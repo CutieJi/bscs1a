@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - 1AFeedbackHub</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
+                        <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
+                        <path d="M10 22H22V24H10V22Z" fill="white" />
+                        <defs>
+                            <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#06b6d4" />
+                                <stop offset="100%" stop-color="#3b82f6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>1AFeedbackHub</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="submit">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span>Submit Feedback</span>
+                </a>
+                <a href="#" class="nav-item" data-view="history">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span>My Submissions</span>
+                </a>
+                <a href="#" class="nav-item" data-view="account">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="7" r="4"></circle>
+                        <path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path>
+                    </svg>
+                    <span>Manage Account</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">
+                        <span id="userInitial">S</span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Student Name</div>
+                        <div class="user-email" id="userEmail">student@email.com</div>
+                    </div>
+                </div>
+                <button class="btn btn-logout" id="logoutBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <h1 class="page-title" id="pageTitle">Submit Feedback</h1>
+                    <p class="page-subtitle" id="pageSubtitle">Share your thoughts and help us improve</p>
+                </div>
+            </div>
+
+            <div class="view-container active" id="submitView">
+                <div class="feedback-form-container">
+                    <form class="feedback-form" id="feedbackForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="feedbackCategory">Category</label>
+                                <select id="feedbackCategory" required>
+                                    <option value="">Select a category</option>
+                                    <option value="course">Course Content</option>
+                                    <option value="instructor">Instructor</option>
+                                    <option value="facilities">Facilities</option>
+                                    <option value="administration">Administration</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="feedbackSubject">Subject</label>
+                                <input type="text" id="feedbackSubject" placeholder="Brief subject of your feedback"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="feedbackType">Feedback Type</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="feedbackType" value="suggestion" required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">💡 Suggestion</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="feedbackType" value="complaint" required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">⚠️ Complaint</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="feedbackType" value="appreciation" required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">🌟 Appreciation</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="feedbackPriority">Priority Level</label>
+                            <div class="priority-slider">
+                                <input type="range" id="feedbackPriority" min="1" max="5" value="3" class="slider">
+                                <div class="priority-labels">
+                                    <span>Low</span>
+                                    <span>Medium</span>
+                                    <span>High</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="feedbackMessage">Your Feedback</label>
+                            <textarea id="feedbackMessage" rows="6" placeholder="Share your detailed feedback here..."
+                                required></textarea>
+                            <div class="char-counter">
+                                <span id="charCount">0</span> / 1000 characters
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="anonymousCheckbox">
+                                <span class="checkbox-custom"></span>
+                                <span>Submit anonymously</span>
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="clearForm">Clear Form</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span>Submit Feedback</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="tips-card">
+                        <h3>💡 Tips for Effective Feedback</h3>
+                        <ul>
+                            <li>Be specific and provide examples</li>
+                            <li>Focus on constructive suggestions</li>
+                            <li>Keep it respectful and professional</li>
+                            <li>Include context when relevant</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-container" id="historyView">
+                <div class="history-filters">
+                    <div class="filter-group">
+                        <label>Filter by Status:</label>
+                        <select id="statusFilter">
+                            <option value="all">All Submissions</option>
+                            <option value="pending">Pending</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Filter by Category:</label>
+                        <select id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            <option value="course">Course Content</option>
+                            <option value="instructor">Instructor</option>
+                            <option value="facilities">Facilities</option>
+                            <option value="administration">Administration</option>
+                            <option value="technology">Technology</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="submissions-grid" id="submissionsGrid">
+                    <div class="empty-state">
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        <h3>No submissions yet</h3>
+                        <p>Start by submitting your first feedback</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-container" id="accountView">
+
+                <div class="account-grid">
+
+                    <div class="account-card">
+                        <h3 class="section-title">👤 Profile Information</h3>
+
+                        <form id="updateProfileForm" class="account-form">
+
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="editName" placeholder="Enter your name">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Student ID</label>
+                                <input type="text" id="editStudentId" placeholder="Student ID">
+                            </div>
+
+                            <button class="btn btn-primary full">Save Changes</button>
+                        </form>
+                    </div>
+
+                    <div class="account-card">
+                        <h3 class="section-title">🔐 Change Password</h3>
+
+                        <form id="changePasswordForm" class="account-form">
+
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" id="newPassword" placeholder="Enter new password">
+                            </div>
+
+                            <button class="btn btn-primary full">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+    <script src="student.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1AFeedbackHub - Student Feedback System</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="landing-container">
+        <div class="animated-bg">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
+                        <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
+                        <path d="M10 22H22V24H10V22Z" fill="white" />
+                        <defs>
+                            <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#06b6d4" />
+                                <stop offset="100%" stop-color="#3b82f6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>1AFeedbackHub</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="about.html" class="nav-link">About</a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="hero-section">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-dot"></span>
+                    Empowering Student Voices
+                </div>
+                <h1 class="hero-title">
+                    Share Feedback,
+                    <span class="gradient-text">Shape Tomorrow</span>
+                </h1>
+                <p class="hero-description">
+                    A seamless platform for students to share valuable feedback and for administrators to drive
+                    meaningful improvements.
+                </p>
+            </div>
+
+            <div class="login-cards">
+                <div class="login-card unified-card">
+                    <div class="card-icon unified-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h2 class="card-title">Welcome Back</h2>
+                    <p class="card-description">Sign in to access your dashboard</p>
+
+                    <form class="login-form" id="unifiedLoginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" placeholder="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" placeholder="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <span>Sign In</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12h14m-7-7l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </form>
+
+                    <div class="card-footer">
+                        <p>New student? <a href="#" id="studentRegisterLink">Create account</a></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <section class="features-section" id="features">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📝</div>
+                    <h3>Easy Submission</h3>
+                    <p>Submit feedback quickly with an intuitive interface</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Private</h3>
+                    <p>Your data is protected with enterprise-grade security</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3>Real-time Analytics</h3>
+                    <p>Administrators get instant insights and trends</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Actionable Insights</h3>
+                    <p>Convert feedback into meaningful improvements</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Student Account</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form class="login-form" id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Full Name</label>
+                    <input type="text" id="registerName" placeholder="1AFeedback Hub" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="Minimum 8 characters" minlength="8" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerStudentId">Student ID</label>
+                    <input type="text" id="registerStudentId" placeholder="20250000-S" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="url(#logo-gradient-footer)" />
+                            <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
+                            <path d="M10 22H22V24H10V22Z" fill="white" />
+                            <defs>
+                                <linearGradient id="logo-gradient-footer" x1="0" y1="0" x2="32" y2="32">
+                                    <stop offset="0%" stop-color="#06b6d4" />
+                                    <stop offset="100%" stop-color="#3b82f6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span>1AFeedbackHub</span>
+                    </div>
+                    <p class="footer-description">Empowering educational excellence through student voices.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="index.html#features">Features</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="documentation.html">Documentation</a></li>
+                        <li><a href="support.html">Support</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul class="footer-links">
+                        <li>support@1AFeedbackHub.edu</li>
+                        <li>+63 (957) 922-4758</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 1AFeedbackHub. All rights reserved.</p>
+            </div>
+        </footer>
+    <div class="toast" id="toast"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+</body>
+
+</html>
