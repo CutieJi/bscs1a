@@ -1,5 +1,3 @@
-Here is the documentation converted into a clean, professional `README.md` format.
-
 ---
 
 # CSFeedback System
