@@ -270,7 +270,7 @@ function showFeedbackDetail(feedback) {
         </div>
         <div class="detail-row">
             <div class="detail-label">Student ID</div>
-            <div class="detail-value">${feedback.studentId || 'N/A'}</div>
+            ${!feedback.isAnonymous ? `<div class="detail-value">${feedback.studentId || 'N/A'}</div>` : 'Anonymous'}
         </div>
         <div class="detail-row">
             <div class="detail-label">Submitted</div>
