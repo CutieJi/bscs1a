@@ -188,7 +188,7 @@ function createFeedbackCard(feedback) {
                     <div class="feedback-info">
                         <span>${feedback.isAnonymous ? '🎭 Anonymous' : '👤 ' + feedback.studentName}</span>
                         <span>📅 ${getTimeAgo(feedback.createdAt)}</span>
-                        <span>🆔 ${feedback.studentId || 'N/A'}</span>
+                        ${!feedback.isAnonymous ? `<span>🆔 ${feedback.studentId || 'N/A'}</span>` : ''}
                     </div>
                 </div>
                 <div class="feedback-badges">
@@ -203,7 +203,7 @@ function createFeedbackCard(feedback) {
             <div class="feedback-message">${truncateText(feedback.message, 200)}</div>
             <div class="feedback-footer">
                 <span>ID: ${feedback.id.substring(0, 8)}</span>
-                <span>📧 ${feedback.studentEmail}</span>
+                ${!feedback.isAnonymous ? `<span>📧 ${feedback.studentEmail}</span>` : ''}
             </div>
         </div>
     `;
@@ -266,7 +266,7 @@ function showFeedbackDetail(feedback) {
         </div>
         <div class="detail-row">
             <div class="detail-label">Email</div>
-            <div class="detail-value">${feedback.studentEmail}</div>
+            ${!feedback.isAnonymous ? `<div class="detail-value">${feedback.studentEmail}</div>` : 'Anonymous'}
         </div>
         <div class="detail-row">
             <div class="detail-label">Student ID</div>
