@@ -1,17 +1,12 @@
-// ==========================================
-// STUDENT DASHBOARD FUNCTIONALITY
-// ==========================================
-
 let currentUser = null;
 let currentUserData = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check authentication
     try {
         const { user, userData } = await checkAuth('student');
         currentUser = user;
         currentUserData = userData;
-        
+
         initializeDashboard();
     } catch (error) {
         console.error('Authentication error:', error);
@@ -19,21 +14,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeDashboard() {
-    // Update user info in sidebar
     updateUserInfo();
-    
-    // Initialize navigation
     initializeNavigation();
-    
-    // Initialize feedback form
     initializeFeedbackForm();
-    
-    // Load submissions history
     loadSubmissions();
-    
-    // Initialize logout
     initializeLogout();
-
     initializeAccountPage();
 }
 
@@ -41,10 +26,10 @@ function updateUserInfo() {
     const userNameEl = document.getElementById('userName');
     const userEmailEl = document.getElementById('userEmail');
     const userInitialEl = document.getElementById('userInitial');
-    
+
     if (userNameEl) userNameEl.textContent = currentUserData.name || 'Student';
     if (userEmailEl) userEmailEl.textContent = currentUser.email || '';
-    
+
     if (userInitialEl && currentUserData.name) {
         userInitialEl.textContent = getUserInitials(currentUserData.name);
     }
@@ -53,27 +38,24 @@ function updateUserInfo() {
 function initializeNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     const views = document.querySelectorAll('.view-container');
-    
+
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            
+
             const viewId = item.getAttribute('data-view');
-            
-            // Update active nav item
+
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
-            
-            // Update active view
+
             views.forEach(view => view.classList.remove('active'));
             const targetView = document.getElementById(`${viewId}View`);
             if (targetView) {
                 targetView.classList.add('active');
-                
-                // Update page title
+
                 const pageTitle = document.getElementById('pageTitle');
                 const pageSubtitle = document.getElementById('pageSubtitle');
-                
+
                 if (viewId === 'submit') {
                     if (pageTitle) pageTitle.textContent = 'Submit Feedback';
                     if (pageSubtitle) pageSubtitle.textContent = 'Share your thoughts and help us improve';
@@ -95,13 +77,12 @@ function initializeFeedbackForm() {
     const clearFormBtn = document.getElementById('clearForm');
     const feedbackMessage = document.getElementById('feedbackMessage');
     const charCount = document.getElementById('charCount');
-    
-    // Character counter
+
     if (feedbackMessage && charCount) {
         feedbackMessage.addEventListener('input', () => {
             const count = feedbackMessage.value.length;
             charCount.textContent = count;
-            
+
             if (count > 1000) {
                 charCount.style.color = 'var(--danger)';
                 feedbackMessage.value = feedbackMessage.value.substring(0, 1000);
@@ -110,27 +91,25 @@ function initializeFeedbackForm() {
             }
         });
     }
-    
-    // Clear form
+
     if (clearFormBtn) {
         clearFormBtn.addEventListener('click', () => {
             feedbackForm.reset();
             if (charCount) charCount.textContent = '0';
         });
     }
-    
-    // Submit feedback
+
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const submitBtn = feedbackForm.querySelector('button[type="submit"]');
             const originalBtnContent = submitBtn.innerHTML;
-            
+
             try {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>Submitting...</span>';
-                
+
                 const formData = {
                     category: document.getElementById('feedbackCategory').value,
                     subject: document.getElementById('feedbackSubject').value,
@@ -145,15 +124,13 @@ function initializeFeedbackForm() {
                     studentEmail: currentUser.email,
                     studentId: currentUserData.studentId
                 };
-                
-                // Add to Firestore
+
                 await db.collection('feedback').add(formData);
-                
+
                 showToast('Feedback submitted successfully!', 'success');
                 feedbackForm.reset();
                 if (charCount) charCount.textContent = '0';
-                
-                // Reload submissions
+
                 loadSubmissions();
             } catch (error) {
                 console.error('Error submitting feedback:', error);
@@ -169,34 +146,30 @@ function initializeFeedbackForm() {
 async function loadSubmissions() {
     const submissionsGrid = document.getElementById('submissionsGrid');
     if (!submissionsGrid) return;
-    
+
     try {
-        // Get status and category filters
         const statusFilter = document.getElementById('statusFilter')?.value || 'all';
         const categoryFilter = document.getElementById('categoryFilter')?.value || 'all';
-        
-        // Build query
+
         let query = db.collection('feedback')
             .where('userId', '==', currentUser.uid)
             .orderBy('createdAt', 'desc');
-        
+
         const snapshot = await query.get();
-        
-        // Filter results
+
         let submissions = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
-        
+
         if (statusFilter !== 'all') {
             submissions = submissions.filter(s => s.status === statusFilter);
         }
-        
+
         if (categoryFilter !== 'all') {
             submissions = submissions.filter(s => s.category === categoryFilter);
         }
-        
-        // Display submissions
+
         if (submissions.length === 0) {
             submissionsGrid.innerHTML = `
                 <div class="empty-state">
@@ -269,56 +242,51 @@ function initializeAccountPage() {
     const profileForm = document.getElementById('updateProfileForm');
     const passwordForm = document.getElementById('changePasswordForm');
 
-    // autofill inputs
-    if(currentUserData){
+    if (currentUserData) {
         document.getElementById('editName').value = currentUserData.name || "";
         document.getElementById('editStudentId').value = currentUserData.studentId || "";
     }
 
-    // UPDATE PROFILE
-    if(profileForm){
-        profileForm.addEventListener('submit', async(e)=>{
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const name = document.getElementById('editName').value;
             const studentId = document.getElementById('editStudentId').value;
 
-            try{
+            try {
                 await db.collection('users').doc(currentUser.uid).update({
                     name: name,
                     studentId: studentId
                 });
 
-                await currentUser.updateProfile({displayName:name});
+                await currentUser.updateProfile({ displayName: name });
 
                 showToast("Profile updated!", "success");
-            }catch(err){
+            } catch (err) {
                 console.error(err);
                 showToast("Failed to update profile", "error");
             }
         });
     }
 
-    // CHANGE PASSWORD
-    if(passwordForm){
-        passwordForm.addEventListener('submit', async(e)=>{
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const newPass = document.getElementById('newPassword').value;
 
-            try{
+            try {
                 await currentUser.updatePassword(newPass);
                 showToast("Password changed!", "success");
                 passwordForm.reset();
-            }catch(err){
+            } catch (err) {
                 showToast("Please re-login before changing password", "error");
             }
         });
     }
 }
 
-
-// Initialize filters
 const statusFilter = document.getElementById('statusFilter');
 const categoryFilter = document.getElementById('categoryFilter');
 

@@ -1,14 +1,9 @@
-// ==========================================
-// ADMIN DASHBOARD FUNCTIONALITY
-// ==========================================
-
 let currentAdmin = null;
 let currentAdminData = null;
 let allFeedback = [];
 let selectedFeedback = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check authentication
     try {
         const { user, userData } = await checkAuth('admin');
         currentAdmin = user;
@@ -21,28 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeDashboard() {
-    // Update admin info
     updateAdminInfo();
-
-    // Initialize navigation
     initializeNavigation();
-
-    // Load dashboard data
     loadDashboardData();
-
-    // Initialize logout
     initializeLogout();
-
-    // Initialize refresh button
     initializeRefresh();
-
-    // Initialize filters
     initializeFilters();
-
-    // Initialize modal
     initializeModal();
-
-    // Initialize user management
     initializeUserManagement();
 
     const editUserForm = document.getElementById("editUserForm");
@@ -70,17 +50,14 @@ function initializeNavigation() {
 
             const viewId = item.getAttribute('data-view');
 
-            // Update active nav item
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
 
-            // Update active view
             views.forEach(view => view.classList.remove('active'));
             const targetView = document.getElementById(`${viewId}View`);
             if (targetView) {
                 targetView.classList.add('active');
 
-                // Load appropriate data
                 if (viewId === 'overview') {
                     loadDashboardData();
                 } else if (viewId === 'feedback') {
@@ -97,7 +74,6 @@ function initializeNavigation() {
 
 async function loadDashboardData() {
     try {
-        // Get all feedback
         const snapshot = await db.collection('feedback')
             .orderBy('createdAt', 'desc')
             .get();
@@ -107,10 +83,7 @@ async function loadDashboardData() {
             ...doc.data()
         }));
 
-        // Update stats
         updateStats();
-
-        // Load recent feedback
         loadRecentFeedback();
     } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -124,7 +97,6 @@ function updateStats() {
     const reviewedFeedback = allFeedback.filter(f => f.status === 'reviewed').length;
     const resolvedFeedback = allFeedback.filter(f => f.status === 'resolved').length;
 
-    // Update DOM
     const totalEl = document.getElementById('totalFeedback');
     const pendingEl = document.getElementById('pendingFeedback');
     const reviewedEl = document.getElementById('reviewedFeedback');
@@ -156,7 +128,6 @@ function loadRecentFeedback() {
             createFeedbackCard(feedback)
         ).join('');
 
-        // Add click handlers
         addFeedbackClickHandlers();
     }
 }
@@ -165,13 +136,11 @@ async function loadAllFeedback() {
     const allFeedbackList = document.getElementById('allFeedbackList');
     if (!allFeedbackList) return;
 
-    // Get filter values
     const statusFilter = document.getElementById('adminStatusFilter')?.value || 'all';
     const categoryFilter = document.getElementById('adminCategoryFilter')?.value || 'all';
     const typeFilter = document.getElementById('adminTypeFilter')?.value || 'all';
     const searchQuery = document.getElementById('searchInput')?.value.toLowerCase() || '';
 
-    // Filter feedback
     let filteredFeedback = [...allFeedback];
 
     if (statusFilter !== 'all') {
@@ -194,7 +163,6 @@ async function loadAllFeedback() {
         );
     }
 
-    // Display feedback
     if (filteredFeedback.length === 0) {
         allFeedbackList.innerHTML = `
             <div class="empty-state">
@@ -207,7 +175,6 @@ async function loadAllFeedback() {
             createFeedbackCard(feedback)
         ).join('');
 
-        // Add click handlers
         addFeedbackClickHandlers();
     }
 }
@@ -356,19 +323,16 @@ async function updateFeedbackStatus(newStatus) {
 
         showToast(`Feedback marked as ${newStatus}`, 'success');
 
-        // Update local data
         selectedFeedback.status = newStatus;
         const feedbackIndex = allFeedback.findIndex(f => f.id === selectedFeedback.id);
         if (feedbackIndex !== -1) {
             allFeedback[feedbackIndex].status = newStatus;
         }
 
-        // Refresh views
         updateStats();
         loadRecentFeedback();
         loadAllFeedback();
 
-        // Close modal
         document.getElementById('feedbackModal').classList.remove('active');
     } catch (error) {
         console.error('Error updating status:', error);
@@ -381,7 +345,6 @@ async function loadAnalytics() {
     const typeChart = document.getElementById('typeChart');
     const priorityBars = document.getElementById('priorityBars');
 
-    // Category breakdown
     const categoryData = {};
     allFeedback.forEach(f => {
         categoryData[f.category] = (categoryData[f.category] || 0) + 1;
@@ -402,7 +365,6 @@ async function loadAnalytics() {
         }).join('');
     }
 
-    // Type breakdown
     const typeData = {};
     allFeedback.forEach(f => {
         typeData[f.type] = (typeData[f.type] || 0) + 1;
@@ -423,7 +385,6 @@ async function loadAnalytics() {
         }).join('');
     }
 
-    // Priority distribution
     const priorityData = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     allFeedback.forEach(f => {
         priorityData[f.priority] = (priorityData[f.priority] || 0) + 1;
@@ -504,10 +465,6 @@ function initializeLogout() {
     }
 }
 
-// ==========================================
-// USER MANAGEMENT FUNCTIONS
-// ==========================================
-
 function initializeUserManagement() {
     const addUserBtn = document.getElementById('addUserBtn');
     const addUserModal = document.getElementById('addUserModal');
@@ -517,14 +474,12 @@ function initializeUserManagement() {
     const newUserRole = document.getElementById('newUserRole');
     const studentIdGroup = document.getElementById('studentIdGroup');
 
-    // Open add user modal
     if (addUserBtn) {
         addUserBtn.addEventListener('click', () => {
             addUserModal.classList.add('active');
         });
     }
 
-    // Close modal handlers
     if (closeAddUserModal) {
         closeAddUserModal.addEventListener('click', () => {
             addUserModal.classList.remove('active');
@@ -548,7 +503,6 @@ function initializeUserManagement() {
         });
     }
 
-    // Toggle student ID field based on role
     if (newUserRole && studentIdGroup) {
         newUserRole.addEventListener('change', () => {
             if (newUserRole.value === 'admin') {
@@ -561,7 +515,6 @@ function initializeUserManagement() {
         });
     }
 
-    // Submit form
     if (addUserForm) {
         addUserForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -584,15 +537,12 @@ async function createNewUser() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Creating...</span>';
 
-        // 🔵 create SECONDARY firebase app
         const secondaryApp = firebase.initializeApp(firebase.app().options, "Secondary");
         const secondaryAuth = secondaryApp.auth();
 
-        // 🔵 create user WITHOUT logging out admin
         const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
         const newUser = userCredential.user;
 
-        // save to firestore
         const userData = {
             name: name,
             email: email,
@@ -608,11 +558,9 @@ async function createNewUser() {
 
         showToast(`${role} created successfully!`, 'success');
 
-        // 🔴 sign out secondary instance only
         await secondaryAuth.signOut();
         await secondaryApp.delete();
 
-        // close modal
         document.getElementById('addUserModal').classList.remove('active');
         document.getElementById('addUserForm').reset();
 
@@ -633,7 +581,6 @@ async function loadUsers() {
     if (!usersGrid) return;
 
     try {
-        // Get all users from Firestore
         const snapshot = await db.collection('users')
             .orderBy('createdAt', 'desc')
             .get();
@@ -697,12 +644,7 @@ async function deleteUser(userId, userEmail) {
     }
 
     try {
-        // Delete user document from Firestore
         await db.collection('users').doc(userId).delete();
-
-        // Note: Deleting from Firebase Auth requires Admin SDK (server-side)
-        // For now, we'll just delete from Firestore
-        // In production, you should implement a Cloud Function to delete from Auth
 
         showToast('User removed from database', 'success');
         loadUsers();
@@ -771,7 +713,6 @@ async function saveUserEdit() {
         }
     }
 }
-
 
 function resetUserPassword(email) {
     auth.sendPasswordResetEmail(email);
