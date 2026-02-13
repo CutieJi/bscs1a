@@ -1,6 +1,6 @@
 ---
 
-# CSFeedback Syste
+# CSFeedback System
 
 A lightweight, responsive web application designed for students to provide academic feedback. This system leverages native web technologies and **Firebase** as a Backend-as-a-Service (BaaS) to ensure secure authentication and real-time data handling.
 
