@@ -1,20 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            try {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                const userData = userDoc.data();
-
-                if (userData && userData.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'student.html';
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-            }
-        }
-    });
 
     const unifiedLoginForm = document.getElementById('unifiedLoginForm');
     if (unifiedLoginForm) {
@@ -93,25 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value;
-            const studentId = document.getElementById('registerStudentId').value;
+            const studentId = document.getElementById('registerStudentId').value.trim();
             const submitBtn = registerForm.querySelector('button[type="submit"]');
 
             try {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>Creating Account...</span>';
 
-
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
-
 
                 await user.updateProfile({
                     displayName: name
                 });
-
 
                 await db.collection('users').doc(user.uid).set({
                     name: name,
@@ -121,12 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
+                console.log('User data saved to Firestore successfully');
                 showToast('Account created successfully! Redirecting...', 'success');
-                registerModal.classList.remove('active');
 
-                setTimeout(() => {
-                    window.location.href = 'student.html';
-                }, 1000);
+                if (registerModal) {
+                    registerModal.classList.remove('active');
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                window.location.href = 'student.html';
+
             } catch (error) {
                 console.error('Registration error:', error);
                 showToast(getErrorMessage(error), 'error');
