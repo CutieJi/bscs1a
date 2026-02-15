@@ -379,8 +379,11 @@ function generateQRCode(equipmentDocId, equipmentId, equipmentName) {
     const qrContainer = document.getElementById('qrCodeContainer');
     qrContainer.innerHTML = '';
 
+    const baseUrl = window.location.origin; 
+    const deepLink = `${baseUrl}/student.html?borrow=${encodeURIComponent(equipmentId)}`;
+
     new QRCode(qrContainer, {
-        text: equipmentId,
+        text: deepLink,
         width: 256,
         height: 256,
         colorDark: "#000000",
@@ -395,6 +398,7 @@ function generateQRCode(equipmentDocId, equipmentId, equipmentName) {
 
     setupQRActions(equipmentId);
 }
+
 
 function setupQRActions(equipmentId) {
     const downloadBtn = document.getElementById('downloadQrBtn');

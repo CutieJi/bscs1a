@@ -11,10 +11,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentUserData = userData;
 
         initializeDashboard();
+
+        handleBorrowDeepLink();
     } catch (error) {
         console.error('Authentication error:', error);
     }
 });
+
+async function handleBorrowDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const equipmentCode = params.get("borrow");
+    if (!equipmentCode) return;
+
+    try {
+        const browseNav = document.querySelector('.nav-item[data-view="browse"]');
+        if (browseNav) browseNav.click();
+
+        const snap = await db.collection("equipment")
+            .where("equipmentId", "==", equipmentCode)
+            .limit(1)
+            .get();
+
+        if (snap.empty) {
+            showToast(`Equipment not found: ${equipmentCode}`, "error");
+            return;
+        }
+
+        const doc = snap.docs[0];
+        const equipment = { id: doc.id, ...doc.data() };
+
+        if (equipment.status !== "available") {
+            showToast("This equipment is not available right now.", "error");
+            return;
+        }
+
+        // ✅ open borrow modal directly
+        await openBorrowModal(equipment.id);
+
+        // ✅ remove query so refresh won't reopen modal
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+    } catch (err) {
+        console.error("Deep link borrow error:", err);
+        showToast("Failed to open borrow form.", "error");
+    }
+}
+
 
 function initializeDashboard() {
     updateUserInfo();
