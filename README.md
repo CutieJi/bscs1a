@@ -4,8 +4,8 @@
 - [Firestore Collections (Data Structure)](#3-firestore-collections-data-structure)
 - [Create Admin Account (Important)](#4-create-admin-account-important)
 - [Security Rules (Basic idea)](#5-security-rules-basic-idea)
-- [How to Use (Student)](#6-how-to-use-the-website-step-by-step)
-- [How to Use (Admin)](#7-common-demo-accounts-for-testing)
+- [How to Use the Website](#6-how-to-use-the-website-step-by-step)
+- [Demo Accounts](#7-common-/-demo-accounts-for-testing)
 - [QR Scanner Notes](#8-notes-important)
 
 ---
