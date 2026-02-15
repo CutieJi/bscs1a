@@ -502,9 +502,9 @@ async function loadCurrentlyBorrowed() {
                                 </div>
                             </div>
                             ${isOverdue
-                                ? '<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger)">OVERDUE</span>'
-                                : ''
-                            }
+                        ? '<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger)">OVERDUE</span>'
+                        : ''
+                    }
                         </div>
 
                         <div class="borrowed-list-details" style="margin-top: 1rem;">
@@ -652,48 +652,199 @@ function initializeExport() {
 
     if (applyFilterBtn) applyFilterBtn.addEventListener('click', loadBorrowingLogs);
 
+    const fmtDate = (ts) => {
+        if (!ts || !ts.toDate) return "";
+        const d = ts.toDate();
+        const pad = (n) => String(n).padStart(2, "0");
+        // Excel-friendly string (sortable)
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+
+    const safe = (v) => (v ?? "").toString();
+
+    // ----- Styles (professional look) -----
+    const styles = {
+        title: {
+            font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "0F172A" } }, // dark navy
+            alignment: { horizontal: "left", vertical: "center" }
+        },
+        meta: {
+            font: { sz: 11, color: { rgb: "334155" } },
+            fill: { fgColor: { rgb: "F1F5F9" } },
+            alignment: { horizontal: "left", vertical: "center" }
+        },
+        header: {
+            font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "2563EB" } }, // blue
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+            border: {
+                top: { style: "thin", color: { rgb: "CBD5E1" } },
+                bottom: { style: "thin", color: { rgb: "CBD5E1" } },
+                left: { style: "thin", color: { rgb: "CBD5E1" } },
+                right: { style: "thin", color: { rgb: "CBD5E1" } }
+            }
+        },
+        cell: {
+            font: { sz: 11, color: { rgb: "0F172A" } },
+            alignment: { horizontal: "left", vertical: "top", wrapText: true },
+            border: {
+                top: { style: "thin", color: { rgb: "E2E8F0" } },
+                bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                left: { style: "thin", color: { rgb: "E2E8F0" } },
+                right: { style: "thin", color: { rgb: "E2E8F0" } }
+            }
+        },
+        zebra: {
+            fill: { fgColor: { rgb: "F8FAFC" } } // very light gray
+        },
+        statusAvailable: { font: { color: { rgb: "065F46" }, bold: true } },
+        statusBorrowed: { font: { color: { rgb: "92400E" }, bold: true } },
+        statusMaintenance: { font: { color: { rgb: "991B1B" }, bold: true } }
+    };
+
+    function applyCellStyle(ws, r, c, styleObj) {
+        const addr = XLSX.utils.encode_cell({ r, c });
+        if (!ws[addr]) ws[addr] = { t: "s", v: "" };
+        ws[addr].s = { ...(ws[addr].s || {}), ...styleObj };
+    }
+
+    function setRowHeight(ws, r, h) {
+        ws["!rows"] = ws["!rows"] || [];
+        ws["!rows"][r] = ws["!rows"][r] || {};
+        ws["!rows"][r].hpt = h;
+    }
+
     if (exportLogsBtn) {
-        exportLogsBtn.addEventListener('click', async () => {
+        exportLogsBtn.addEventListener("click", async () => {
             try {
-                const snapshot = await db.collection('borrowings')
-                    .orderBy('borrowedAt', 'desc')
+                const snapshot = await db.collection("borrowings")
+                    .orderBy("borrowedAt", "desc")
                     .get();
 
-                const logs = snapshot.docs.map(doc => doc.data());
+                const logs = snapshot.docs.map((doc) => doc.data());
 
-                let csv = 'Equipment Name,Equipment Code,Student Name,Student Email,Student ID,Borrowed At,Returned At,Due Time,Room,Status,Purpose,Return Condition\n';
+                const now = new Date();
+                const fileDate = now.toISOString().split("T")[0];
 
-                logs.forEach(log => {
-                    const borrowedAt = log.borrowedAt ? log.borrowedAt.toDate().toLocaleString() : 'N/A';
-                    const returnedAt = log.returnedAt ? log.returnedAt.toDate().toLocaleString() : 'N/A';
+                const headers = [
+                    "Equipment Name",
+                    "Equipment Code",
+                    "Student Name",
+                    "Student Email",
+                    "Student ID",
+                    "Borrowed At",
+                    "Returned At",
+                    "Due Time",
+                    "Room",
+                    "Status",
+                    "Purpose",
+                    "Return Condition"
+                ];
 
-                    csv += `"${log.equipmentName || ''}",`;
-                    csv += `"${log.equipmentCode || log.equipmentId || 'N/A'}",`;
-                    csv += `"${log.userName || ''}",`;
-                    csv += `"${log.userEmail || ''}",`;
-                    csv += `"${log.studentId || 'N/A'}",`;
-                    csv += `"${borrowedAt}",`;
-                    csv += `"${returnedAt}",`;
-                    csv += `"${log.expectedReturnTime || 'N/A'}",`;
-                    csv += `"${log.room || 'N/A'}",`;
-                    csv += `"${log.status || ''}",`;
-                    csv += `"${(log.purpose || '').replace(/"/g, '""')}",`;
-                    csv += `"${log.returnCondition || 'N/A'}"\n`;
+                const rows = [];
+                rows.push(["MIS eBorrow - Borrowing Logs"]);
+                rows.push([`Generated At: ${now.toLocaleString()}`]);
+                rows.push([]);
+                rows.push(headers);
+
+                logs.forEach((log) => {
+                    rows.push([
+                        safe(log.equipmentName),
+                        safe(log.equipmentCode || log.equipmentId),
+                        safe(log.userName),
+                        safe(log.userEmail),
+                        safe(log.studentId),
+                        fmtDate(log.borrowedAt),
+                        fmtDate(log.returnedAt),
+                        safe(log.expectedReturnTime),
+                        safe(log.room),
+                        safe(log.status),
+                        safe(log.purpose),
+                        safe(log.returnCondition)
+                    ]);
                 });
 
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(rows);
 
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `borrowing-logs-${new Date().toISOString().split('T')[0]}.csv`;
-                a.click();
+                ws["!cols"] = [
+                    { wch: 28 },
+                    { wch: 18 },
+                    { wch: 22 },
+                    { wch: 26 },
+                    { wch: 14 },
+                    { wch: 20 },
+                    { wch: 20 },
+                    { wch: 12 },
+                    { wch: 14 },
+                    { wch: 14 },
+                    { wch: 34 },
+                    { wch: 20 }
+                ];
 
-                window.URL.revokeObjectURL(url);
-                showToast('Logs exported successfully', 'success');
+                ws["!merges"] = ws["!merges"] || [];
+                ws["!merges"].push({
+                    s: { r: 0, c: 0 },
+                    e: { r: 0, c: headers.length - 1 }
+                });
+                ws["!merges"].push({
+                    s: { r: 1, c: 0 },
+                    e: { r: 1, c: headers.length - 1 }
+                });
+
+                setRowHeight(ws, 0, 28);
+                setRowHeight(ws, 1, 18);
+                setRowHeight(ws, 3, 20);
+
+                for (let c = 0; c < headers.length; c++) {
+                    applyCellStyle(ws, 0, c, styles.title);
+                    applyCellStyle(ws, 1, c, styles.meta);
+                }
+
+                for (let c = 0; c < headers.length; c++) {
+                    applyCellStyle(ws, 3, c, styles.header);
+                }
+
+                const startBodyRow = 4;
+                const endBodyRow = rows.length - 1;
+
+                for (let r = startBodyRow; r <= endBodyRow; r++) {
+                    const isZebra = (r - startBodyRow) % 2 === 1;
+                    for (let c = 0; c < headers.length; c++) {
+                        applyCellStyle(ws, r, c, styles.cell);
+                        if (isZebra) applyCellStyle(ws, r, c, styles.zebra);
+                    }
+
+                    const statusCellAddr = XLSX.utils.encode_cell({ r, c: 9 });
+                    const statusValue = (ws[statusCellAddr]?.v || "").toString().toLowerCase();
+
+                    if (statusValue.includes("available")) applyCellStyle(ws, r, 9, styles.statusAvailable);
+                    else if (statusValue.includes("borrow")) applyCellStyle(ws, r, 9, styles.statusBorrowed);
+                    else if (statusValue.includes("maintenance")) applyCellStyle(ws, r, 9, styles.statusMaintenance);
+                }
+
+                ws["!autofilter"] = {
+                    ref: XLSX.utils.encode_range({
+                        s: { r: 3, c: 0 },
+                        e: { r: 3, c: headers.length - 1 }
+                    })
+                };
+
+                ws["!sheetViews"] = [{
+                    state: "frozen",
+                    ySplit: 4,
+                    topLeftCell: "A5",
+                    activePane: "bottomLeft"
+                }];
+
+                XLSX.utils.book_append_sheet(wb, ws, "Borrowing Logs");
+
+                XLSX.writeFile(wb, `MIS-eBorrow-borrowing-logs-${fileDate}.xlsx`);
+                showToast("XLSX exported with professional styling!", "success");
             } catch (error) {
-                console.error('Error exporting logs:', error);
-                showToast('Failed to export logs', 'error');
+                console.error("Error exporting logs:", error);
+                showToast("Failed to export XLSX", "error");
             }
         });
     }
