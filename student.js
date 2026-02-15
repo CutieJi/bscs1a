@@ -126,7 +126,6 @@ async function loadEquipment() {
                     </div>
                     <div class="equipment-name">${item.name}</div>
                     <div class="equipment-category">${capitalize(item.category)}</div>
-                    <div class="equipment-location">📍 ${item.location}</div>
                     ${item.description ? `<p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">${item.description}</p>` : ''}
                     <div class="equipment-actions">
                         ${item.status === 'available' ? `
@@ -190,72 +189,22 @@ function setupQRScanner() {
     }
 }
 
+// ✅ KEEP ONLY ONE copy (you had 3 duplicates)
 function extractEquipmentId(decodedText) {
     if (!decodedText) return "";
 
     let text = String(decodedText).trim();
 
-    // If QR contains a URL like https://site.com/?id=PROJ-001
     try {
         if (text.startsWith("http")) {
             const url = new URL(text);
             const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
             if (fromQuery) return fromQuery.trim();
-            // If URL ends with /PROJ-001
             const last = url.pathname.split("/").pop();
             if (last) return last.trim();
         }
     } catch (e) { }
 
-    // If QR contains "PROJ-001|something" or "PROJ-001\n"
-    text = text.split("|")[0].trim();
-    text = text.split("\n")[0].trim();
-
-    return text;
-}
-
-function extractEquipmentId(decodedText) {
-    if (!decodedText) return "";
-
-    let text = String(decodedText).trim();
-
-    // If QR contains a URL like https://site.com/?id=PROJ-001
-    try {
-        if (text.startsWith("http")) {
-            const url = new URL(text);
-            const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
-            if (fromQuery) return fromQuery.trim();
-            // If URL ends with /PROJ-001
-            const last = url.pathname.split("/").pop();
-            if (last) return last.trim();
-        }
-    } catch (e) { }
-
-    // If QR contains "PROJ-001|something" or "PROJ-001\n"
-    text = text.split("|")[0].trim();
-    text = text.split("\n")[0].trim();
-
-    return text;
-}
-
-function extractEquipmentId(decodedText) {
-    if (!decodedText) return "";
-
-    let text = String(decodedText).trim();
-
-    // If QR contains a URL like https://site.com/?id=PROJ-001
-    try {
-        if (text.startsWith("http")) {
-            const url = new URL(text);
-            const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
-            if (fromQuery) return fromQuery.trim();
-            // If URL ends with /PROJ-001
-            const last = url.pathname.split("/").pop();
-            if (last) return last.trim();
-        }
-    } catch (e) { }
-
-    // If QR contains "PROJ-001|something" or "PROJ-001\n"
     text = text.split("|")[0].trim();
     text = text.split("\n")[0].trim();
 
@@ -308,8 +257,6 @@ async function processQRCode(decodedText) {
     }
 }
 
-
-
 async function openBorrowModal(equipmentId) {
     try {
         const equipmentDoc = await db.collection('equipment').doc(equipmentId).get();
@@ -322,15 +269,20 @@ async function openBorrowModal(equipmentId) {
             <div style="margin-bottom: 1rem;">
                 <strong>Equipment:</strong> ${equipment.name}<br>
                 <strong>ID:</strong> ${equipment.equipmentId}<br>
-                <strong>Location:</strong> ${equipment.location}
             </div>
         `;
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const returnDateInput = document.getElementById('returnDate');
-        returnDateInput.min = tomorrow.toISOString().split('T')[0];
-        returnDateInput.value = tomorrow.toISOString().split('T')[0];
+        // ✅ TIME (not date)
+        const returnTimeInput = document.getElementById('returnTime');
+        if (returnTimeInput) {
+            const now = new Date();
+            now.setSeconds(0, 0);
+            now.setHours(now.getHours() + 1);
+
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            returnTimeInput.value = `${hh}:${mm}`;
+        }
 
         document.getElementById('borrowModal').classList.add('active');
     } catch (error) {
@@ -404,11 +356,17 @@ function initializeModals() {
 }
 
 async function borrowEquipment() {
-    const returnDate = document.getElementById('returnDate').value;
+    const returnTime = document.getElementById('returnTime').value;
     const purpose = document.getElementById('purpose').value;
+    const room = document.getElementById('room').value.trim();
 
-    if (!returnDate) {
-        showToast('Please select a return date', 'error');
+    if (!room) {
+        showToast('Please enter the room', 'error');
+        return;
+    }
+
+    if (!returnTime) {
+        showToast('Please select a return time', 'error');
         return;
     }
 
@@ -424,12 +382,18 @@ async function borrowEquipment() {
             equipmentCode: selectedEquipmentForBorrow.equipmentId,
             equipmentName: selectedEquipmentForBorrow.name,
             equipmentCategory: selectedEquipmentForBorrow.category,
+
+            room: room,
+
             userId: currentUser.uid,
             userName: currentUserData.name,
             userEmail: currentUser.email,
             studentId: currentUserData.studentId,
             borrowedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            expectedReturn: new Date(returnDate),
+
+            // ✅ TIME ONLY
+            expectedReturnTime: returnTime,
+
             purpose: purpose || 'Not specified',
             status: 'borrowed'
         });
@@ -442,6 +406,9 @@ async function borrowEquipment() {
 
         showToast('Equipment borrowed successfully!', 'success');
         document.getElementById('borrowModal').classList.remove('active');
+
+        document.getElementById('room').value = '';
+        document.getElementById('returnTime').value = '';
 
         loadEquipment();
         loadBorrowedItems();
@@ -488,25 +455,22 @@ async function loadBorrowedItems() {
             `;
         } else {
             borrowedItemsGrid.innerHTML = borrowedItems.map(item => {
-                const expectedReturn = item.expectedReturn.toDate();
-                const isOverdue = expectedReturn < new Date();
-
                 return `
                     <div class="borrowed-item-card">
                         <div class="borrowed-item-header">
                             <div class="borrowed-item-info">
                                 <div class="borrowed-item-name">${item.equipmentName}</div>
-                                <div class="borrowed-item-id">ID: ${item.equipmentId || 'N/A'}</div>
+                                <div class="borrowed-item-id">ID: ${item.equipmentCode || 'N/A'}</div>
                             </div>
                         </div>
                         <div class="borrowed-item-meta">
                             <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
-                            <span class="due-date ${isOverdue ? 'overdue' : ''}">
-                                ⏰ Due: ${expectedReturn.toLocaleDateString()}
-                                ${isOverdue ? ' (OVERDUE!)' : ''}
+                            <span class="due-date">
+                                ⏰ Due Time: ${item.expectedReturnTime || 'N/A'}
                             </span>
                         </div>
                         <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                            <strong>Room:</strong> ${item.room || 'N/A'}
                             <strong>Purpose:</strong> ${item.purpose}
                         </div>
                         <div class="borrowed-item-actions">
@@ -544,7 +508,8 @@ async function openReturnModal(borrowingId) {
             <div style="margin-bottom: 1rem;">
                 <strong>Equipment:</strong> ${borrowing.equipmentName}<br>
                 <strong>Borrowed:</strong> ${formatDate(borrowing.borrowedAt)}<br>
-                <strong>Expected Return:</strong> ${borrowing.expectedReturn.toDate().toLocaleDateString()}
+                <strong>Room:</strong> ${borrowing.room || 'N/A'}<br>
+                <strong>Expected Return Time:</strong> ${borrowing.expectedReturnTime || 'N/A'}
             </div>
         `;
 
@@ -643,8 +608,10 @@ async function loadHistory() {
                     </div>
                     <div class="history-item-details">
                         <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
+                        ${item.expectedReturnTime ? `<span>⏰ Due Time: ${item.expectedReturnTime}</span>` : ''}
                         ${item.returnedAt ? `<span>✅ Returned: ${formatDate(item.returnedAt)}</span>` : ''}
                         ${item.returnCondition ? `<span>🔧 Condition: ${capitalize(item.returnCondition)}</span>` : ''}
+                        ${item.room ? `<span>🏫 Room: ${item.room}</span>` : ''}
                         <span>📝 Purpose: ${item.purpose}</span>
                     </div>
                 </div>
@@ -669,8 +636,7 @@ function initializeLogout() {
                 if (html5QrCode) {
                     try {
                         await html5QrCode.stop();
-                    } catch (e) {
-                    }
+                    } catch (e) { }
                 }
 
                 await auth.signOut();
@@ -732,53 +698,55 @@ async function changePassword() {
     closePasswordModal();
 }
 
-// ==========================================
-// MOBILE MENU
-// ==========================================
-
 function initializeMobileMenu() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    if (mobileMenuToggle && sidebar && sidebarOverlay) {
-        // Toggle sidebar on button click
-        mobileMenuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-open');
-            sidebarOverlay.classList.toggle('active');
-        });
+    if (!mobileMenuToggle || !sidebar || !sidebarOverlay) return;
 
-        // Close sidebar when clicking overlay
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('mobile-open');
-            sidebarOverlay.classList.remove('active');
-        });
+    const openMenu = () => {
+        sidebar.classList.add('mobile-open');
+        sidebarOverlay.classList.add('active');
+        mobileMenuToggle.classList.add('is-open');
+        document.body.classList.add('sidebar-open');
+    };
 
-        // Close sidebar when clicking nav items on mobile
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('mobile-open');
-                    sidebarOverlay.classList.remove('active');
-                }
-            });
+    const closeMenu = () => {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+        mobileMenuToggle.classList.remove('is-open');
+        document.body.classList.remove('sidebar-open');
+    };
+
+    mobileMenuToggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.contains('mobile-open');
+        isOpen ? closeMenu() : openMenu();
+    });
+
+    sidebarOverlay.addEventListener('click', closeMenu);
+
+    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) closeMenu();
         });
-    }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) closeMenu();
+    });
 }
 
 async function startQRScanner() {
     const readerEl = document.getElementById("qr-reader");
     if (!readerEl) return;
 
-    // iOS/Android: must be HTTPS (or localhost) to allow camera
     if (location.protocol !== "https:" && location.hostname !== "localhost") {
         showToast("Camera needs HTTPS. Please open using https link.", "error");
         return;
     }
 
     try {
-        // Stop previous
         if (html5QrCode) {
             try { await html5QrCode.stop(); } catch (e) { }
         } else {
@@ -799,7 +767,6 @@ async function startQRScanner() {
         showToast("Camera blocked. Check browser permission settings.", "error");
     }
 }
-
 
 window.openBorrowModal = openBorrowModal;
 window.openReturnModal = openReturnModal;

@@ -1,6 +1,5 @@
 let currentAdmin = null;
 let currentAdminData = null;
-let selectedEquipmentForQR = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -9,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentAdminData = userData;
 
         initializeDashboard();
+        loadPending();
     } catch (error) {
         console.error('Authentication error:', error);
     }
@@ -16,20 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initializeDashboard() {
     updateAdminInfo();
-
     initializeNavigation();
-
     loadDashboardData();
-
     initializeEquipmentManagement();
-
     initializeUserManagement();
-
     initializeLogout();
-
     initializeRefresh();
-
     initializeExport();
+    initializeMobileMenu()
 }
 
 function updateAdminInfo() {
@@ -75,11 +69,13 @@ async function loadDashboardData() {
     try {
         const equipmentSnapshot = await db.collection('equipment').get();
         const equipment = equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const usersSnapshot = await db.collection('users').get();
+        const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         const totalEquipment = equipment.length;
         const availableEquipment = equipment.filter(e => e.status === 'available').length;
         const borrowedEquipment = equipment.filter(e => e.status === 'borrowed').length;
-
+        const totalUsers = users.length;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -94,6 +90,7 @@ async function loadDashboardData() {
         document.getElementById('borrowedEquipment').textContent = borrowedEquipment;
         document.getElementById('todayBorrows').textContent = todayBorrows;
         document.getElementById('borrowedBadge').textContent = borrowedEquipment;
+        document.getElementById('totalUsers').textContent = totalUsers;
 
         await loadRecentActivities();
 
@@ -126,7 +123,7 @@ async function loadRecentActivities() {
                         <div class="transaction-title">${activity.status === 'returned' ? 'Returned' : 'Borrowed'}: ${activity.equipmentName}</div>
                         <div class="transaction-meta">${activity.userName}</div>
                     </div>
-                    <div class="transaction-time">${getTimeAgo(activity.borrowedAt)}</div>
+                    <div class="transaction-time">${formatDate(activity.borrowedAt)}</div>
                 </div>
             `).join('');
         }
@@ -141,13 +138,26 @@ async function loadOverdueItems() {
 
     try {
         const now = new Date();
+
         const snapshot = await db.collection('borrowings')
             .where('status', '==', 'borrowed')
             .get();
 
         const overdue = snapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(item => item.expectedReturn.toDate() < now);
+            .filter(item => {
+                if (!item.expectedReturnTime || !item.borrowedAt) return false;
+
+                const borrowedDate = item.borrowedAt.toDate();
+                const [hh, mm] = String(item.expectedReturnTime).split(':').map(n => parseInt(n, 10));
+
+                if (Number.isNaN(hh) || Number.isNaN(mm)) return false;
+
+                const due = new Date(borrowedDate);
+                due.setHours(hh, mm, 0, 0);
+
+                return now > due;
+            });
 
         if (overdue.length === 0) {
             overdueList.innerHTML = `
@@ -165,13 +175,24 @@ async function loadOverdueItems() {
                     <div class="alert-icon">⚠️</div>
                     <div class="alert-content">
                         <div class="alert-title">${item.equipmentName}</div>
-                        <div class="alert-message">Borrowed by ${item.userName} - Due: ${item.expectedReturn.toDate().toLocaleDateString()}</div>
+                        <div class="alert-message">
+                            Borrowed by ${item.userName} - Due Time: ${item.expectedReturnTime || 'N/A'}
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
     } catch (error) {
         console.error('Error loading overdue items:', error);
+        overdueList.innerHTML = `
+            <div class="alert-item warning">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <div class="alert-title">Error</div>
+                    <div class="alert-message">Failed to load overdue list</div>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -223,7 +244,6 @@ async function addEquipment() {
     const equipmentId = document.getElementById('equipmentId').value;
     const name = document.getElementById('equipmentName').value;
     const category = document.getElementById('equipmentCategory').value;
-    const location = document.getElementById('equipmentLocation').value;
     const description = document.getElementById('equipmentDescription').value;
 
     const submitBtn = document.querySelector('#addEquipmentForm button[type="submit"]');
@@ -248,7 +268,6 @@ async function addEquipment() {
             equipmentId: equipmentId,
             name: name,
             category: category,
-            location: location,
             description: description || '',
             status: 'available',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -297,11 +316,10 @@ async function loadAllEquipment() {
                             <span class="badge badge-category">${item.equipmentId}</span>
                             <span class="badge badge-type">${capitalize(item.category)}</span>
                             <span class="badge badge-status ${item.status}">${capitalize(item.status)}</span>
-                            <span>📍 ${item.location}</span>
                         </div>
                     </div>
                     <div class="equipment-list-actions">
-                    <button class="btn btn-icon" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.location}','${item.description || ''}')"title="Edit">
+                    <button class="btn btn-icon" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.description || ''}')"title="Edit">
                     ✏️
                     </button>
                         <button class="btn btn-secondary btn-sm" onclick="generateQRCode('${item.id}', '${item.equipmentId}', '${item.name}')">
@@ -442,6 +460,8 @@ async function loadCurrentlyBorrowed() {
     if (!borrowedList) return;
 
     try {
+        const now = new Date();
+
         const snapshot = await db.collection('borrowings')
             .where('status', '==', 'borrowed')
             .get();
@@ -457,9 +477,20 @@ async function loadCurrentlyBorrowed() {
             `;
         } else {
             borrowedList.innerHTML = borrowed.map(item => {
-                const expectedReturn = item.expectedReturn.toDate();
-                const isOverdue = expectedReturn < new Date();
-                const daysBorrowed = Math.floor((new Date() - item.borrowedAt.toDate()) / (1000 * 60 * 60 * 24));
+                const daysBorrowed = item.borrowedAt
+                    ? Math.floor((new Date() - item.borrowedAt.toDate()) / (1000 * 60 * 60 * 24))
+                    : 0;
+
+                let isOverdue = false;
+                if (item.borrowedAt && item.expectedReturnTime) {
+                    const borrowedDate = item.borrowedAt.toDate();
+                    const [hh, mm] = String(item.expectedReturnTime).split(':').map(n => parseInt(n, 10));
+                    if (!Number.isNaN(hh) && !Number.isNaN(mm)) {
+                        const due = new Date(borrowedDate);
+                        due.setHours(hh, mm, 0, 0);
+                        isOverdue = now > due;
+                    }
+                }
 
                 return `
                     <div class="borrowed-list-item">
@@ -470,13 +501,18 @@ async function loadCurrentlyBorrowed() {
                                     📧 ${item.userEmail} • 🆔 ${item.studentId}
                                 </div>
                             </div>
-                            ${isOverdue ? '<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger)">OVERDUE</span>' : ''}
+                            ${isOverdue
+                                ? '<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger)">OVERDUE</span>'
+                                : ''
+                            }
                         </div>
+
                         <div class="borrowed-list-details" style="margin-top: 1rem;">
                             <strong>Equipment:</strong> ${item.equipmentName}<br>
                             <strong>Borrowed:</strong> ${formatDate(item.borrowedAt)} (${daysBorrowed} days ago)<br>
-                            <strong>Expected Return:</strong> ${expectedReturn.toLocaleDateString()}<br>
-                            <strong>Purpose:</strong> ${item.purpose}
+                            <strong>Due Time:</strong> ${item.expectedReturnTime || 'N/A'}<br>
+                            <strong>Room:</strong> ${item.room || 'N/A'}<br>
+                            <strong>Purpose:</strong> ${item.purpose || 'N/A'}
                         </div>
                     </div>
                 `;
@@ -503,33 +539,35 @@ async function loadBorrowingLogs() {
         const studentFilter = document.getElementById('studentFilter')?.value.toLowerCase() || '';
         const equipmentFilter = document.getElementById('equipmentFilter')?.value.toLowerCase() || '';
 
-        let query = db.collection('borrowings').orderBy('borrowedAt', 'desc').limit(100);
+        const snapshot = await db.collection('borrowings')
+            .orderBy('borrowedAt', 'desc')
+            .limit(100)
+            .get();
 
-        const snapshot = await query.get();
         let logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         if (startDate) {
             const start = new Date(startDate);
-            logs = logs.filter(log => log.borrowedAt.toDate() >= start);
+            logs = logs.filter(log => log.borrowedAt?.toDate() >= start);
         }
 
         if (endDate) {
             const end = new Date(endDate);
             end.setHours(23, 59, 59);
-            logs = logs.filter(log => log.borrowedAt.toDate() <= end);
+            logs = logs.filter(log => log.borrowedAt?.toDate() <= end);
         }
 
         if (studentFilter) {
             logs = logs.filter(log =>
-                log.userName.toLowerCase().includes(studentFilter) ||
-                log.userEmail.toLowerCase().includes(studentFilter)
+                (log.userName || '').toLowerCase().includes(studentFilter) ||
+                (log.userEmail || '').toLowerCase().includes(studentFilter)
             );
         }
 
         if (equipmentFilter) {
             logs = logs.filter(log =>
-                log.equipmentName.toLowerCase().includes(equipmentFilter) ||
-                log.equipmentId?.toLowerCase().includes(equipmentFilter)
+                (log.equipmentName || '').toLowerCase().includes(equipmentFilter) ||
+                (log.equipmentCode || '').toLowerCase().includes(equipmentFilter)
             );
         }
 
@@ -547,6 +585,7 @@ async function loadBorrowingLogs() {
                         <span class="log-item-title">${log.equipmentName}</span>
                         <span class="history-status ${log.status}">${capitalize(log.status)}</span>
                     </div>
+
                     <div class="log-item-info">
                         <div class="log-field">
                             <span class="log-label">Student:</span>
@@ -558,12 +597,13 @@ async function loadBorrowingLogs() {
                         </div>
                         <div class="log-field">
                             <span class="log-label">Student ID:</span>
-                            <span class="log-value">${log.studentId}</span>
+                            <span class="log-value">${log.studentId || 'N/A'}</span>
                         </div>
                         <div class="log-field">
                             <span class="log-label">Borrowed:</span>
                             <span class="log-value">${formatDate(log.borrowedAt)}</span>
                         </div>
+
                         ${log.returnedAt ? `
                             <div class="log-field">
                                 <span class="log-label">Returned:</span>
@@ -571,14 +611,20 @@ async function loadBorrowingLogs() {
                             </div>
                         ` : `
                             <div class="log-field">
-                                <span class="log-label">Expected Return:</span>
-                                <span class="log-value">${log.expectedReturn.toDate().toLocaleDateString()}</span>
+                                <span class="log-label">Due Time:</span>
+                                <span class="log-value">${log.expectedReturnTime || 'N/A'}</span>
                             </div>
                         `}
+
+                        <div class="log-field">
+                            <span class="log-label">Room:</span>
+                            <span class="log-value">${log.room || 'N/A'}</span>
+                        </div>
                         <div class="log-field">
                             <span class="log-label">Purpose:</span>
-                            <span class="log-value">${log.purpose}</span>
+                            <span class="log-value">${log.purpose || 'N/A'}</span>
                         </div>
+
                         ${log.returnCondition ? `
                             <div class="log-field">
                                 <span class="log-label">Return Condition:</span>
@@ -604,9 +650,7 @@ function initializeExport() {
     const exportLogsBtn = document.getElementById('exportLogsBtn');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
 
-    if (applyFilterBtn) {
-        applyFilterBtn.addEventListener('click', loadBorrowingLogs);
-    }
+    if (applyFilterBtn) applyFilterBtn.addEventListener('click', loadBorrowingLogs);
 
     if (exportLogsBtn) {
         exportLogsBtn.addEventListener('click', async () => {
@@ -617,23 +661,35 @@ function initializeExport() {
 
                 const logs = snapshot.docs.map(doc => doc.data());
 
-                let csv = 'Equipment Name,Equipment ID,Student Name,Student Email,Student ID,Borrowed At,Returned At,Expected Return,Status,Purpose,Return Condition\n';
+                let csv = 'Equipment Name,Equipment Code,Student Name,Student Email,Student ID,Borrowed At,Returned At,Due Time,Room,Status,Purpose,Return Condition\n';
 
                 logs.forEach(log => {
-                    csv += `"${log.equipmentName}","${log.equipmentId || 'N/A'}","${log.userName}","${log.userEmail}","${log.studentId}",`;
-                    csv += `"${log.borrowedAt.toDate().toLocaleString()}",`;
-                    csv += `"${log.returnedAt ? log.returnedAt.toDate().toLocaleString() : 'N/A'}",`;
-                    csv += `"${log.expectedReturn.toDate().toLocaleDateString()}","${log.status}","${log.purpose}","${log.returnCondition || 'N/A'}"\n`;
+                    const borrowedAt = log.borrowedAt ? log.borrowedAt.toDate().toLocaleString() : 'N/A';
+                    const returnedAt = log.returnedAt ? log.returnedAt.toDate().toLocaleString() : 'N/A';
+
+                    csv += `"${log.equipmentName || ''}",`;
+                    csv += `"${log.equipmentCode || log.equipmentId || 'N/A'}",`;
+                    csv += `"${log.userName || ''}",`;
+                    csv += `"${log.userEmail || ''}",`;
+                    csv += `"${log.studentId || 'N/A'}",`;
+                    csv += `"${borrowedAt}",`;
+                    csv += `"${returnedAt}",`;
+                    csv += `"${log.expectedReturnTime || 'N/A'}",`;
+                    csv += `"${log.room || 'N/A'}",`;
+                    csv += `"${log.status || ''}",`;
+                    csv += `"${(log.purpose || '').replace(/"/g, '""')}",`;
+                    csv += `"${log.returnCondition || 'N/A'}"\n`;
                 });
 
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
+
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `borrowing-logs-${new Date().toISOString().split('T')[0]}.csv`;
                 a.click();
-                window.URL.revokeObjectURL(url);
 
+                window.URL.revokeObjectURL(url);
                 showToast('Logs exported successfully', 'success');
             } catch (error) {
                 console.error('Error exporting logs:', error);
@@ -864,13 +920,13 @@ function initializeLogout() {
     }
 }
 
-function openEditEquipment(id, eid, name, cat, loc, desc) {
+function openEditEquipment(id, eid, name, cat, desc, status) {
     document.getElementById("editDocId").value = id;
     document.getElementById("editEquipmentId").value = eid;
     document.getElementById("editEquipmentName").value = name;
     document.getElementById("editEquipmentCategory").value = cat;
-    document.getElementById("editEquipmentLocation").value = loc;
     document.getElementById("editEquipmentDescription").value = desc;
+    document.getElementById("editEquipmentStatus").value = status || "available";
 
     document.getElementById("editEquipmentModal").classList.add("active");
 }
@@ -883,18 +939,32 @@ document.getElementById("editEquipmentForm").addEventListener("submit", async e 
     e.preventDefault();
 
     const id = document.getElementById("editDocId").value;
+    const newStatus = document.getElementById("editEquipmentStatus").value;
 
-    await db.collection("equipment").doc(id).update({
+    const updateData = {
         equipmentId: document.getElementById("editEquipmentId").value,
         name: document.getElementById("editEquipmentName").value,
         category: document.getElementById("editEquipmentCategory").value,
-        location: document.getElementById("editEquipmentLocation").value,
-        description: document.getElementById("editEquipmentDescription").value
-    });
+        description: document.getElementById("editEquipmentDescription").value,
+        status: newStatus
+    };
+
+    if (newStatus === "available") {
+        updateData.borrowedBy = null;
+        updateData.borrowedAt = null;
+    }
+
+    if (newStatus === "maintenance") {
+        updateData.borrowedBy = null;
+        updateData.borrowedAt = null;
+    }
+
+    await db.collection("equipment").doc(id).update(updateData);
 
     showToast("Equipment updated", "success");
     closeEditEquipment();
     loadAllEquipment();
+    loadDashboardData();
 });
 
 function openEditUser(id, name, email, role, studentId) {
@@ -926,19 +996,6 @@ document.getElementById("editUserForm").addEventListener("submit", async e => {
     showToast("User updated", "success");
     document.getElementById("editUserModal").classList.remove("active");
     loadUsers();
-});
-
-function openModal(id) {
-    document.getElementById(id).classList.add("active");
-}
-
-function closeModal(id) {
-    document.getElementById(id).classList.remove("active");
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-    const { user, userData } = await checkAuth("admin");
-    loadPending();
 });
 
 async function loadPending() {
@@ -998,6 +1055,45 @@ async function rejectUser(uid) {
     showToast("User rejected", "error");
     loadPending();
     loadUsers();
+}
+
+function initializeMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (!mobileMenuToggle || !sidebar || !sidebarOverlay) return;
+
+    const openMenu = () => {
+        sidebar.classList.add('mobile-open');
+        sidebarOverlay.classList.add('active');
+        mobileMenuToggle.classList.add('is-open');
+        document.body.classList.add('sidebar-open');
+    };
+
+    const closeMenu = () => {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+        mobileMenuToggle.classList.remove('is-open');
+        document.body.classList.remove('sidebar-open');
+    };
+
+    mobileMenuToggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.contains('mobile-open');
+        isOpen ? closeMenu() : openMenu();
+    });
+
+    sidebarOverlay.addEventListener('click', closeMenu);
+
+    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) closeMenu();
+        });
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) closeMenu();
+    });
 }
 
 window.generateQRCode = generateQRCode;
