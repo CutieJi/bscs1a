@@ -4,16 +4,13 @@
 - [Firestore Collections (Data Structure)](#3-firestore-collections-data-structure)
 - [Create Admin Account (Important)](#4-create-admin-account-important)
 - [Security Rules (Basic idea)](#5-security-rules-basic-idea)
-- [How to Use (Student)](#6-how-to-use-student)
-- [How to Use (Admin)](#7-how-to-use-admin)
-- [QR Scanner Notes](#8-qr-scanner-notes)
-- [Common Issues](#9-common-issues)
-- [Common Accounts](#10-common-accounts)
-- [Notes](#11-notes)
+- [How to Use (Student)](#6-how-to-use-the-website-step-by-step)
+- [How to Use (Admin)](#7-common-demo-accounts-for-testing)
+- [QR Scanner Notes](#8-notes-important)
 
 ---
 
-# EquipLend (Equipment Borrowing System) - README
+# MIS eBorrow (Equipment Borrowing System) - README
 
 A student project for borrowing/returning school equipment using Firebase + QR scanning.
 
@@ -31,7 +28,7 @@ A student project for borrowing/returning school equipment using Firebase + QR s
 
 ## 2) Firebase Setup (Step-by-step)
 1. Go to Firebase Console
-2. Create a project (example: EquipLend)
+2. Create a project (example: MIS eBorrow)
 3. Enable Authentication:
    - Auth > Sign-in method > enable Email/Password
 4. Create Firestore Database:
@@ -105,8 +102,6 @@ Use a dedicated admin creation screen (your project already has Add User in admi
 
 ---
 
----
-
 ## 6) How to Use the Website (Step-by-step)
 
 ### A) Student Side (Borrower)
@@ -170,27 +165,29 @@ Use a dedicated admin creation screen (your project already has Add User in admi
 > Replace the emails/passwords based on your actual setup.
 
 ### Admin Demo Account
-- Email: `admin@equiplend.test`
-- Password: `Admin123!`
+- Name: `Admin`
+- Email: `admin@cs1a.com`
+- Password: `admin123!`
 - Firestore users doc:
   - role = `admin`
-  - status = `approved`
 
 ### Student Demo Account (Approved)
-- Email: `student1@equiplend.test`
-- Password: `Student123!`
+- Name: `Student Default`
+- Email: `student@cs1a.com`
+- Password: `studentcs1a`
 - Firestore users doc:
   - role = `student`
   - status = `approved`
-  - studentId = `2024001`
+  - studentId = `20251234-S`
 
 ### Student Demo Account (Pending)
-- Email: `pending@equiplend.test`
-- Password: `Student123!`
+- Name: `Student2 Default`
+- Email: `student2@cs1a.com`
+- Password: `student2cs1a`
 - Firestore users doc:
   - role = `student`
   - status = `pending`
-  - studentId = `2024999`
+  - studentId = `20251235-S`
 
 ✅ Admin must approve pending accounts:
 Admin → User Management → Pending Approvals → Approve

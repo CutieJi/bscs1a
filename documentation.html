@@ -1,154 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EquipLend | Documentation</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    .page-wrap { max-width: 980px; margin: 40px auto; padding: 0 16px; }
-    .doc-hero { background: #111827; color: #fff; border-radius: 14px; padding: 24px; }
-    .doc-hero h1 { margin: 0 0 6px; font-size: 28px; }
-    .doc-hero p { margin: 0; opacity: .85; }
-    .doc-card { background: #fff; border-radius: 14px; padding: 18px; margin-top: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
-    .doc-card h2 { margin: 0 0 10px; font-size: 18px; }
-    .doc-card h3 { margin: 14px 0 8px; font-size: 15px; }
-    .doc-card p, .doc-card li { color: #444; line-height: 1.6; }
-    .doc-card code { background: #f3f4f6; padding: 2px 6px; border-radius: 8px; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 880px){ .grid { grid-template-columns: 1fr 1fr; } }
-    .backbar { display:flex; gap: 10px; align-items:center; margin: 14px 0; }
-    .backbar a { text-decoration:none; padding:10px 14px; border-radius:10px; background:#f3f4f6; color:#111; font-weight:600; }
-    .tag { display:inline-block; margin-top:8px; font-size:12px; padding:4px 10px; border-radius:999px; background:#e5e7eb; color:#111; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation | MIS eBorrow</title>
+
+    <link rel="stylesheet" href="support.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
 </head>
-<body>
-  <div class="page-wrap">
-    <div class="backbar">
-      <a href="index.html">← Back to Home</a>
-      <a href="admin.html">Admin</a>
-      <a href="student.html">Student</a>
+
+<body class="info-page">
+    <div class="info-shell">
+
+        <div class="info-topbar">
+            <a class="info-brand" href="index.html">
+                <img src="CS1A.png" width="32" height="32" alt="roshlogo">
+                <strong>MIS eBorrow</strong>
+            </a>
+
+            <div class="info-actions">
+                <a class="btn" href="support.html">Support</a>
+                <a class="btn" href="privacy.html">Privacy Policy</a>
+                <a class="btn btn-primary" href="index.html">Back to Login</a>
+            </div>
+        </div>
+
+        <section class="info-hero">
+            <h1 class="info-title">Documentation</h1>
+            <p class="info-subtitle">
+                Step-by-step guide on how to use MIS eBorrow (Student + Admin). Includes common demo accounts and quick
+                tips.
+            </p>
+        </section>
+
+        <div class="info-grid">
+            <section class="info-card">
+                <h2>📌 Student Guide</h2>
+                <ul class="info-list">
+                    <li><strong>1)</strong> Login using your student account.</li>
+                    <li><strong>2)</strong> If status is <span class="kbd">pending</span>, wait for admin approval.</li>
+                    <li><strong>3)</strong> Open <span class="kbd">Browse Equipment</span> and search/filter items.</li>
+                    <li><strong>4)</strong> Click <span class="kbd">Borrow</span> on available equipment.</li>
+                    <li><strong>5)</strong> Fill required fields: <span class="kbd">Room</span> and <span
+                            class="kbd">Return Time</span>.</li>
+                    <li><strong>6)</strong> Submit and check <span class="kbd">My Borrowed</span> for active items.</li>
+                    <li><strong>7)</strong> When returning, choose condition:
+                        <br>✅ <span class="kbd">Good</span> → back to <span class="kbd">available</span>
+                        <br>⚠️ <span class="kbd">Not Good / Damaged</span> → becomes <span
+                            class="kbd">maintenance</span>
+                    </li>
+                    <li><strong>8)</strong> Optional: Use <span class="kbd">Scan</span> to borrow/return using QR code.
+                    </li>
+                </ul>
+            </section>
+
+            <aside class="info-card">
+                <h2>🔐 Demo Accounts</h2>
+                <p>Use these for testing only (change to your own before real deployment).</p>
+                <ul class="info-list">
+                    <li>
+                        <strong>Admin</strong><br>
+                        Email: <span class="kbd">admin@cs1a.com</span><br>
+                        Password: <span class="kbd">admin123</span>
+                    </li>
+                    <li>
+                        <strong>Student (Approved)</strong><br>
+                        Email: <span class="kbd">student@cs1a.com</span><br>
+                        Password: <span class="kbd">studentcs1a</span><br>
+                        Student ID: <span class="kbd">20251234-S</span>
+                    </li>
+                    <li>
+                        <strong>Student (Pending)</strong><br>
+                        Email: <span class="kbd">student2@cs1a.com</span><br>
+                        Password: <span class="kbd">student2cs1a</span><br>
+                        Student ID: <span class="kbd">20251235-S</span>
+                    </li>
+                </ul>
+            </aside>
+
+            <section class="info-card">
+                <h2>🛠 Admin Guide</h2>
+                <ul class="info-list">
+                    <li><strong>1)</strong> Login using an admin account.</li>
+                    <li><strong>2)</strong> Dashboard shows: equipment totals, borrowed badge, today borrows, users.
+                    </li>
+                    <li><strong>3)</strong> Manage Equipment:
+                        <br>➕ Add equipment
+                        <br>✏️ Edit equipment
+                        <br>🧾 Generate QR
+                        <br>🗑 Delete (only if not borrowed)
+                    </li>
+                    <li><strong>4)</strong> Pending approvals:
+                        <br>User Management → Pending → <span class="kbd">Approve</span> or <span
+                            class="kbd">Reject</span>
+                    </li>
+                    <li><strong>5)</strong> Borrowing Logs:
+                        <br>Filter by date / student / equipment then export CSV.
+                    </li>
+                </ul>
+            </section>
+
+            <aside class="info-card">
+                <h2>✅ Equipment Condition Rules</h2>
+                <p>
+                    If an item was returned and marked <span class="kbd">Not Good</span>,
+                    it should be set to <span class="kbd">maintenance</span>.
+                </p>
+                <ul class="info-list">
+                    <li><strong>After repair</strong>, admin can edit equipment status and set it back to <span
+                            class="kbd">available</span>.</li>
+                    <li><strong>Only available</strong> items are shown to students by default.</li>
+                    <li><strong>QR scanning</strong> requires <span class="kbd">HTTPS</span> or <span
+                            class="kbd">localhost</span>.</li>
+                </ul>
+            </aside>
+        </div>
+
+        <div class="info-footer">
+            <div>© <span id="year"></span> MIS eBorrow • Documentation</div>
+            <div>
+                <a class="btn" href="support.html">Support</a>
+                <a class="btn" href="privacy.html">Privacy Policy</a>
+            </div>
+        </div>
     </div>
 
-    <div class="doc-hero">
-      <h1>EquipLend Documentation</h1>
-      <p>Quick guide on how to use the system (Student & Admin).</p>
-      <span class="tag">Last updated: 2026</span>
-    </div>
-
-    <div class="grid">
-      <div class="doc-card">
-        <h2>Student Guide</h2>
-
-        <h3>1) Log in</h3>
-        <ul>
-          <li>Open the website and log in using your student account.</li>
-          <li>If your account is new, it may appear as <b>Pending</b> until approved by admin.</li>
-        </ul>
-
-        <h3>2) Browse equipment</h3>
-        <ul>
-          <li>Go to <b>Browse Equipment</b>.</li>
-          <li>Use filters: Category, Status, and Search bar.</li>
-          <li>Only <b>Available</b> items can be borrowed.</li>
-        </ul>
-
-        <h3>3) Borrow equipment</h3>
-        <ul>
-          <li>Click <b>Borrow</b> on an equipment card.</li>
-          <li>Fill up:
-            <ul>
-              <li><b>Room</b> (required)</li>
-              <li><b>Return time</b> (required)</li>
-              <li><b>Purpose</b> (optional)</li>
-            </ul>
-          </li>
-          <li>Click <b>Confirm Borrow</b>.</li>
-        </ul>
-
-        <h3>4) Return equipment</h3>
-        <ul>
-          <li>Go to <b>My Borrowed</b> tab.</li>
-          <li>Click <b>Return Equipment</b>.</li>
-          <li>Choose item condition:
-            <ul>
-              <li><b>Good</b> → becomes <code>available</code></li>
-              <li><b>Damaged</b> → becomes <code>maintenance</code></li>
-            </ul>
-          </li>
-          <li>Optional: add notes.</li>
-        </ul>
-
-        <h3>5) Scan QR</h3>
-        <ul>
-          <li>Go to <b>Scan</b>.</li>
-          <li>Allow camera permission (must be HTTPS or localhost).</li>
-          <li>Scan equipment QR to borrow/return faster.</li>
-          <li>Manual entry is available if camera is blocked.</li>
-        </ul>
-      </div>
-
-      <div class="doc-card">
-        <h2>Admin Guide</h2>
-
-        <h3>1) Dashboard</h3>
-        <ul>
-          <li>Shows total equipment, available, borrowed, today borrows, and total users.</li>
-          <li>Check <b>Recent Activities</b> and <b>Overdue Returns</b>.</li>
-        </ul>
-
-        <h3>2) Manage Equipment</h3>
-        <ul>
-          <li>Add new equipment with unique Equipment ID.</li>
-          <li>Edit equipment details (name, category, description).</li>
-          <li>Generate QR code for any equipment.</li>
-          <li>Delete equipment only if it’s not currently borrowed.</li>
-        </ul>
-
-        <h3>3) Edit Condition / Status</h3>
-        <ul>
-          <li>In Edit Equipment modal, admin can set status:
-            <ul>
-              <li><code>available</code> (ready to borrow)</li>
-              <li><code>maintenance</code> (not good / under repair)</li>
-              <li><code>borrowed</code> (manual override, optional)</li>
-            </ul>
-          </li>
-          <li>If set to <code>available</code>, equipment is usable again.</li>
-        </ul>
-
-        <h3>4) User Management</h3>
-        <ul>
-          <li>Approve or reject pending accounts.</li>
-          <li>Add new users (Student/Admin).</li>
-          <li>Edit user info (name, email, role, student ID).</li>
-          <li>Delete user from database (note: this may not remove Firebase Auth unless you use Admin SDK).</li>
-        </ul>
-
-        <h3>5) Logs</h3>
-        <ul>
-          <li>Filter borrowing logs by date/student/equipment.</li>
-          <li>Export logs to CSV.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="doc-card">
-      <h2>Troubleshooting</h2>
-      <ul>
-        <li><b>Camera not working:</b> Use HTTPS (or localhost) + allow permissions.</li>
-        <li><b>Borrow button disabled:</b> Item is not <code>available</code>.</li>
-        <li><b>Overdue showing:</b> Expected return date/time is already passed.</li>
-      </ul>
-    </div>
-
-    <div class="doc-card">
-      <h2>Links</h2>
-      <ul>
-        <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="support.html">Support</a></li>
-      </ul>
-    </div>
-  </div>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
+
 </html>

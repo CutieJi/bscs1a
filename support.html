@@ -4,62 +4,94 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Support - 1AFeedbackHub</title>
+    <title>Support | MIS eBorrow</title>
+
     <link rel="stylesheet" href="support.css" />
     <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
         rel="stylesheet">
 </head>
 
 <body class="info-page">
-
     <div class="info-shell">
+
         <div class="info-topbar">
             <a class="info-brand" href="index.html">
-                <span class="dot"></span>
-                <strong>1AFeedbackHub</strong>
+                <img src="CS1A.png" width="32" height="32" alt="roshlogo">
+                <strong>MIS eBorrow</strong>
             </a>
+
             <div class="info-actions">
-                <a class="btn" href="index.html">← Back</a>
-                <a class="btn btn-primary" href="privacy.html">Privacy</a>
+                <a class="btn" href="documentation.html">Documentation</a>
+                <a class="btn" href="privacy.html">Privacy Policy</a>
+                <a class="btn btn-primary" href="index.html">Back to Login</a>
             </div>
         </div>
 
-        <div class="info-hero">
-            <h1 class="info-title">🛟 Support</h1>
+        <section class="info-hero">
+            <h1 class="info-title">Support</h1>
             <p class="info-subtitle">
-                If you’re having trouble logging in, submitting feedback, or loading data, use this guide.
+                Need help? Here are quick fixes and where to report issues.
             </p>
-        </div>
+        </section>
 
         <div class="info-grid">
-            <div class="info-card">
-                <h2>✅ Common Fixes</h2>
+            <section class="info-card">
+                <h2>🧩 Common Issues</h2>
                 <ul class="info-list">
-                    <li><strong>“Missing/insufficient permissions”:</strong> Firestore Rules issue (admin role / rules).
+                    <li><strong>Camera not working (QR Scan):</strong> Use HTTPS or localhost. Allow camera permission
+                        in browser settings.</li>
+                    <li><strong>Account is pending:</strong> Wait for admin approval (User Management → Pending).</li>
+                    <li><strong>Cannot borrow equipment:</strong> Item may be borrowed or in maintenance.</li>
+                    <li><strong>Wrong return status:</strong> Admin can update equipment status in Manage Equipment.
                     </li>
-                    <li><strong>“Query requires an index”:</strong> Create the index from the Firebase link in console.
-                    </li>
-                    <li><strong>“Error loading submissions”:</strong> Check internet then refresh page.</li>
                 </ul>
-            </div>
+            </section>
 
-            <div class="info-card">
-                <h2>📩 Contact</h2>
+            <aside class="info-card">
+                <h2>📩 Contact Admin</h2>
+                <p style="margin-bottom:10px;">
+                    For support requests, contact the system administrator.
+                </p>
                 <ul class="info-list">
-                    <li><strong>Email:</strong> support@1AFeedbackHub.edu</li>
-                    <li><strong>Developer:</strong> Rosh</li>
-                    <li><strong>Response:</strong> within 24 hours</li>
+                    <li><strong>Email:</strong> <span class="kbd">admin@cs1a.com</span></li>
+                    <li><strong>Office:</strong> <span class="kbd">MIS Office</span></li>
+                    <li><strong>Response Time:</strong> <span class="kbd">24–48 hours</span></li>
                 </ul>
-            </div>
+            </aside>
+
+            <section class="info-card">
+                <h2>📝 How to Report a Bug</h2>
+                <ul class="info-list">
+                    <li><strong>Step 1:</strong> Describe what you were doing.</li>
+                    <li><strong>Step 2:</strong> Include the exact error message (if any).</li>
+                    <li><strong>Step 3:</strong> Add screenshots if possible.</li>
+                    <li><strong>Step 4:</strong> Mention device + browser (Chrome/Edge/Mobile).</li>
+                </ul>
+            </section>
+
+            <aside class="info-card">
+                <h2>✅ Quick Tips</h2>
+                <ul class="info-list">
+                    <li>Refresh dashboard if numbers look delayed.</li>
+                    <li>Check Borrowing Logs for record verification.</li>
+                    <li>If item is fixed, set status back to <span class="kbd">available</span>.</li>
+                </ul>
+            </aside>
         </div>
 
         <div class="info-footer">
-            <span>Tip: Open DevTools <span class="kbd">F12</span> to see the exact Firebase error.</span>
-            <span>© 2026 1AFeedbackHub</span>
+            <div>© <span id="year"></span> MIS eBorrow • Support</div>
+            <div>
+                <a class="btn" href="documentation.html">Documentation</a>
+                <a class="btn" href="privacy.html">Privacy Policy</a>
+            </div>
         </div>
     </div>
 
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 
 </html>
