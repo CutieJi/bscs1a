@@ -907,11 +907,12 @@ function initializeUserManagement() {
 }
 
 async function createNewUser() {
-    const name = document.getElementById('newUserName').value;
-    const email = document.getElementById('newUserEmail').value;
+    const name = document.getElementById('newUserName').value.trim();
+    const email = document.getElementById('newUserEmail').value.trim();
     const password = document.getElementById('newUserPassword').value;
     const role = document.getElementById('newUserRole').value;
-    const studentId = document.getElementById('newUserStudentId').value;
+    const studentId = document.getElementById('newUserStudentId').value.trim();
+
     const submitBtn = document.querySelector('#addUserForm button[type="submit"]');
     const originalBtnContent = submitBtn.innerHTML;
 
@@ -919,52 +920,51 @@ async function createNewUser() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Creating...</span>';
 
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
+        const secAuth = getSecondaryAuth();
+        const userCredential = await secAuth.createUserWithEmailAndPassword(email, password);
+        const newUser = userCredential.user;
 
-        await user.updateProfile({ displayName: name });
+        await newUser.updateProfile({ displayName: name });
 
         const userData = {
-            name: name,
-            email: email,
-            role: role,
+            name,
+            email,
+            role,
+            status: role === "student" ? "approved" : "approved",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if (role === 'student' && studentId) {
-            userData.studentId = studentId;
-        }
+        if (role === 'student') userData.studentId = studentId || "";
 
-        await db.collection('users').doc(user.uid).set(userData);
+        await db.collection('users').doc(newUser.uid).set(userData);
+
+        await secAuth.signOut();
 
         showToast(`${capitalize(role)} account created successfully!`, 'success');
-
-        await auth.signOut();
-        await auth.signInWithEmailAndPassword(currentAdmin.email, '__admin_session__');
 
         document.getElementById('addUserModal').classList.remove('active');
         document.getElementById('addUserForm').reset();
 
         loadUsers();
+        if (typeof loadPending === "function") loadPending();
 
     } catch (error) {
         console.error('Error creating user:', error);
+
         let errorMessage = 'Failed to create user. ';
-        if (error.code === 'auth/email-already-in-use') {
-            errorMessage += 'This email is already registered.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage += 'Invalid email address.';
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage += 'Password should be at least 6 characters.';
-        } else {
-            errorMessage += error.message;
-        }
+        if (error.code === 'auth/email-already-in-use') errorMessage += 'This email is already registered.';
+        else if (error.code === 'auth/invalid-email') errorMessage += 'Invalid email address.';
+        else if (error.code === 'auth/weak-password') errorMessage += 'Password should be at least 6 characters.';
+        else errorMessage += error.message;
+
         showToast(errorMessage, 'error');
+
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnContent;
     }
 }
+
 
 async function loadUsers() {
     const usersGrid = document.getElementById('usersGrid');

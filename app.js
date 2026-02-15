@@ -12,6 +12,15 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+function getSecondaryAuth() {
+    try {
+        return firebase.app("Secondary").auth();
+    } catch (e) {
+        const secondary = firebase.initializeApp(firebaseConfig, "Secondary");
+        return secondary.auth();
+    }
+}
+
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -70,8 +79,8 @@ function checkAuth(requiredRole = null) {
                         resolve({ user, userData });
                     } else {
                         const redirectUrl = userData.role === 'admin'
-                            ? 'admin-dashboard.html'
-                            : 'student-dashboard.html';
+                            ? 'admin.html'
+                            : 'student.html';
                         window.location.href = redirectUrl;
                         reject('Wrong role');
                     }
