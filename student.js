@@ -190,52 +190,124 @@ function setupQRScanner() {
     }
 }
 
-async function startQRScanner() {
-  const qrRegionId = "qr-reader";
+function extractEquipmentId(decodedText) {
+    if (!decodedText) return "";
 
-  // IMPORTANT: QR area must be visible (not display:none)
-  const scanView = document.getElementById("scanView");
-  if (scanView) scanView.classList.add("active");
+    let text = String(decodedText).trim();
 
-  // Force permission prompt on mobile
-  try {
-    await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-  } catch (err) {
-    console.error("Camera blocked:", err);
-    showToast("Camera permission blocked. Allow camera in browser settings.", "error");
-    return;
-  }
+    // If QR contains a URL like https://site.com/?id=PROJ-001
+    try {
+        if (text.startsWith("http")) {
+            const url = new URL(text);
+            const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
+            if (fromQuery) return fromQuery.trim();
+            // If URL ends with /PROJ-001
+            const last = url.pathname.split("/").pop();
+            if (last) return last.trim();
+        }
+    } catch (e) { }
 
-  if (!html5QrCode) html5QrCode = new Html5Qrcode(qrRegionId);
+    // If QR contains "PROJ-001|something" or "PROJ-001\n"
+    text = text.split("|")[0].trim();
+    text = text.split("\n")[0].trim();
 
-  // Pick BACK camera if available
-  let cameraId = null;
-  try {
-    const cameras = await Html5Qrcode.getCameras();
-    if (!cameras || cameras.length === 0) {
-      showToast("No camera found.", "error");
-      return;
-    }
-    const backCam = cameras.find(c =>
-      /back|rear|environment/i.test(c.label)
-    );
-    cameraId = (backCam || cameras[0]).id;
-  } catch (e) {
-    console.error("getCameras error:", e);
-  }
-
-  html5QrCode.start(
-    cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    async (decodedText) => {
-      try { await html5QrCode.stop(); } catch(e){}
-      await processQRCode(decodedText);
-    }
-  ).catch((err) => {
-    console.error("QR start error:", err);
-    showToast("Failed to open camera. Use HTTPS + allow permission.", "error");
-  });
+    return text;
 }
+
+function extractEquipmentId(decodedText) {
+    if (!decodedText) return "";
+
+    let text = String(decodedText).trim();
+
+    // If QR contains a URL like https://site.com/?id=PROJ-001
+    try {
+        if (text.startsWith("http")) {
+            const url = new URL(text);
+            const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
+            if (fromQuery) return fromQuery.trim();
+            // If URL ends with /PROJ-001
+            const last = url.pathname.split("/").pop();
+            if (last) return last.trim();
+        }
+    } catch (e) { }
+
+    // If QR contains "PROJ-001|something" or "PROJ-001\n"
+    text = text.split("|")[0].trim();
+    text = text.split("\n")[0].trim();
+
+    return text;
+}
+
+function extractEquipmentId(decodedText) {
+    if (!decodedText) return "";
+
+    let text = String(decodedText).trim();
+
+    // If QR contains a URL like https://site.com/?id=PROJ-001
+    try {
+        if (text.startsWith("http")) {
+            const url = new URL(text);
+            const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
+            if (fromQuery) return fromQuery.trim();
+            // If URL ends with /PROJ-001
+            const last = url.pathname.split("/").pop();
+            if (last) return last.trim();
+        }
+    } catch (e) { }
+
+    // If QR contains "PROJ-001|something" or "PROJ-001\n"
+    text = text.split("|")[0].trim();
+    text = text.split("\n")[0].trim();
+
+    return text;
+}
+
+async function processQRCode(decodedText) {
+    try {
+        const equipmentId = extractEquipmentId(decodedText);
+
+        if (!equipmentId) {
+            showToast("Invalid QR code content", "error");
+            return;
+        }
+
+        const equipmentSnapshot = await db.collection("equipment")
+            .where("equipmentId", "==", equipmentId)
+            .limit(1)
+            .get();
+
+        if (equipmentSnapshot.empty) {
+            showToast(`Equipment not found: ${equipmentId}`, "error");
+            return;
+        }
+
+        const equipmentDoc = equipmentSnapshot.docs[0];
+        const equipment = { id: equipmentDoc.id, ...equipmentDoc.data() };
+
+        if (equipment.status === "available") {
+            openBorrowModal(equipment.id);
+        } else if (equipment.status === "borrowed") {
+            const borrowingSnapshot = await db.collection("borrowings")
+                .where("equipmentId", "==", equipment.id)
+                .where("userId", "==", currentUser.uid)
+                .where("status", "==", "borrowed")
+                .limit(1)
+                .get();
+
+            if (!borrowingSnapshot.empty) {
+                openReturnModal(borrowingSnapshot.docs[0].id);
+            } else {
+                showToast("This equipment is currently borrowed by someone else", "error");
+            }
+        } else {
+            showToast("This equipment is under maintenance", "error");
+        }
+    } catch (error) {
+        console.error("Error processing QR code:", error);
+        showToast("Error processing QR code", "error");
+    }
+}
+
 
 
 async function openBorrowModal(equipmentId) {
@@ -349,6 +421,7 @@ async function borrowEquipment() {
 
         await db.collection('borrowings').add({
             equipmentId: selectedEquipmentForBorrow.id,
+            equipmentCode: selectedEquipmentForBorrow.equipmentId,
             equipmentName: selectedEquipmentForBorrow.name,
             equipmentCategory: selectedEquipmentForBorrow.category,
             userId: currentUser.uid,
@@ -667,20 +740,20 @@ function initializeMobileMenu() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
-    
+
     if (mobileMenuToggle && sidebar && sidebarOverlay) {
         // Toggle sidebar on button click
         mobileMenuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('mobile-open');
             sidebarOverlay.classList.toggle('active');
         });
-        
+
         // Close sidebar when clicking overlay
         sidebarOverlay.addEventListener('click', () => {
             sidebar.classList.remove('mobile-open');
             sidebarOverlay.classList.remove('active');
         });
-        
+
         // Close sidebar when clicking nav items on mobile
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -693,6 +766,40 @@ function initializeMobileMenu() {
         });
     }
 }
+
+async function startQRScanner() {
+    const readerEl = document.getElementById("qr-reader");
+    if (!readerEl) return;
+
+    // iOS/Android: must be HTTPS (or localhost) to allow camera
+    if (location.protocol !== "https:" && location.hostname !== "localhost") {
+        showToast("Camera needs HTTPS. Please open using https link.", "error");
+        return;
+    }
+
+    try {
+        // Stop previous
+        if (html5QrCode) {
+            try { await html5QrCode.stop(); } catch (e) { }
+        } else {
+            html5QrCode = new Html5Qrcode("qr-reader");
+        }
+
+        await html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            async (decodedText) => {
+                try { await html5QrCode.stop(); } catch (e) { }
+                await processQRCode(decodedText);
+            }
+        );
+
+    } catch (err) {
+        console.error("QR start error:", err);
+        showToast("Camera blocked. Check browser permission settings.", "error");
+    }
+}
+
 
 window.openBorrowModal = openBorrowModal;
 window.openReturnModal = openReturnModal;
