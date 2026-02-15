@@ -14,10 +14,10 @@
 
 A student project for borrowing/returning school equipment using Firebase + QR scanning.
 
-[Live demo here!](https://uccmis.netlify.app/)
-[Full guide here!]()
-[Support guide here!]([https](https://uccmis.netlify.app/support)
-[Privacy policy here!](https://uccmis.netlify.app/policy)
+- [Live demo here!](https://uccmis.netlify.app/)
+- [Full guide here!](https://uccmis.netlify.app/documentation.html)
+- [Support guide here!]([https](https://uccmis.netlify.app/support.html)
+- [Privacy policy here!](https://uccmis.netlify.app/policy.html)
 
 ---
 
