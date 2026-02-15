@@ -2,6 +2,26 @@ let currentAdmin = null;
 let currentAdminData = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) return;
+
+        try {
+            const userDoc = await db.collection("admin").doc(user.uid).get();
+            const userData = userDoc.data();
+
+            if (!userData) {
+                await auth.signOut();
+                return;
+            }
+
+            if (userData.role === "admin") window.location.href = "admin.html";
+            else window.location.href = "student.html";
+
+        } catch (err) {
+            console.error("Index redirect error:", err);
+        }
+    });
+
     try {
         const { user, userData } = await checkAuth('admin');
         currentAdmin = user;
@@ -379,7 +399,7 @@ function generateQRCode(equipmentDocId, equipmentId, equipmentName) {
     const qrContainer = document.getElementById('qrCodeContainer');
     qrContainer.innerHTML = '';
 
-    const baseUrl = window.location.origin; 
+    const baseUrl = window.location.origin;
     const deepLink = `${baseUrl}/student.html?borrow=${encodeURIComponent(equipmentId)}`;
 
     new QRCode(qrContainer, {

@@ -1,4 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged(async (user) => {
+
+        try {
+            const userDoc = await db.collection("users").doc(user.uid).get();
+            const userData = userDoc.data();
+
+            if (!userData) {
+                await auth.signOut();
+                return;
+            }
+
+            if (userData.role === "admin") window.location.href = "admin.html";
+            else window.location.href = "student.html";
+
+        } catch (err) {
+            console.error("Index redirect error:", err);
+        }
+    });
 
     const unifiedLoginForm = document.getElementById('unifiedLoginForm');
 

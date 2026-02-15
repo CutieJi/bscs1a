@@ -12,6 +12,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => console.log("Persistence: LOCAL"))
+    .catch(err => console.error("Persistence error:", err));
+
 function getSecondaryAuth() {
     try {
         return firebase.app("Secondary").auth();
@@ -63,34 +67,34 @@ function getUserInitials(name) {
 
 function checkAuth(requiredRole = null) {
     return new Promise((resolve, reject) => {
-        auth.onAuthStateChanged(async (user) => {
+        const unsub = auth.onAuthStateChanged(async (user) => {
+            unsub();
+
             if (!user) {
-                window.location.href = 'index.html';
-                reject('Not authenticated');
+                window.location.href = "index.html";
+                reject("Not authenticated");
                 return;
             }
 
-            if (requiredRole) {
-                try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    const userData = userDoc.data();
-
-                    if (userData && userData.role === requiredRole) {
-                        resolve({ user, userData });
-                    } else {
-                        const redirectUrl = userData.role === 'admin'
-                            ? 'admin.html'
-                            : 'student.html';
-                        window.location.href = redirectUrl;
-                        reject('Wrong role');
-                    }
-                } catch (error) {
-                    console.error('Error checking role:', error);
-                    window.location.href = 'index.html';
-                    reject(error);
-                }
-            } else {
+            if (!requiredRole) {
                 resolve({ user });
+                return;
+            }
+
+            try {
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                const userData = userDoc.data();
+
+                if (userData?.role === requiredRole) {
+                    resolve({ user, userData });
+                } else {
+                    window.location.href = userData?.role === "admin" ? "admin.html" : "student.html";
+                    reject("Wrong role");
+                }
+            } catch (err) {
+                console.error("Role check error:", err);
+                window.location.href = "index.html";
+                reject(err);
             }
         });
     });

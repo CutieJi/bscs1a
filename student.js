@@ -5,6 +5,26 @@ let selectedEquipmentForBorrow = null;
 let selectedBorrowingForReturn = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) return;
+
+        try {
+            const userDoc = await db.collection("student").doc(user.uid).get();
+            const userData = userDoc.data();
+
+            if (!userData) {
+                await auth.signOut();
+                return;
+            }
+
+            if (userData.role === "admin") window.location.href = "admin.html";
+            else window.location.href = "student.html";
+
+        } catch (err) {
+            console.error("Index redirect error:", err);
+        }
+    });
+
     try {
         const { user, userData } = await checkAuth('student');
         currentUser = user;
