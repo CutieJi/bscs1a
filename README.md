@@ -5,7 +5,7 @@
 - [Create Admin Account (Important)](#4-create-admin-account-important)
 - [Security Rules (Basic idea)](#5-security-rules-basic-idea)
 - [How to Use the Website](#6-how-to-use-the-website-step-by-step)
-- [Demo Accounts](#7-common-/-demo-accounts-for-testing)
+- [Demo Accounts](#7-demo-accounts-for-testing)
 - [QR Scanner Notes](#8-notes-important)
 
 ---
@@ -159,7 +159,7 @@ Use a dedicated admin creation screen (your project already has Add User in admi
 
 ---
 
-## 7) Common / Demo Accounts (For Testing)
+## 7) Demo Accounts (For Testing)
 
 > These are sample accounts you can create in Firebase Auth for demo/testing.
 > Replace the emails/passwords based on your actual setup.
