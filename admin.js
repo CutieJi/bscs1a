@@ -1,7 +1,6 @@
 let currentAdmin = null;
 let currentAdminData = null;
-let allFeedback = [];
-let selectedFeedback = null;
+let selectedEquipmentForQR = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -17,22 +16,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initializeDashboard() {
     updateAdminInfo();
+
     initializeNavigation();
+
     loadDashboardData();
-    initializeLogout();
-    initializeRefresh();
-    initializeFilters();
-    initializeModal();
+
+    initializeEquipmentManagement();
+
     initializeUserManagement();
 
-    const editUserForm = document.getElementById("editUserForm");
-    if (editUserForm) {
-        editUserForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            await saveUserEdit();
-        });
-    }
+    initializeLogout();
 
+    initializeRefresh();
+
+    initializeExport();
 }
 
 function updateAdminInfo() {
@@ -58,12 +55,14 @@ function initializeNavigation() {
             if (targetView) {
                 targetView.classList.add('active');
 
-                if (viewId === 'overview') {
+                if (viewId === 'dashboard') {
                     loadDashboardData();
-                } else if (viewId === 'feedback') {
-                    loadAllFeedback();
-                } else if (viewId === 'analytics') {
-                    loadAnalytics();
+                } else if (viewId === 'equipment') {
+                    loadAllEquipment();
+                } else if (viewId === 'borrowed') {
+                    loadCurrentlyBorrowed();
+                } else if (viewId === 'logs') {
+                    loadBorrowingLogs();
                 } else if (viewId === 'users') {
                     loadUsers();
                 }
@@ -74,392 +73,571 @@ function initializeNavigation() {
 
 async function loadDashboardData() {
     try {
-        const snapshot = await db.collection('feedback')
+        const equipmentSnapshot = await db.collection('equipment').get();
+        const equipment = equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const totalEquipment = equipment.length;
+        const availableEquipment = equipment.filter(e => e.status === 'available').length;
+        const borrowedEquipment = equipment.filter(e => e.status === 'borrowed').length;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const todayBorrowsSnapshot = await db.collection('borrowings')
+            .where('borrowedAt', '>=', today)
+            .get();
+
+        const todayBorrows = todayBorrowsSnapshot.size;
+
+        document.getElementById('totalEquipment').textContent = totalEquipment;
+        document.getElementById('availableEquipment').textContent = availableEquipment;
+        document.getElementById('borrowedEquipment').textContent = borrowedEquipment;
+        document.getElementById('todayBorrows').textContent = todayBorrows;
+        document.getElementById('borrowedBadge').textContent = borrowedEquipment;
+
+        await loadRecentActivities();
+
+        await loadOverdueItems();
+
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+async function loadRecentActivities() {
+    const activitiesList = document.getElementById('recentActivities');
+    if (!activitiesList) return;
+
+    try {
+        const snapshot = await db.collection('borrowings')
+            .orderBy('borrowedAt', 'desc')
+            .limit(5)
+            .get();
+
+        const activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (activities.length === 0) {
+            activitiesList.innerHTML = '<p style="color: var(--text-secondary);">No recent activities</p>';
+        } else {
+            activitiesList.innerHTML = activities.map(activity => `
+                <div class="transaction-item">
+                    <div class="transaction-icon">${activity.status === 'returned' ? '✅' : '📦'}</div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">${activity.status === 'returned' ? 'Returned' : 'Borrowed'}: ${activity.equipmentName}</div>
+                        <div class="transaction-meta">${activity.userName}</div>
+                    </div>
+                    <div class="transaction-time">${getTimeAgo(activity.borrowedAt)}</div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading activities:', error);
+    }
+}
+
+async function loadOverdueItems() {
+    const overdueList = document.getElementById('overdueList');
+    if (!overdueList) return;
+
+    try {
+        const now = new Date();
+        const snapshot = await db.collection('borrowings')
+            .where('status', '==', 'borrowed')
+            .get();
+
+        const overdue = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(item => item.expectedReturn.toDate() < now);
+
+        if (overdue.length === 0) {
+            overdueList.innerHTML = `
+                <div class="alert-item success">
+                    <div class="alert-icon">✅</div>
+                    <div class="alert-content">
+                        <div class="alert-title">All Clear</div>
+                        <div class="alert-message">No overdue items</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            overdueList.innerHTML = overdue.map(item => `
+                <div class="alert-item warning">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <div class="alert-title">${item.equipmentName}</div>
+                        <div class="alert-message">Borrowed by ${item.userName} - Due: ${item.expectedReturn.toDate().toLocaleDateString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading overdue items:', error);
+    }
+}
+
+function initializeEquipmentManagement() {
+    const addEquipmentBtn = document.getElementById('addEquipmentBtn');
+    const addEquipmentModal = document.getElementById('addEquipmentModal');
+    const closeEquipmentModal = document.getElementById('closeEquipmentModal');
+    const cancelEquipment = document.getElementById('cancelEquipment');
+    const addEquipmentForm = document.getElementById('addEquipmentForm');
+
+    if (addEquipmentBtn) {
+        addEquipmentBtn.addEventListener('click', () => {
+            addEquipmentModal.classList.add('active');
+        });
+    }
+
+    if (closeEquipmentModal) {
+        closeEquipmentModal.addEventListener('click', () => {
+            addEquipmentModal.classList.remove('active');
+            addEquipmentForm.reset();
+        });
+    }
+
+    if (cancelEquipment) {
+        cancelEquipment.addEventListener('click', () => {
+            addEquipmentModal.classList.remove('active');
+            addEquipmentForm.reset();
+        });
+    }
+
+    if (addEquipmentModal) {
+        addEquipmentModal.addEventListener('click', (e) => {
+            if (e.target === addEquipmentModal) {
+                addEquipmentModal.classList.remove('active');
+                addEquipmentForm.reset();
+            }
+        });
+    }
+
+    if (addEquipmentForm) {
+        addEquipmentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addEquipment();
+        });
+    }
+}
+
+async function addEquipment() {
+    const equipmentId = document.getElementById('equipmentId').value;
+    const name = document.getElementById('equipmentName').value;
+    const category = document.getElementById('equipmentCategory').value;
+    const location = document.getElementById('equipmentLocation').value;
+    const description = document.getElementById('equipmentDescription').value;
+
+    const submitBtn = document.querySelector('#addEquipmentForm button[type="submit"]');
+    const originalContent = submitBtn.innerHTML;
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Adding...</span>';
+
+        const existingSnapshot = await db.collection('equipment')
+            .where('equipmentId', '==', equipmentId)
+            .get();
+
+        if (!existingSnapshot.empty) {
+            showToast('Equipment ID already exists', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+            return;
+        }
+
+        await db.collection('equipment').add({
+            equipmentId: equipmentId,
+            name: name,
+            category: category,
+            location: location,
+            description: description || '',
+            status: 'available',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showToast('Equipment added successfully!', 'success');
+        document.getElementById('addEquipmentModal').classList.remove('active');
+        document.getElementById('addEquipmentForm').reset();
+
+        loadAllEquipment();
+        loadDashboardData();
+
+    } catch (error) {
+        console.error('Error adding equipment:', error);
+        showToast('Failed to add equipment', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalContent;
+    }
+}
+
+async function loadAllEquipment() {
+    const equipmentList = document.getElementById('equipmentList');
+    if (!equipmentList) return;
+
+    try {
+        const snapshot = await db.collection('equipment')
             .orderBy('createdAt', 'desc')
             .get();
 
-        allFeedback = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const equipment = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        updateStats();
-        loadRecentFeedback();
-    } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        showToast('Failed to load dashboard data', 'error');
-    }
-}
-
-function updateStats() {
-    const totalFeedback = allFeedback.length;
-    const pendingFeedback = allFeedback.filter(f => f.status === 'pending').length;
-    const reviewedFeedback = allFeedback.filter(f => f.status === 'reviewed').length;
-    const resolvedFeedback = allFeedback.filter(f => f.status === 'resolved').length;
-
-    const totalEl = document.getElementById('totalFeedback');
-    const pendingEl = document.getElementById('pendingFeedback');
-    const reviewedEl = document.getElementById('reviewedFeedback');
-    const resolvedEl = document.getElementById('resolvedFeedback');
-    const feedbackCountEl = document.getElementById('feedbackCount');
-
-    if (totalEl) totalEl.textContent = totalFeedback;
-    if (pendingEl) pendingEl.textContent = pendingFeedback;
-    if (reviewedEl) reviewedEl.textContent = reviewedFeedback;
-    if (resolvedEl) resolvedEl.textContent = resolvedFeedback;
-    if (feedbackCountEl) feedbackCountEl.textContent = totalFeedback;
-}
-
-function loadRecentFeedback() {
-    const recentFeedbackList = document.getElementById('recentFeedbackList');
-    if (!recentFeedbackList) return;
-
-    const recentFeedback = allFeedback.slice(0, 5);
-
-    if (recentFeedback.length === 0) {
-        recentFeedbackList.innerHTML = `
-            <div class="empty-state">
-                <h3>No feedback yet</h3>
-                <p>Feedback submissions will appear here</p>
-            </div>
-        `;
-    } else {
-        recentFeedbackList.innerHTML = recentFeedback.map(feedback =>
-            createFeedbackCard(feedback)
-        ).join('');
-
-        addFeedbackClickHandlers();
-    }
-}
-
-async function loadAllFeedback() {
-    const allFeedbackList = document.getElementById('allFeedbackList');
-    if (!allFeedbackList) return;
-
-    const statusFilter = document.getElementById('adminStatusFilter')?.value || 'all';
-    const categoryFilter = document.getElementById('adminCategoryFilter')?.value || 'all';
-    const typeFilter = document.getElementById('adminTypeFilter')?.value || 'all';
-    const searchQuery = document.getElementById('searchInput')?.value.toLowerCase() || '';
-
-    let filteredFeedback = [...allFeedback];
-
-    if (statusFilter !== 'all') {
-        filteredFeedback = filteredFeedback.filter(f => f.status === statusFilter);
-    }
-
-    if (categoryFilter !== 'all') {
-        filteredFeedback = filteredFeedback.filter(f => f.category === categoryFilter);
-    }
-
-    if (typeFilter !== 'all') {
-        filteredFeedback = filteredFeedback.filter(f => f.type === typeFilter);
-    }
-
-    if (searchQuery) {
-        filteredFeedback = filteredFeedback.filter(f =>
-            f.subject.toLowerCase().includes(searchQuery) ||
-            f.message.toLowerCase().includes(searchQuery) ||
-            f.studentName.toLowerCase().includes(searchQuery)
-        );
-    }
-
-    if (filteredFeedback.length === 0) {
-        allFeedbackList.innerHTML = `
-            <div class="empty-state">
-                <h3>No feedback found</h3>
-                <p>Try adjusting your filters</p>
-            </div>
-        `;
-    } else {
-        allFeedbackList.innerHTML = filteredFeedback.map(feedback =>
-            createFeedbackCard(feedback)
-        ).join('');
-
-        addFeedbackClickHandlers();
-    }
-}
-
-function createFeedbackCard(feedback) {
-    return `
-        <div class="feedback-item" data-id="${feedback.id}">
-            <div class="feedback-header">
-                <div class="feedback-meta">
-                    <div class="feedback-subject">${feedback.subject}</div>
-                    <div class="feedback-info">
-                        <span>${feedback.isAnonymous ? '🎭 Anonymous' : '👤 ' + feedback.studentName}</span>
-                        <span>📅 ${getTimeAgo(feedback.createdAt)}</span>
-                        ${!feedback.isAnonymous ? `<span>🆔 ${feedback.studentId || 'N/A'}</span>` : ''}
+        if (equipment.length === 0) {
+            equipmentList.innerHTML = `
+                <div class="empty-state">
+                    <h3>No equipment found</h3>
+                    <p>Start by adding new equipment</p>
+                </div>
+            `;
+        } else {
+            equipmentList.innerHTML = equipment.map(item => `
+                <div class="equipment-list-item">
+                    <div class="equipment-list-info">
+                        <div class="equipment-list-name">${item.name}</div>
+                        <div class="equipment-list-meta">
+                            <span class="badge badge-category">${item.equipmentId}</span>
+                            <span class="badge badge-type">${capitalize(item.category)}</span>
+                            <span class="badge badge-status ${item.status}">${capitalize(item.status)}</span>
+                            <span>📍 ${item.location}</span>
+                        </div>
+                    </div>
+                    <div class="equipment-list-actions">
+                    <button class="btn btn-icon" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.location}','${item.description || ''}')"title="Edit">
+                    ✏️
+                    </button>
+                        <button class="btn btn-secondary btn-sm" onclick="generateQRCode('${item.id}', '${item.equipmentId}', '${item.name}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                                <line x1="15" y1="3" x2="15" y2="21"></line>
+                            </svg>
+                            QR Code
+                        </button>
+                        <button class="btn btn-icon danger" onclick="deleteEquipment('${item.id}', '${item.name}')" title="Delete">
+                        🗑    
+                        </button>
                     </div>
                 </div>
-                <div class="feedback-badges">
-                    <span class="badge badge-category">${capitalize(feedback.category)}</span>
-                    <span class="badge badge-type">${capitalize(feedback.type)}</span>
-                    <span class="badge badge-status ${feedback.status}">${capitalize(feedback.status)}</span>
-                    <span class="badge badge-priority" style="background: ${getPriorityColor(feedback.priority)}20; color: ${getPriorityColor(feedback.priority)}">
-                        ${getPriorityLabel(feedback.priority)}
-                    </span>
-                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading equipment:', error);
+        equipmentList.innerHTML = `
+            <div class="empty-state">
+                <h3>Error loading equipment</h3>
+                <p>Please try again later</p>
             </div>
-            <div class="feedback-message">${truncateText(feedback.message, 200)}</div>
-            <div class="feedback-footer">
-                <span>ID: ${feedback.id.substring(0, 8)}</span>
-                ${!feedback.isAnonymous ? `<span>📧 ${feedback.studentEmail}</span>` : ''}
-            </div>
-        </div>
-    `;
-}
-
-function addFeedbackClickHandlers() {
-    const feedbackItems = document.querySelectorAll('.feedback-item');
-    feedbackItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const feedbackId = item.getAttribute('data-id');
-            const feedback = allFeedback.find(f => f.id === feedbackId);
-            if (feedback) {
-                showFeedbackDetail(feedback);
-            }
-        });
-    });
-}
-
-function showFeedbackDetail(feedback) {
-    selectedFeedback = feedback;
-    const modal = document.getElementById('feedbackModal');
-    const detailContainer = document.getElementById('feedbackDetail');
-
-    if (!modal || !detailContainer) return;
-
-    detailContainer.innerHTML = `
-        <div class="detail-row">
-            <div class="detail-label">Subject</div>
-            <div class="detail-value">${feedback.subject}</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Category</div>
-            <div class="detail-value">
-                <span class="badge badge-category">${capitalize(feedback.category)}</span>
-            </div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Type</div>
-            <div class="detail-value">
-                <span class="badge badge-type">${capitalize(feedback.type)}</span>
-            </div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Priority</div>
-            <div class="detail-value">
-                <span class="badge badge-priority" style="background: ${getPriorityColor(feedback.priority)}20; color: ${getPriorityColor(feedback.priority)}">
-                    ${getPriorityLabel(feedback.priority)}
-                </span>
-            </div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Status</div>
-            <div class="detail-value">
-                <span class="badge badge-status ${feedback.status}">${capitalize(feedback.status)}</span>
-            </div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Student</div>
-            <div class="detail-value">${feedback.isAnonymous ? 'Anonymous' : feedback.studentName}</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Email</div>
-            ${!feedback.isAnonymous ? `<div class="detail-value">${feedback.studentEmail}</div>` : 'Anonymous'}
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Student ID</div>
-            ${!feedback.isAnonymous ? `<div class="detail-value">${feedback.studentId || 'N/A'}</div>` : 'Anonymous'}
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Submitted</div>
-            <div class="detail-value">${formatDate(feedback.createdAt)}</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Message</div>
-            <div class="detail-value" style="white-space: pre-wrap; line-height: 1.6;">${feedback.message}</div>
-        </div>
-    `;
-
-    modal.classList.add('active');
-}
-
-function initializeModal() {
-    const modal = document.getElementById('feedbackModal');
-    const closeBtn = document.getElementById('closeFeedbackModal');
-    const statusButtons = document.querySelectorAll('.status-actions button');
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
+        `;
     }
-
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('active');
-            }
-        });
-    }
-
-    statusButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const newStatus = btn.getAttribute('data-status');
-            await updateFeedbackStatus(newStatus);
-        });
-    });
 }
 
-async function updateFeedbackStatus(newStatus) {
-    if (!selectedFeedback) return;
+async function deleteEquipment(equipmentId, equipmentName) {
+    if (!confirm(`Are you sure you want to delete "${equipmentName}"?\n\nThis action cannot be undone.`)) {
+        return;
+    }
 
     try {
-        await db.collection('feedback').doc(selectedFeedback.id).update({
-            status: newStatus,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        const borrowingSnapshot = await db.collection('borrowings')
+            .where('equipmentId', '==', equipmentId)
+            .where('status', '==', 'borrowed')
+            .get();
 
-        showToast(`Feedback marked as ${newStatus}`, 'success');
-
-        selectedFeedback.status = newStatus;
-        const feedbackIndex = allFeedback.findIndex(f => f.id === selectedFeedback.id);
-        if (feedbackIndex !== -1) {
-            allFeedback[feedbackIndex].status = newStatus;
+        if (!borrowingSnapshot.empty) {
+            showToast('Cannot delete equipment that is currently borrowed', 'error');
+            return;
         }
 
-        updateStats();
-        loadRecentFeedback();
-        loadAllFeedback();
+        await db.collection('equipment').doc(equipmentId).delete();
+        showToast('Equipment deleted successfully', 'success');
 
-        document.getElementById('feedbackModal').classList.remove('active');
+        loadAllEquipment();
+        loadDashboardData();
     } catch (error) {
-        console.error('Error updating status:', error);
-        showToast('Failed to update status', 'error');
+        console.error('Error deleting equipment:', error);
+        showToast('Failed to delete equipment', 'error');
     }
 }
 
-async function loadAnalytics() {
-    const categoryChart = document.getElementById('categoryChart');
-    const typeChart = document.getElementById('typeChart');
-    const priorityBars = document.getElementById('priorityBars');
+function generateQRCode(equipmentDocId, equipmentId, equipmentName) {
+    const qrContainer = document.getElementById('qrCodeContainer');
+    qrContainer.innerHTML = '';
 
-    const categoryData = {};
-    allFeedback.forEach(f => {
-        categoryData[f.category] = (categoryData[f.category] || 0) + 1;
+    new QRCode(qrContainer, {
+        text: equipmentId,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
     });
 
-    if (categoryChart) {
-        categoryChart.innerHTML = Object.entries(categoryData).map(([category, count]) => {
-            const percentage = (count / allFeedback.length * 100).toFixed(1);
-            return `
-                <div class="chart-item">
-                    <div class="chart-label">${capitalize(category)}</div>
-                    <div class="chart-bar">
-                        <div class="chart-fill" style="width: ${percentage}%"></div>
-                    </div>
-                    <div class="chart-value">${count}</div>
-                </div>
-            `;
-        }).join('');
-    }
+    document.getElementById('qrEquipmentId').textContent = equipmentId;
+    document.getElementById('qrEquipmentName').textContent = equipmentName;
 
-    const typeData = {};
-    allFeedback.forEach(f => {
-        typeData[f.type] = (typeData[f.type] || 0) + 1;
-    });
+    document.getElementById('qrCodeModal').classList.add('active');
 
-    if (typeChart) {
-        typeChart.innerHTML = Object.entries(typeData).map(([type, count]) => {
-            const percentage = (count / allFeedback.length * 100).toFixed(1);
-            return `
-                <div class="chart-item">
-                    <div class="chart-label">${capitalize(type)}</div>
-                    <div class="chart-bar">
-                        <div class="chart-fill" style="width: ${percentage}%"></div>
-                    </div>
-                    <div class="chart-value">${count}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    const priorityData = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    allFeedback.forEach(f => {
-        priorityData[f.priority] = (priorityData[f.priority] || 0) + 1;
-    });
-
-    if (priorityBars) {
-        priorityBars.innerHTML = Object.entries(priorityData).map(([priority, count]) => {
-            const percentage = allFeedback.length > 0 ? (count / allFeedback.length * 100).toFixed(1) : 0;
-            return `
-                <div class="chart-item">
-                    <div class="chart-label">${getPriorityLabel(parseInt(priority))}</div>
-                    <div class="chart-bar">
-                        <div class="chart-fill" style="width: ${percentage}%; background: ${getPriorityColor(parseInt(priority))}"></div>
-                    </div>
-                    <div class="chart-value">${count}</div>
-                </div>
-            `;
-        }).join('');
-    }
+    setupQRActions(equipmentId);
 }
 
-function initializeFilters() {
-    const statusFilter = document.getElementById('adminStatusFilter');
-    const categoryFilter = document.getElementById('adminCategoryFilter');
-    const typeFilter = document.getElementById('adminTypeFilter');
-    const searchInput = document.getElementById('searchInput');
+function setupQRActions(equipmentId) {
+    const downloadBtn = document.getElementById('downloadQrBtn');
+    const printBtn = document.getElementById('printQrBtn');
+    const closeQrModal = document.getElementById('closeQrModal');
+    const qrModal = document.getElementById('qrCodeModal');
 
-    if (statusFilter) {
-        statusFilter.addEventListener('change', loadAllFeedback);
-    }
+    downloadBtn.onclick = () => {
+        const canvas = document.querySelector('#qrCodeContainer canvas');
+        if (canvas) {
+            const link = document.createElement('a');
+            link.download = `QR-${equipmentId}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            showToast('QR Code downloaded', 'success');
+        }
+    };
 
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', loadAllFeedback);
-    }
-
-    if (typeFilter) {
-        typeFilter.addEventListener('change', loadAllFeedback);
-    }
-
-    if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(loadAllFeedback, 300);
-        });
-    }
-}
-
-function initializeRefresh() {
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', async () => {
-            refreshBtn.disabled = true;
-            await loadDashboardData();
-            showToast('Dashboard refreshed', 'success');
+    printBtn.onclick = () => {
+        const canvas = document.querySelector('#qrCodeContainer canvas');
+        if (canvas) {
+            const printWindow = window.open('', '', 'width=600,height=600');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>QR Code - ${equipmentId}</title>
+                    <style>
+                        body { text-align: center; font-family: Arial, sans-serif; padding: 20px; }
+                        img { max-width: 400px; margin: 20px 0; }
+                        h2 { margin: 10px 0; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Equipment QR Code</h2>
+                    <p><strong>ID:</strong> ${equipmentId}</p>
+                    <img src="${canvas.toDataURL()}" />
+                    <p><em>Scan this code to borrow or return equipment</em></p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
             setTimeout(() => {
-                refreshBtn.disabled = false;
-            }, 1000);
-        });
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+    };
+
+    closeQrModal.onclick = () => {
+        qrModal.classList.remove('active');
+    };
+
+    qrModal.onclick = (e) => {
+        if (e.target === qrModal) {
+            qrModal.classList.remove('active');
+        }
+    };
+}
+
+async function loadCurrentlyBorrowed() {
+    const borrowedList = document.getElementById('borrowedList');
+    if (!borrowedList) return;
+
+    try {
+        const snapshot = await db.collection('borrowings')
+            .where('status', '==', 'borrowed')
+            .get();
+
+        const borrowed = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (borrowed.length === 0) {
+            borrowedList.innerHTML = `
+                <div class="empty-state">
+                    <h3>No borrowed equipment</h3>
+                    <p>All equipment is available</p>
+                </div>
+            `;
+        } else {
+            borrowedList.innerHTML = borrowed.map(item => {
+                const expectedReturn = item.expectedReturn.toDate();
+                const isOverdue = expectedReturn < new Date();
+                const daysBorrowed = Math.floor((new Date() - item.borrowedAt.toDate()) / (1000 * 60 * 60 * 24));
+
+                return `
+                    <div class="borrowed-list-item">
+                        <div class="borrowed-list-header">
+                            <div>
+                                <div class="borrowed-student">${item.userName}</div>
+                                <div class="borrowed-list-details">
+                                    📧 ${item.userEmail} • 🆔 ${item.studentId}
+                                </div>
+                            </div>
+                            ${isOverdue ? '<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger)">OVERDUE</span>' : ''}
+                        </div>
+                        <div class="borrowed-list-details" style="margin-top: 1rem;">
+                            <strong>Equipment:</strong> ${item.equipmentName}<br>
+                            <strong>Borrowed:</strong> ${formatDate(item.borrowedAt)} (${daysBorrowed} days ago)<br>
+                            <strong>Expected Return:</strong> ${expectedReturn.toLocaleDateString()}<br>
+                            <strong>Purpose:</strong> ${item.purpose}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error loading borrowed items:', error);
+        borrowedList.innerHTML = `
+            <div class="empty-state">
+                <h3>Error loading borrowed items</h3>
+                <p>Please try again later</p>
+            </div>
+        `;
     }
 }
 
-function initializeLogout() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
+async function loadBorrowingLogs() {
+    const logsList = document.getElementById('logsList');
+    if (!logsList) return;
+
+    try {
+        const startDate = document.getElementById('startDate')?.value;
+        const endDate = document.getElementById('endDate')?.value;
+        const studentFilter = document.getElementById('studentFilter')?.value.toLowerCase() || '';
+        const equipmentFilter = document.getElementById('equipmentFilter')?.value.toLowerCase() || '';
+
+        let query = db.collection('borrowings').orderBy('borrowedAt', 'desc').limit(100);
+
+        const snapshot = await query.get();
+        let logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (startDate) {
+            const start = new Date(startDate);
+            logs = logs.filter(log => log.borrowedAt.toDate() >= start);
+        }
+
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59);
+            logs = logs.filter(log => log.borrowedAt.toDate() <= end);
+        }
+
+        if (studentFilter) {
+            logs = logs.filter(log =>
+                log.userName.toLowerCase().includes(studentFilter) ||
+                log.userEmail.toLowerCase().includes(studentFilter)
+            );
+        }
+
+        if (equipmentFilter) {
+            logs = logs.filter(log =>
+                log.equipmentName.toLowerCase().includes(equipmentFilter) ||
+                log.equipmentId?.toLowerCase().includes(equipmentFilter)
+            );
+        }
+
+        if (logs.length === 0) {
+            logsList.innerHTML = `
+                <div class="empty-state">
+                    <h3>No logs found</h3>
+                    <p>Try adjusting your filters</p>
+                </div>
+            `;
+        } else {
+            logsList.innerHTML = logs.map(log => `
+                <div class="log-item">
+                    <div class="log-item-header">
+                        <span class="log-item-title">${log.equipmentName}</span>
+                        <span class="history-status ${log.status}">${capitalize(log.status)}</span>
+                    </div>
+                    <div class="log-item-info">
+                        <div class="log-field">
+                            <span class="log-label">Student:</span>
+                            <span class="log-value">${log.userName}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Email:</span>
+                            <span class="log-value">${log.userEmail}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Student ID:</span>
+                            <span class="log-value">${log.studentId}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Borrowed:</span>
+                            <span class="log-value">${formatDate(log.borrowedAt)}</span>
+                        </div>
+                        ${log.returnedAt ? `
+                            <div class="log-field">
+                                <span class="log-label">Returned:</span>
+                                <span class="log-value">${formatDate(log.returnedAt)}</span>
+                            </div>
+                        ` : `
+                            <div class="log-field">
+                                <span class="log-label">Expected Return:</span>
+                                <span class="log-value">${log.expectedReturn.toDate().toLocaleDateString()}</span>
+                            </div>
+                        `}
+                        <div class="log-field">
+                            <span class="log-label">Purpose:</span>
+                            <span class="log-value">${log.purpose}</span>
+                        </div>
+                        ${log.returnCondition ? `
+                            <div class="log-field">
+                                <span class="log-label">Return Condition:</span>
+                                <span class="log-value">${capitalize(log.returnCondition)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading logs:', error);
+        logsList.innerHTML = `
+            <div class="empty-state">
+                <h3>Error loading logs</h3>
+                <p>Please try again later</p>
+            </div>
+        `;
+    }
+}
+
+function initializeExport() {
+    const exportLogsBtn = document.getElementById('exportLogsBtn');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', loadBorrowingLogs);
+    }
+
+    if (exportLogsBtn) {
+        exportLogsBtn.addEventListener('click', async () => {
             try {
-                await auth.signOut();
-                showToast('Logged out successfully', 'success');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
+                const snapshot = await db.collection('borrowings')
+                    .orderBy('borrowedAt', 'desc')
+                    .get();
+
+                const logs = snapshot.docs.map(doc => doc.data());
+
+                let csv = 'Equipment Name,Equipment ID,Student Name,Student Email,Student ID,Borrowed At,Returned At,Expected Return,Status,Purpose,Return Condition\n';
+
+                logs.forEach(log => {
+                    csv += `"${log.equipmentName}","${log.equipmentId || 'N/A'}","${log.userName}","${log.userEmail}","${log.studentId}",`;
+                    csv += `"${log.borrowedAt.toDate().toLocaleString()}",`;
+                    csv += `"${log.returnedAt ? log.returnedAt.toDate().toLocaleString() : 'N/A'}",`;
+                    csv += `"${log.expectedReturn.toDate().toLocaleDateString()}","${log.status}","${log.purpose}","${log.returnCondition || 'N/A'}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `borrowing-logs-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                showToast('Logs exported successfully', 'success');
             } catch (error) {
-                console.error('Logout error:', error);
-                showToast('Failed to logout. Please try again.', 'error');
+                console.error('Error exporting logs:', error);
+                showToast('Failed to export logs', 'error');
             }
         });
     }
@@ -529,7 +707,6 @@ async function createNewUser() {
     const password = document.getElementById('newUserPassword').value;
     const role = document.getElementById('newUserRole').value;
     const studentId = document.getElementById('newUserStudentId').value;
-
     const submitBtn = document.querySelector('#addUserForm button[type="submit"]');
     const originalBtnContent = submitBtn.innerHTML;
 
@@ -537,11 +714,10 @@ async function createNewUser() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Creating...</span>';
 
-        const secondaryApp = firebase.initializeApp(firebase.app().options, "Secondary");
-        const secondaryAuth = secondaryApp.auth();
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
 
-        const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
-        const newUser = userCredential.user;
+        await user.updateProfile({ displayName: name });
 
         const userData = {
             name: name,
@@ -554,12 +730,12 @@ async function createNewUser() {
             userData.studentId = studentId;
         }
 
-        await db.collection('users').doc(newUser.uid).set(userData);
+        await db.collection('users').doc(user.uid).set(userData);
 
-        showToast(`${role} created successfully!`, 'success');
+        showToast(`${capitalize(role)} account created successfully!`, 'success');
 
-        await secondaryAuth.signOut();
-        await secondaryApp.delete();
+        await auth.signOut();
+        await auth.signInWithEmailAndPassword(currentAdmin.email, '__admin_session__');
 
         document.getElementById('addUserModal').classList.remove('active');
         document.getElementById('addUserForm').reset();
@@ -567,14 +743,23 @@ async function createNewUser() {
         loadUsers();
 
     } catch (error) {
-        console.error(error);
-        showToast(error.message, 'error');
+        console.error('Error creating user:', error);
+        let errorMessage = 'Failed to create user. ';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage += 'This email is already registered.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage += 'Invalid email address.';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage += 'Password should be at least 6 characters.';
+        } else {
+            errorMessage += error.message;
+        }
+        showToast(errorMessage, 'error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnContent;
     }
 }
-
 
 async function loadUsers() {
     const usersGrid = document.getElementById('usersGrid');
@@ -585,10 +770,7 @@ async function loadUsers() {
             .orderBy('createdAt', 'desc')
             .get();
 
-        const users = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         if (users.length === 0) {
             usersGrid.innerHTML = `
@@ -611,17 +793,14 @@ async function loadUsers() {
                             ${user.studentId ? `<span class="badge badge-category">ID: ${user.studentId}</span>` : ''}
                         </div>
                         <div class="user-card-actions">
-                        ${user.id !== currentAdmin.uid ? `
-                            <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.studentId || ''}','${user.email}')">
-                                ✏️
-                            </button>
-                            <button class="btn btn-icon" onclick="resetUserPassword('${user.email}')">
-                                🔑
-                            </button>
-                            <button class="btn btn-icon danger" onclick="deleteUser('${user.id}','${user.email}')">
-                                🗑
-                            </button>
-                        ` : '<span style="font-size:0.75rem;color:#888">(You)</span>'}
+                            ${user.id !== currentAdmin.uid ? `
+                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}')">
+                                    ✏️
+                                </button>
+                                <button class="btn btn-icon danger" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
+                                    🗑
+                                </button>
+                            ` : '<span style="font-size: 0.75rem; color: var(--text-tertiary);">(You)</span>'}
                         </div>
                     </div>
                 </div>
@@ -645,7 +824,6 @@ async function deleteUser(userId, userEmail) {
 
     try {
         await db.collection('users').doc(userId).delete();
-
         showToast('User removed from database', 'success');
         loadUsers();
     } catch (error) {
@@ -654,67 +832,174 @@ async function deleteUser(userId, userEmail) {
     }
 }
 
-let editingUserId = null;
-
-function openEditUser(id, name, studentId, email) {
-    editingUserId = id;
-
-    document.getElementById('editUserName').value = name || "";
-    document.getElementById('editUserStudentId').value = studentId || "";
-
-    document.getElementById('editUserModal').classList.add('active');
-}
-
-function closeEditModal() {
-    document.getElementById('editUserModal').classList.remove('active');
-}
-
-async function saveUserEdit() {
-    if (!editingUserId) {
-        showToast("No user selected to edit.", "error");
-        return;
-    }
-
-    const name = document.getElementById('editUserName').value.trim();
-    const studentId = document.getElementById('editUserStudentId').value.trim();
-
-    if (!name) {
-        showToast("Name is required.", "error");
-        return;
-    }
-
-    const saveBtn = document.querySelector("#editUserForm .btn.btn-primary")
-        || document.querySelector("#editUserModal .btn.btn-primary");
-    const oldText = saveBtn ? saveBtn.innerHTML : "";
-
-    try {
-        if (saveBtn) {
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = "Saving...";
-        }
-
-        await db.collection('users').doc(editingUserId).update({
-            name,
-            studentId: studentId || firebase.firestore.FieldValue.delete()
+function initializeRefresh() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+            refreshBtn.disabled = true;
+            await loadDashboardData();
+            showToast('Dashboard refreshed', 'success');
+            setTimeout(() => {
+                refreshBtn.disabled = false;
+            }, 1000);
         });
-
-        showToast("User updated", "success");
-
-        closeEditModal();
-        await loadUsers();
-
-    } catch (err) {
-        console.error("SAVE ERROR:", err);
-        showToast(err.message || "Update failed", "error");
-    } finally {
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = oldText;
-        }
     }
 }
 
-function resetUserPassword(email) {
-    auth.sendPasswordResetEmail(email);
-    showToast("Password reset email sent", "success");
+function initializeLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                showToast('Logged out successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('Failed to logout. Please try again.', 'error');
+            }
+        });
+    }
 }
+
+function openEditEquipment(id, eid, name, cat, loc, desc) {
+    document.getElementById("editDocId").value = id;
+    document.getElementById("editEquipmentId").value = eid;
+    document.getElementById("editEquipmentName").value = name;
+    document.getElementById("editEquipmentCategory").value = cat;
+    document.getElementById("editEquipmentLocation").value = loc;
+    document.getElementById("editEquipmentDescription").value = desc;
+
+    document.getElementById("editEquipmentModal").classList.add("active");
+}
+
+function closeEditEquipment() {
+    document.getElementById("editEquipmentModal").classList.remove("active");
+}
+
+document.getElementById("editEquipmentForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const id = document.getElementById("editDocId").value;
+
+    await db.collection("equipment").doc(id).update({
+        equipmentId: document.getElementById("editEquipmentId").value,
+        name: document.getElementById("editEquipmentName").value,
+        category: document.getElementById("editEquipmentCategory").value,
+        location: document.getElementById("editEquipmentLocation").value,
+        description: document.getElementById("editEquipmentDescription").value
+    });
+
+    showToast("Equipment updated", "success");
+    closeEditEquipment();
+    loadAllEquipment();
+});
+
+function openEditUser(id, name, email, role, studentId) {
+    document.getElementById("editUserId").value = id;
+    document.getElementById("editUserName").value = name;
+    document.getElementById("editUserEmail").value = email;
+    document.getElementById("editUserRole").value = role;
+    document.getElementById("editUserStudentId").value = studentId;
+
+    document.getElementById("editUserModal").classList.add("active");
+}
+
+function closeEditUser() {
+    document.getElementById("editUserModal").classList.remove("active");
+}
+
+document.getElementById("editUserForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const id = document.getElementById("editUserId").value;
+
+    await db.collection("users").doc(id).update({
+        name: document.getElementById("editUserName").value,
+        email: document.getElementById("editUserEmail").value,
+        role: document.getElementById("editUserRole").value,
+        studentId: document.getElementById("editUserStudentId").value
+    });
+
+    showToast("User updated", "success");
+    document.getElementById("editUserModal").classList.remove("active");
+    loadUsers();
+});
+
+function openModal(id) {
+    document.getElementById(id).classList.add("active");
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove("active");
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const { user, userData } = await checkAuth("admin");
+    loadPending();
+});
+
+async function loadPending() {
+    const grid = document.getElementById("pendingGrid");
+    const count = document.getElementById("pendingCount");
+
+    if (!grid) return;
+
+    const snap = await db.collection("users")
+        .where("status", "==", "pending")
+        .get();
+
+    count.textContent = snap.size;
+
+    if (snap.empty) {
+        grid.innerHTML = `<p style="color:#777;">No pending accounts</p>`;
+        return;
+    }
+
+    grid.innerHTML = snap.docs.map(doc => {
+        const u = doc.data();
+
+        return `
+<div class="pending-card">
+
+    <div class="pending-avatar">
+        ${u.name ? u.name.charAt(0) : "U"}
+    </div>
+
+    <div class="pending-name">${u.name}</div>
+    <div class="pending-email">${u.email}</div>
+    <div class="pending-id">ID: ${u.studentId || "N/A"}</div>
+
+    <div class="pending-actions">
+        <button class="btn-approve" onclick="approveUser('${doc.id}')">Approve</button>
+        <button class="btn-reject" onclick="rejectUser('${doc.id}')">Reject</button>
+    </div>
+
+</div>
+`;
+    }).join("");
+}
+
+async function approveUser(uid) {
+    await db.collection("users").doc(uid).update({
+        status: "approved"
+    });
+    showToast("User approved", "success");
+    loadPending();
+    loadUsers();
+}
+
+async function rejectUser(uid) {
+    if (!confirm("Delete account?")) return;
+
+    await db.collection("users").doc(uid).delete();
+    showToast("User rejected", "error");
+    loadPending();
+    loadUsers();
+}
+
+window.generateQRCode = generateQRCode;
+window.deleteEquipment = deleteEquipment;
+window.deleteUser = deleteUser;

@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - 1AFeedbackHub</title>
-    <link rel="stylesheet" href="style.css">
+    <title>UCC | MIS - Admin</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
         rel="stylesheet">
@@ -13,40 +14,47 @@
 
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
-                        <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
-                        <path d="M10 22H22V24H10V22Z" fill="white" />
-                        <defs>
-                            <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
-                                <stop offset="0%" stop-color="#06b6d4" />
-                                <stop offset="100%" stop-color="#3b82f6" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span>1AFeedbackHub</span>
+                    <img src="CS1A.png" width="32" height="32" alt="roshlogo">
+                    <span>EquipLend</span>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-view="overview">
+                <a href="#" class="nav-item active" data-view="dashboard">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"></rect>
                         <rect x="14" y="3" width="7" height="7"></rect>
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    <span>Overview</span>
+                    <span>Dashboard</span>
                 </a>
-                <a href="#" class="nav-item" data-view="feedback">
+                <a href="#" class="nav-item" data-view="equipment">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                        </path>
                     </svg>
-                    <span>All Feedback</span>
-                    <span class="nav-badge" id="feedbackCount">0</span>
+                    <span>Manage Equipment</span>
+                </a>
+                <a href="#" class="nav-item" data-view="borrowed">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>Currently Borrowed</span>
+                    <span class="nav-badge" id="borrowedBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-view="logs">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>Borrowing Logs</span>
                 </a>
                 <a href="#" class="nav-item" data-view="users">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,15 +63,7 @@
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    <span>Manage Users</span>
-                </a>
-                <a href="#" class="nav-item" data-view="analytics">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="20" x2="12" y2="10"></line>
-                        <line x1="18" y1="20" x2="18" y2="4"></line>
-                        <line x1="6" y1="20" x2="6" y2="16"></line>
-                    </svg>
-                    <span>Analytics</span>
+                    <span>User Management</span>
                 </a>
             </nav>
 
@@ -88,12 +88,14 @@
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
-            <div class="view-container active" id="overviewView">
+            <!-- Dashboard View -->
+            <div class="view-container active" id="dashboardView">
                 <div class="content-header">
                     <div>
-                        <h1 class="page-title">Dashboard Overview</h1>
-                        <p class="page-subtitle">Track and analyze feedback submissions</p>
+                        <h1 class="page-title">Equipment Management Dashboard</h1>
+                        <p class="page-subtitle">Overview of equipment and borrowing activities</p>
                     </div>
                     <div class="header-actions">
                         <button class="btn btn-secondary" id="refreshBtn">
@@ -113,26 +115,14 @@
                         <div class="stat-icon total">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                <path
+                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                                </path>
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Total Feedback</div>
-                            <div class="stat-value" id="totalFeedback">0</div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon pending">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-label">Pending Review</div>
-                            <div class="stat-value" id="pendingFeedback">0</div>
+                            <div class="stat-label">Total Equipment</div>
+                            <div class="stat-value" id="totalEquipment">0</div>
                         </div>
                     </div>
 
@@ -144,13 +134,13 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Reviewed</div>
-                            <div class="stat-value" id="reviewedFeedback">0</div>
+                            <div class="stat-label">Available</div>
+                            <div class="stat-value" id="availableEquipment">0</div>
                         </div>
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon resolved">
+                        <div class="stat-icon pending">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -158,107 +148,132 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Resolved</div>
-                            <div class="stat-value" id="resolvedFeedback">0</div>
+                            <div class="stat-label">Currently Borrowed</div>
+                            <div class="stat-value" id="borrowedEquipment">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon resolved">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Borrows Today</div>
+                            <div class="stat-value" id="todayBorrows">0</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="recent-feedback-section">
-                    <h2 class="section-title">Recent Feedback</h2>
-                    <div class="feedback-list" id="recentFeedbackList">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Recent Activities</h3>
+                        <div class="transaction-list" id="recentActivities">
+                            <!-- Recent activities will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Overdue Returns</h3>
+                        <div class="alert-list" id="overdueList">
+                            <!-- Overdue items will be loaded here -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="view-container" id="feedbackView">
+            <!-- Equipment Management View -->
+            <div class="view-container" id="equipmentView">
                 <div class="content-header">
                     <div>
-                        <h1 class="page-title">All Feedback</h1>
-                        <p class="page-subtitle">Review and manage submissions</p>
+                        <h1 class="page-title">Manage Equipment</h1>
+                        <p class="page-subtitle">Add, edit, and track all equipment</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addEquipmentBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Equipment
+                        </button>
                     </div>
                 </div>
 
-                <div class="feedback-filters">
-                    <div class="filter-group">
-                        <label>Status:</label>
-                        <select id="adminStatusFilter">
-                            <option value="all">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="reviewed">Reviewed</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Category:</label>
-                        <select id="adminCategoryFilter">
-                            <option value="all">All Categories</option>
-                            <option value="course">Course Content</option>
-                            <option value="instructor">Instructor</option>
-                            <option value="facilities">Facilities</option>
-                            <option value="administration">Administration</option>
-                            <option value="technology">Technology</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Type:</label>
-                        <select id="adminTypeFilter">
-                            <option value="all">All Types</option>
-                            <option value="suggestion">Suggestion</option>
-                            <option value="complaint">Complaint</option>
-                            <option value="appreciation">Appreciation</option>
-                        </select>
-                    </div>
-                    <div class="search-group">
-                        <input type="text" id="searchInput" placeholder="Search feedback...">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.35-4.35"></path>
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="feedback-list" id="allFeedbackList">
+                <div class="equipment-list" id="equipmentList">
+                    <!-- Equipment list will be loaded here -->
                 </div>
             </div>
 
-            <div class="view-container" id="analyticsView">
+            <!-- Currently Borrowed View -->
+            <div class="view-container" id="borrowedView">
                 <div class="content-header">
                     <div>
-                        <h1 class="page-title">Analytics</h1>
-                        <p class="page-subtitle">Insights and trends</p>
+                        <h1 class="page-title">Currently Borrowed Equipment</h1>
+                        <p class="page-subtitle">Track active borrowings</p>
                     </div>
                 </div>
 
-                <div class="analytics-grid">
-                    <div class="analytics-card">
-                        <h3>Feedback by Category</h3>
-                        <div class="chart-container" id="categoryChart">
-                        </div>
-                    </div>
-
-                    <div class="analytics-card">
-                        <h3>Feedback by Type</h3>
-                        <div class="chart-container" id="typeChart">
-                        </div>
-                    </div>
-
-                    <div class="analytics-card full-width">
-                        <h3>Priority Distribution</h3>
-                        <div class="priority-bars" id="priorityBars">
-                        </div>
-                    </div>
+                <div class="borrowed-list" id="borrowedList">
+                    <!-- Currently borrowed items will be loaded here -->
                 </div>
             </div>
 
+            <!-- Borrowing Logs View -->
+            <div class="view-container" id="logsView">
+                <div class="content-header">
+                    <div>
+                        <h1 class="page-title">Borrowing Logs</h1>
+                        <p class="page-subtitle">Complete history of all borrowing activities</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="exportLogsBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export Logs
+                        </button>
+                    </div>
+                </div>
+
+                <div class="logs-filters">
+                    <div class="filter-group">
+                        <label>Date Range:</label>
+                        <input type="date" id="startDate" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="endDate" class="date-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>Student:</label>
+                        <input type="text" id="studentFilter" placeholder="Search by student name">
+                    </div>
+                    <div class="filter-group">
+                        <label>Equipment:</label>
+                        <input type="text" id="equipmentFilter" placeholder="Search by equipment">
+                    </div>
+                    <button class="btn btn-primary" id="applyFilterBtn">Apply Filter</button>
+                </div>
+
+                <div class="logs-list" id="logsList">
+                    <!-- Logs will be loaded here -->
+                </div>
+            </div>
+
+            <!-- User Management View -->
             <div class="view-container" id="usersView">
+
                 <div class="content-header">
                     <div>
-                        <h1 class="page-title">Manage Users</h1>
-                        <p class="page-subtitle">Add and manage user accounts</p>
+                        <h1 class="page-title">User Management</h1>
+                        <p class="page-subtitle">Manage system users</p>
                     </div>
+
                     <div class="header-actions">
                         <button class="btn btn-primary" id="addUserBtn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -271,12 +286,118 @@
                     </div>
                 </div>
 
+                <!-- 🔴 PENDING APPROVAL SECTION -->
+                <div class="pending-section">
+                    <div class="pending-header">
+                        <div>
+                            <h2 class="section-title">Pending Approvals</h2>
+                            <p class="section-sub">Students waiting for approval</p>
+                        </div>
+
+                        <div class="pending-count" id="pendingCount">0</div>
+                    </div>
+
+                    <div class="pending-grid" id="pendingGrid">
+                        <!-- pending cards -->
+                    </div>
+                </div>
+
+                <!-- 🟢 ALL USERS -->
+                <h2 class="section-title" style="margin-top:25px;">All Users</h2>
+
                 <div class="users-grid" id="usersGrid">
+                    <!-- Users will be loaded here -->
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Add Equipment Modal -->
+    <div class="modal" id="addEquipmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Equipment</h2>
+                <button class="modal-close" id="closeEquipmentModal">&times;</button>
+            </div>
+            <form class="login-form" id="addEquipmentForm">
+                <div class="form-group">
+                    <label for="equipmentId">Equipment ID</label>
+                    <input type="text" id="equipmentId" placeholder="e.g., PROJ-001" required>
+                </div>
+                <div class="form-group">
+                    <label for="equipmentName">Equipment Name</label>
+                    <input type="text" id="equipmentName" placeholder="e.g., Epson Projector EB-X41" required>
+                </div>
+                <div class="form-group">
+                    <label for="equipmentCategory">Category</label>
+                    <select id="equipmentCategory" required>
+                        <option value="">Select category</option>
+                        <option value="projector">Projector</option>
+                        <option value="cable">Cable/Adapter</option>
+                        <option value="remote">Remote Control</option>
+                        <option value="display">Display/TV</option>
+                        <option value="extension">Extension Cord</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="equipmentLocation">Location</label>
+                    <input type="text" id="equipmentLocation" placeholder="e.g., Storage Room A" required>
+                </div>
+                <div class="form-group">
+                    <label for="equipmentDescription">Description (Optional)</label>
+                    <textarea id="equipmentDescription" rows="3" placeholder="Additional details..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEquipment">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Add Equipment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal" id="qrCodeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Equipment QR Code</h2>
+                <button class="modal-close" id="closeQrModal">&times;</button>
+            </div>
+            <div class="qr-code-display">
+                <div id="qrCodeContainer"></div>
+                <div class="qr-info">
+                    <p><strong>Equipment ID:</strong> <span id="qrEquipmentId"></span></p>
+                    <p><strong>Name:</strong> <span id="qrEquipmentName"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="downloadQrBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download QR Code
+                </button>
+                <button class="btn btn-secondary" id="printQrBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Print
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal (reused from before) -->
     <div class="modal" id="addUserModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -286,15 +407,16 @@
             <form class="login-form" id="addUserForm">
                 <div class="form-group">
                     <label for="newUserName">Full Name</label>
-                    <input type="text" id="newUserName" placeholder="1AFeedback Hub" required>
+                    <input type="text" id="newUserName" placeholder="John Doe" required>
                 </div>
                 <div class="form-group">
                     <label for="newUserEmail">Email</label>
-                    <input type="email" id="newUserEmail" placeholder="email" required>
+                    <input type="email" id="newUserEmail" placeholder="user@university.edu" required>
                 </div>
                 <div class="form-group">
                     <label for="newUserPassword">Password</label>
-                    <input type="password" id="newUserPassword" placeholder="Minimum 8 characters" minlength="8" required>
+                    <input type="password" id="newUserPassword" placeholder="Minimum 6 characters" minlength="6"
+                        required>
                 </div>
                 <div class="form-group">
                     <label for="newUserRole">User Role</label>
@@ -306,7 +428,7 @@
                 </div>
                 <div class="form-group" id="studentIdGroup">
                     <label for="newUserStudentId">Student ID</label>
-                    <input type="text" id="newUserStudentId" placeholder="20250000-S" minlength="10" maxlength="10" required>
+                    <input type="text" id="newUserStudentId" placeholder="2024001">
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>
@@ -325,57 +447,87 @@
         </div>
     </div>
 
-    <div class="modal" id="feedbackModal">
-        <div class="modal-content large">
+    <div class="modal" id="editEquipmentModal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>Feedback Details</h2>
-                <button class="modal-close" id="closeFeedbackModal">&times;</button>
+                <h2>Edit Equipment</h2>
+                <button class="modal-close" onclick="closeEditEquipment()">&times;</button>
             </div>
-            <div class="feedback-detail" id="feedbackDetail">
-            </div>
-            <div class="modal-footer">
-                <div class="status-actions">
-                    <button class="btn btn-secondary" data-status="pending">Mark as Pending</button>
-                    <button class="btn btn-primary" data-status="reviewed">Mark as Reviewed</button>
-                    <button class="btn btn-success" data-status="resolved">Mark as Resolved</button>
+
+            <form id="editEquipmentForm">
+                <input type="hidden" id="editDocId">
+
+                <div class="form-group">
+                    <label>ID</label>
+                    <input type="text" id="editEquipmentId" required>
                 </div>
-            </div>
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="editEquipmentName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="editEquipmentCategory">
+                </div>
+
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="editEquipmentLocation">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editEquipmentDescription"></textarea>
+                </div>
+
+                <button class="btn btn-primary">Save Changes</button>
+            </form>
         </div>
     </div>
 
     <div class="modal" id="editUserModal">
         <div class="modal-content">
-
             <div class="modal-header">
                 <h2>Edit User</h2>
-                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                <button class="modal-close" onclick="closeEditUser()">&times;</button>
             </div>
 
-            <form id="editUserForm" class="login-form">
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
 
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="editUserName" placeholder="Enter name">
-                </div>
+                <label>Name</label>
+                <input id="editUserName">
 
-                <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="editUserStudentId" placeholder="Student ID" minlength="10" maxlength="10" required>
-                </div>
+                <label>Email</label>
+                <input id="editUserEmail">
 
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" onclick="saveUserEdit()">Save Changes</button>
-                </div>
+                <label>Role</label>
+                <select id="editUserRole">
+                    <option value="student">Student</option>
+                    <option value="admin">Admin</option>
+                </select>
+
+                <label>Student ID</label>
+                <input id="editUserStudentId">
+
+                <button class="btn btn-primary">Save</button>
             </form>
         </div>
     </div>
 
+    <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
+    <!-- Firebase Configuration -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <script src="app.js"></script>
     <script src="admin.js"></script>
 </body>

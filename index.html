@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1AFeedbackHub - Student Feedback System</title>
-    <link rel="stylesheet" href="style.css">
+    <title>UCC | MIS - Equipment Borrowing System</title>
+    <link rel="stylesheet" href="styles.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
         rel="stylesheet">
@@ -22,18 +22,8 @@
         <nav class="navbar">
             <div class="nav-content">
                 <div class="logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
-                        <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
-                        <path d="M10 22H22V24H10V22Z" fill="white" />
-                        <defs>
-                            <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
-                                <stop offset="0%" stop-color="#06b6d4" />
-                                <stop offset="100%" stop-color="#3b82f6" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span>1AFeedbackHub</span>
+                    <img src="CS1A.png" width="32" height="32" alt="roshlogo">
+                    <span>EquipLend</span>
                 </div>
                 <div class="nav-links">
                     <a href="#features" class="nav-link">Features</a>
@@ -46,15 +36,15 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <span class="badge-dot"></span>
-                    Empowering Student Voices
+                    Equipment Borrowing System
                 </div>
                 <h1 class="hero-title">
-                    Share Feedback,
-                    <span class="gradient-text">Shape Tomorrow</span>
+                    MIS Equipment Management,<br>
+                    <span class="gradient-text">QR Code Tracking</span>
                 </h1>
                 <p class="hero-description">
-                    A seamless platform for students to share valuable feedback and for administrators to drive
-                    meaningful improvements.
+                    Streamline equipment lending with QR code scanning, real-time tracking, and automated borrowing logs
+                    for projectors, cables, and classroom devices.
                 </p>
             </div>
 
@@ -67,8 +57,8 @@
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
                     </div>
-                    <h2 class="card-title">Welcome Back</h2>
-                    <p class="card-description">Sign in to access your dashboard</p>
+                    <h2 class="card-title">Student Access</h2>
+                    <p class="card-description">Sign in to borrow or manage equipment</p>
 
                     <form class="login-form" id="unifiedLoginForm">
                         <div class="form-group">
@@ -77,7 +67,7 @@
                         </div>
                         <div class="form-group">
                             <label for="loginPassword">Password</label>
-                            <input type="password" id="loginPassword" placeholder="password" required>
+                            <input type="password" id="loginPassword" placeholder="password" minlength="8" required>
                         </div>
                         <button type="submit" class="btn btn-primary">
                             <span>Sign In</span>
@@ -89,7 +79,7 @@
                     </form>
 
                     <div class="card-footer">
-                        <p>New student? <a href="#" id="studentRegisterLink">Create account</a></p>
+                        <p>Need access? <a href="#" id="studentRegisterLink">Request account</a></p>
                     </div>
                 </div>
             </div>
@@ -98,24 +88,34 @@
         <section class="features-section" id="features">
             <div class="features-grid">
                 <div class="feature-item">
-                    <div class="feature-icon">📝</div>
-                    <h3>Easy Submission</h3>
-                    <p>Submit feedback quickly with an intuitive interface</p>
+                    <div class="feature-icon">📱</div>
+                    <h3>QR Code Scanning</h3>
+                    <p>Quick borrowing and return process using QR codes on equipment</p>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Secure & Private</h3>
-                    <p>Your data is protected with enterprise-grade security</p>
+                    <div class="feature-icon">📦</div>
+                    <h3>Equipment Tracking</h3>
+                    <p>Real-time status of all equipment - available, borrowed, or maintenance</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📋</div>
+                    <h3>Borrowing Logs</h3>
+                    <p>Complete history of who borrowed what equipment and when</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⏰</div>
+                    <h3>Due Date Reminders</h3>
+                    <p>Automatic notifications for upcoming return dates</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Easy Search</h3>
+                    <p>Find available equipment quickly by type, location, or ID</p>
                 </div>
                 <div class="feature-item">
                     <div class="feature-icon">📊</div>
-                    <h3>Real-time Analytics</h3>
-                    <p>Administrators get instant insights and trends</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Actionable Insights</h3>
-                    <p>Convert feedback into meaningful improvements</p>
+                    <h3>Usage Analytics</h3>
+                    <p>Track equipment utilization and popular items</p>
                 </div>
             </div>
         </section>
@@ -130,7 +130,7 @@
             <form class="login-form" id="registerForm">
                 <div class="form-group">
                     <label for="registerName">Full Name</label>
-                    <input type="text" id="registerName" placeholder="1AFeedback Hub" required>
+                    <input type="text" id="registerName" placeholder="Full Name" required>
                 </div>
                 <div class="form-group">
                     <label for="registerEmail">Email</label>
@@ -138,68 +138,59 @@
                 </div>
                 <div class="form-group">
                     <label for="registerPassword">Password</label>
-                    <input type="password" id="registerPassword" placeholder="Minimum 8 characters" minlength="8" required>
+                    <input type="password" id="registerPassword" placeholder="password" minlength="8" required>
                 </div>
                 <div class="form-group">
                     <label for="registerStudentId">Student ID</label>
                     <input type="text" id="registerStudentId" placeholder="20250000-S" minlength="10" maxlength="10" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Create Account</button>
-            </form> 
+            </form>
         </div>
     </div>
 
     <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="logo">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <rect width="32" height="32" rx="8" fill="url(#logo-gradient-footer)" />
-                            <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
-                            <path d="M10 22H22V24H10V22Z" fill="white" />
-                            <defs>
-                                <linearGradient id="logo-gradient-footer" x1="0" y1="0" x2="32" y2="32">
-                                    <stop offset="0%" stop-color="#06b6d4" />
-                                    <stop offset="100%" stop-color="#3b82f6" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <span>1AFeedbackHub</span>
-                    </div>
-                    <p class="footer-description">Empowering educational excellence through student voices.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="logo">
+                    <img src="CS1A.png" width="32" height="32" alt="roshlogo">
+                    <span>EquipLend</span>
                 </div>
-
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul class="footer-links">
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="about.html">About</a></li>
-                        <li><a href="index.html#features">Features</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul class="footer-links">
-                        <li><a href="documentation.html">Documentation</a></li>
-                        <li><a href="support.html">Support</a></li>
-                        <li><a href="privacy.html">Privacy Policy</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <ul class="footer-links">
-                        <li>support@1AFeedbackHub.edu</li>
-                        <li>+63 (957) 922-4758</li>
-                    </ul>
-                </div>
+                <p class="footer-description">Smart equipment management through QR code technology.</p>
             </div>
 
-            <div class="footer-bottom">
-                <p>&copy; 2026 1AFeedbackHub. All rights reserved.</p>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="index.html#features">Features</a></li>
+                </ul>
             </div>
-        </footer>
+
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul class="footer-links">
+                    <li><a href="documentation.html">Documentation</a></li>
+                    <li><a href="support.html">Support</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <ul class="footer-links">
+                    <li>support@cs1a.mis</li>
+                    <li>+63 (975) 922-4758</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 UCC|CS1A. All rights reserved. Built for educational purposes.</p>
+        </div>
+    </footer>
+
     <div class="toast" id="toast"></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
