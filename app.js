@@ -115,7 +115,6 @@ document.addEventListener("keydown", (e) => {
         return false;
     }
 
-    // F12
     if (e.key === "F12") {
         e.preventDefault();
         return false;

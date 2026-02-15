@@ -79,6 +79,7 @@ function initializeNavigation() {
                     loadBorrowingLogs();
                 } else if (viewId === 'users') {
                     loadUsers();
+                    loadPending();
                 }
             }
         });
@@ -698,7 +699,7 @@ function initializeExport() {
         },
         header: {
             font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "2563EB" } }, // blue
+            fill: { fgColor: { rgb: "2563EB" } },
             alignment: { horizontal: "center", vertical: "center", wrapText: true },
             border: {
                 top: { style: "thin", color: { rgb: "CBD5E1" } },

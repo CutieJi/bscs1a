@@ -1,5 +1,9 @@
+let isRegistering = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(async (user) => {
+        if (!user) return;
+        if (isRegistering) return;
 
         try {
             const userDoc = await db.collection("users").doc(user.uid).get();
@@ -10,8 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            if (userData.role === "student" && userData.status === "pending") {
+                await auth.signOut();
+                showToast("Your account is pending admin approval.", "error");
+                return;
+            }
+
             if (userData.role === "admin") window.location.href = "admin.html";
-            else window.location.href = "student.html";
+            else if (userData.role === "student" && userData.status === "approved") {
+                window.location.href = "student.html";
+            }
 
         } catch (err) {
             console.error("Index redirect error:", err);
@@ -103,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = registerForm.querySelector('button[type="submit"]');
 
             try {
+                isRegistering = true;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>Creating Account...</span>';
 
@@ -122,13 +135,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showToast("Account created. Wait for admin approval.", "success");
+                await auth.signOut();
+                isRegistering = false;
 
+                registerForm.reset();
                 registerModal.classList.remove('active');
 
-                await auth.signOut();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Create Account</span>';
+
+                showToast("Account created. Wait for admin approval.", "success");
 
             } catch (error) {
+                isRegistering = false;
                 console.error('Registration error:', error);
                 showToast(getErrorMessage(error), 'error');
 

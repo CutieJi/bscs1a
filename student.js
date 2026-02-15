@@ -65,10 +65,8 @@ async function handleBorrowDeepLink() {
             return;
         }
 
-        // ✅ open borrow modal directly
         await openBorrowModal(equipment.id);
 
-        // ✅ remove query so refresh won't reopen modal
         window.history.replaceState({}, document.title, window.location.pathname);
 
     } catch (err) {

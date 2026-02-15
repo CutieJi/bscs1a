@@ -2349,7 +2349,6 @@ textarea {
 @media (max-width: 480px) {
     .nav-links {
         display: flex;
-        /* show links */
         width: 100%;
         justify-content: center;
         flex-wrap: wrap;
