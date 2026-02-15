@@ -12,7 +12,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// toast notification ng firebase
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -53,7 +52,6 @@ function getUserInitials(name) {
     return name.substring(0, 2);
 }
 
-// Check authentication state
 function checkAuth(requiredRole = null) {
     return new Promise((resolve, reject) => {
         auth.onAuthStateChanged(async (user) => {
@@ -71,7 +69,6 @@ function checkAuth(requiredRole = null) {
                     if (userData && userData.role === requiredRole) {
                         resolve({ user, userData });
                     } else {
-                        // Redirect to appropriate dashboard
                         const redirectUrl = userData.role === 'admin'
                             ? 'admin-dashboard.html'
                             : 'student-dashboard.html';

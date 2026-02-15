@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ================= LOGIN =================
     const unifiedLoginForm = document.getElementById('unifiedLoginForm');
 
     if (unifiedLoginForm) {
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('User data not found. Please contact administrator.');
                 }
 
-                // 🔴 BLOCK IF STUDENT NOT APPROVED
                 if (userData.role === "student" && userData.status !== "approved") {
                     await auth.signOut();
                     showToast("Account waiting for admin approval.", "error");
@@ -57,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ================= REGISTER MODAL =================
     const registerModal = document.getElementById('registerModal');
     const studentRegisterLink = document.getElementById('studentRegisterLink');
     const closeModal = document.getElementById('closeModal');
@@ -75,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ================= REGISTER =================
     const registerForm = document.getElementById('registerForm');
 
     if (registerForm) {
@@ -99,13 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayName: name
                 });
 
-                // 🔥 CREATE USER WITH PENDING STATUS
                 await db.collection('users').doc(user.uid).set({
                     name: name,
                     email: email,
                     studentId: studentId,
                     role: 'student',
-                    status: 'pending', // IMPORTANT
+                    status: 'pending',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
@@ -113,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 registerModal.classList.remove('active');
 
-                // logout so they cannot enter dashboard
                 await auth.signOut();
 
             } catch (error) {

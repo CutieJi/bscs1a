@@ -1,67 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Documentation - 1AFeedbackHub</title>
-    <link rel="stylesheet" href="support.css" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
-        rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EquipLend | Documentation</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .page-wrap { max-width: 980px; margin: 40px auto; padding: 0 16px; }
+    .doc-hero { background: #111827; color: #fff; border-radius: 14px; padding: 24px; }
+    .doc-hero h1 { margin: 0 0 6px; font-size: 28px; }
+    .doc-hero p { margin: 0; opacity: .85; }
+    .doc-card { background: #fff; border-radius: 14px; padding: 18px; margin-top: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .doc-card h2 { margin: 0 0 10px; font-size: 18px; }
+    .doc-card h3 { margin: 14px 0 8px; font-size: 15px; }
+    .doc-card p, .doc-card li { color: #444; line-height: 1.6; }
+    .doc-card code { background: #f3f4f6; padding: 2px 6px; border-radius: 8px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 880px){ .grid { grid-template-columns: 1fr 1fr; } }
+    .backbar { display:flex; gap: 10px; align-items:center; margin: 14px 0; }
+    .backbar a { text-decoration:none; padding:10px 14px; border-radius:10px; background:#f3f4f6; color:#111; font-weight:600; }
+    .tag { display:inline-block; margin-top:8px; font-size:12px; padding:4px 10px; border-radius:999px; background:#e5e7eb; color:#111; }
+  </style>
 </head>
-
-<body class="info-page">
-
-    <div class="info-shell">
-        <div class="info-topbar">
-            <a class="info-brand" href="index.html">
-                <span class="dot"></span>
-                <strong>1AFeedbackHub</strong>
-            </a>
-            <div class="info-actions">
-                <a class="btn" href="index.html">← Back</a>
-                <a class="btn btn-primary" href="support.html">Need Help?</a>
-            </div>
-        </div>
-
-        <div class="info-hero">
-            <h1 class="info-title">📘 Documentation</h1>
-            <p class="info-subtitle">
-                Quick guide on how to use 1AFeedbackHub—submit feedback, track submissions, and manage data (admin).
-            </p>
-        </div>
-
-        <div class="info-grid">
-            <div class="info-card">
-                <h2>🧑‍🎓 Student Guide</h2>
-                <ul class="info-list">
-                    <li><strong>Submit Feedback:</strong> Choose category, type, priority, then write your message.</li>
-                    <li><strong>Anonymous Option:</strong> Enable “Submit anonymously” if you don’t want your name
-                        shown.</li>
-                    <li><strong>My Submissions:</strong> View your history and track status: pending → reviewed →
-                        resolved.</li>
-                </ul>
-            </div>
-
-            <div class="info-card">
-                <h2>🛡 Admin Guide</h2>
-                <ul class="info-list">
-                    <li><strong>Overview:</strong> See totals and recent feedback.</li>
-                    <li><strong>All Feedback:</strong> Filter by status/category/type + search.</li>
-                    <li><strong>Manage Users:</strong> Add, edit user info (name/student ID).</li>
-                    <li><strong>Analytics:</strong> View trends per category/type/priority.</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="info-footer">
-            <span>Tip: Press <span class="kbd">Ctrl</span> + <span class="kbd">R</span> to refresh if data is
-                missing.</span>
-            <span>© 2026 1AFeedbackHub</span>
-        </div>
+<body>
+  <div class="page-wrap">
+    <div class="backbar">
+      <a href="index.html">← Back to Home</a>
+      <a href="admin.html">Admin</a>
+      <a href="student.html">Student</a>
     </div>
 
-</body>
+    <div class="doc-hero">
+      <h1>EquipLend Documentation</h1>
+      <p>Quick guide on how to use the system (Student & Admin).</p>
+      <span class="tag">Last updated: 2026</span>
+    </div>
 
+    <div class="grid">
+      <div class="doc-card">
+        <h2>Student Guide</h2>
+
+        <h3>1) Log in</h3>
+        <ul>
+          <li>Open the website and log in using your student account.</li>
+          <li>If your account is new, it may appear as <b>Pending</b> until approved by admin.</li>
+        </ul>
+
+        <h3>2) Browse equipment</h3>
+        <ul>
+          <li>Go to <b>Browse Equipment</b>.</li>
+          <li>Use filters: Category, Status, and Search bar.</li>
+          <li>Only <b>Available</b> items can be borrowed.</li>
+        </ul>
+
+        <h3>3) Borrow equipment</h3>
+        <ul>
+          <li>Click <b>Borrow</b> on an equipment card.</li>
+          <li>Fill up:
+            <ul>
+              <li><b>Room</b> (required)</li>
+              <li><b>Return time</b> (required)</li>
+              <li><b>Purpose</b> (optional)</li>
+            </ul>
+          </li>
+          <li>Click <b>Confirm Borrow</b>.</li>
+        </ul>
+
+        <h3>4) Return equipment</h3>
+        <ul>
+          <li>Go to <b>My Borrowed</b> tab.</li>
+          <li>Click <b>Return Equipment</b>.</li>
+          <li>Choose item condition:
+            <ul>
+              <li><b>Good</b> → becomes <code>available</code></li>
+              <li><b>Damaged</b> → becomes <code>maintenance</code></li>
+            </ul>
+          </li>
+          <li>Optional: add notes.</li>
+        </ul>
+
+        <h3>5) Scan QR</h3>
+        <ul>
+          <li>Go to <b>Scan</b>.</li>
+          <li>Allow camera permission (must be HTTPS or localhost).</li>
+          <li>Scan equipment QR to borrow/return faster.</li>
+          <li>Manual entry is available if camera is blocked.</li>
+        </ul>
+      </div>
+
+      <div class="doc-card">
+        <h2>Admin Guide</h2>
+
+        <h3>1) Dashboard</h3>
+        <ul>
+          <li>Shows total equipment, available, borrowed, today borrows, and total users.</li>
+          <li>Check <b>Recent Activities</b> and <b>Overdue Returns</b>.</li>
+        </ul>
+
+        <h3>2) Manage Equipment</h3>
+        <ul>
+          <li>Add new equipment with unique Equipment ID.</li>
+          <li>Edit equipment details (name, category, description).</li>
+          <li>Generate QR code for any equipment.</li>
+          <li>Delete equipment only if it’s not currently borrowed.</li>
+        </ul>
+
+        <h3>3) Edit Condition / Status</h3>
+        <ul>
+          <li>In Edit Equipment modal, admin can set status:
+            <ul>
+              <li><code>available</code> (ready to borrow)</li>
+              <li><code>maintenance</code> (not good / under repair)</li>
+              <li><code>borrowed</code> (manual override, optional)</li>
+            </ul>
+          </li>
+          <li>If set to <code>available</code>, equipment is usable again.</li>
+        </ul>
+
+        <h3>4) User Management</h3>
+        <ul>
+          <li>Approve or reject pending accounts.</li>
+          <li>Add new users (Student/Admin).</li>
+          <li>Edit user info (name, email, role, student ID).</li>
+          <li>Delete user from database (note: this may not remove Firebase Auth unless you use Admin SDK).</li>
+        </ul>
+
+        <h3>5) Logs</h3>
+        <ul>
+          <li>Filter borrowing logs by date/student/equipment.</li>
+          <li>Export logs to CSV.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="doc-card">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><b>Camera not working:</b> Use HTTPS (or localhost) + allow permissions.</li>
+        <li><b>Borrow button disabled:</b> Item is not <code>available</code>.</li>
+        <li><b>Overdue showing:</b> Expected return date/time is already passed.</li>
+      </ul>
+    </div>
+
+    <div class="doc-card">
+      <h2>Links</h2>
+      <ul>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
 </html>

@@ -189,7 +189,6 @@ function setupQRScanner() {
     }
 }
 
-// ✅ KEEP ONLY ONE copy (you had 3 duplicates)
 function extractEquipmentId(decodedText) {
     if (!decodedText) return "";
 
@@ -272,7 +271,6 @@ async function openBorrowModal(equipmentId) {
             </div>
         `;
 
-        // ✅ TIME (not date)
         const returnTimeInput = document.getElementById('returnTime');
         if (returnTimeInput) {
             const now = new Date();
@@ -390,8 +388,6 @@ async function borrowEquipment() {
             userEmail: currentUser.email,
             studentId: currentUserData.studentId,
             borrowedAt: firebase.firestore.FieldValue.serverTimestamp(),
-
-            // ✅ TIME ONLY
             expectedReturnTime: returnTime,
 
             purpose: purpose || 'Not specified',
