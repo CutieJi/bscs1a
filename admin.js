@@ -656,17 +656,15 @@ function initializeExport() {
         if (!ts || !ts.toDate) return "";
         const d = ts.toDate();
         const pad = (n) => String(n).padStart(2, "0");
-        // Excel-friendly string (sortable)
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     };
 
     const safe = (v) => (v ?? "").toString();
 
-    // ----- Styles (professional look) -----
     const styles = {
         title: {
             font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "0F172A" } }, // dark navy
+            fill: { fgColor: { rgb: "0F172A" } },
             alignment: { horizontal: "left", vertical: "center" }
         },
         meta: {
@@ -696,7 +694,7 @@ function initializeExport() {
             }
         },
         zebra: {
-            fill: { fgColor: { rgb: "F8FAFC" } } // very light gray
+            fill: { fgColor: { rgb: "F8FAFC" } }
         },
         statusAvailable: { font: { color: { rgb: "065F46" }, bold: true } },
         statusBorrowed: { font: { color: { rgb: "92400E" }, bold: true } },
