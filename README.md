@@ -109,7 +109,7 @@ Use a dedicated admin creation screen (your project already has Add User in admi
 
 ## 6) How to Use the Website (Step-by-step)
 
-[Click for Full Guide!](https://uccmis.netlify.app/documentation)
+[Click for Full Guide!](https://uccmis.netlify.app/documentation.html)
 
 ### A) Student Side (Borrower)
 1. Open the website (example: `index.html`)
