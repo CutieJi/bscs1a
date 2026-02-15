@@ -86,3 +86,39 @@ function checkAuth(requiredRole = null) {
         });
     });
 }
+
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+document.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+
+    if (e.ctrlKey && (k === "u" || k === "s" || k === "p")) {
+        e.preventDefault();
+        return false;
+    }
+
+    if (e.ctrlKey && e.shiftKey && (k === "i" || k === "j" || k === "c")) {
+        e.preventDefault();
+        return false;
+    }
+
+    // F12
+    if (e.key === "F12") {
+        e.preventDefault();
+        return false;
+    }
+});
+
+(function () {
+    let threshold = 160;
+
+    setInterval(() => {
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+
+        if (widthDiff > threshold || heightDiff > threshold) {
+            document.body.innerHTML = "";
+            window.location.href = "index.html";
+        }
+    }, 800);
+})();
