@@ -654,6 +654,8 @@ function openProfileModal() {
     document.getElementById("profileName").value = currentUserData.name || "";
     document.getElementById("profileEmail").value = currentUser.email || "";
     document.getElementById("profileStudentId").value = currentUserData.studentId || "";
+    document.getElementById("profileStudentId").setAttribute("minlength", "10");
+    document.getElementById("profileStudentId").setAttribute("maxlength", "10");
 }
 
 function closeProfileModal() {
@@ -687,6 +689,10 @@ function closePasswordModal() {
 
 async function changePassword() {
     const pass = document.getElementById("newPassword").value;
+    if (pass.length < 8) {
+        showToast("Password must be at least 8 characters", "error");
+        return;
+    }
 
     await currentUser.updatePassword(pass);
 

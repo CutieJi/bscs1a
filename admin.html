@@ -412,15 +412,15 @@
             <form class="login-form" id="addUserForm">
                 <div class="form-group">
                     <label for="newUserName">Full Name</label>
-                    <input type="text" id="newUserName" placeholder="John Doe" required>
+                    <input type="text" id="newUserName" placeholder="Full Name" required>
                 </div>
                 <div class="form-group">
                     <label for="newUserEmail">Email</label>
-                    <input type="email" id="newUserEmail" placeholder="user@university.edu" required>
+                    <input type="email" id="newUserEmail" placeholder="email" required>
                 </div>
                 <div class="form-group">
                     <label for="newUserPassword">Password</label>
-                    <input type="password" id="newUserPassword" placeholder="Minimum 6 characters" minlength="6"
+                    <input type="password" id="newUserPassword" placeholder="password" minlength="8"
                         required>
                 </div>
                 <div class="form-group">
@@ -433,7 +433,7 @@
                 </div>
                 <div class="form-group" id="studentIdGroup">
                     <label for="newUserStudentId">Student ID</label>
-                    <input type="text" id="newUserStudentId" placeholder="2024001">
+                    <input type="text" id="newUserStudentId" placeholder="20250000-S" minlength="10" maxlength="10" required>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>

@@ -973,6 +973,8 @@ function openEditUser(id, name, email, role, studentId) {
     document.getElementById("editUserEmail").value = email;
     document.getElementById("editUserRole").value = role;
     document.getElementById("editUserStudentId").value = studentId;
+    document.getElementById("editUserStudentId").setAttribute("minlength", "10");
+    document.getElementById("editUserStudentId").setAttribute("maxlength", "10");
 
     document.getElementById("editUserModal").classList.add("active");
 }

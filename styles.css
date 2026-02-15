@@ -2109,7 +2109,6 @@ textarea {
     margin-bottom: 14px;
 }
 
-/* pending section */
 .pending-section {
     background: #fff;
     border-radius: 16px;
@@ -2146,14 +2145,12 @@ textarea {
     font-weight: 600;
 }
 
-/* grid */
 .pending-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
 }
 
-/* card */
 .pending-card {
     background: white;
     border: 1px solid #eee;
@@ -2316,6 +2313,25 @@ textarea {
     .sidebar.mobile-open~.mobile-menu-toggle {
         left: calc(min(86vw, 320px) - 58px);
     }
+
+    .nav-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 0 var(--spacing-lg);
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .nav-link {
+        padding: 8px 10px;
+
+    }
 }
 
 .mobile-menu-toggle.is-open span:nth-child(1) {
@@ -2332,7 +2348,16 @@ textarea {
 
 @media (max-width: 480px) {
     .nav-links {
-        display: none;
+        display: flex;
+        /* show links */
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .nav-link {
+        padding: 8px 10px;
     }
 
     .hero-section {
