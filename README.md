@@ -14,6 +14,11 @@
 
 A student project for borrowing/returning school equipment using Firebase + QR scanning.
 
+- [Live demo here!](https://uccmis.netlify.app/)
+- [Full guide here!](https://uccmis.netlify.app/documentation.html)
+- [Support guide here!](https://uccmis.netlify.app/support.html)
+- [Privacy policy here!](https://uccmis.netlify.app/privacy.html)
+
 ---
 
 ## 1) Requirements
@@ -103,6 +108,8 @@ Use a dedicated admin creation screen (your project already has Add User in admi
 ---
 
 ## 6) How to Use the Website (Step-by-step)
+
+[Click for Full Guide!](https://uccmis.netlify.app/documentation.html)
 
 ### A) Student Side (Borrower)
 1. Open the website (example: `index.html`)
