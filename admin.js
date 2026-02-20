@@ -766,7 +766,7 @@ function initializeExport() {
                 ];
 
                 const rows = [];
-                rows.push(["MIS eBorrow - Borrowing Logs"]);
+                rows.push(["MISLend - Borrowing Logs"]);
                 rows.push([`Generated At: ${now.toLocaleString()}`]);
                 rows.push([]);
                 rows.push(headers);

@@ -10,7 +10,7 @@
 
 ---
 
-# MIS eBorrow (Equipment Borrowing System) - README
+# MISLend (Equipment Borrowing System) - README
 
 A student project for borrowing/returning school equipment using Firebase + QR scanning.
 
@@ -33,7 +33,7 @@ A student project for borrowing/returning school equipment using Firebase + QR s
 
 ## 2) Firebase Setup (Step-by-step)
 1. Go to Firebase Console
-2. Create a project (example: MIS eBorrow)
+2. Create a project (example: MISLend)
 3. Enable Authentication:
    - Auth > Sign-in method > enable Email/Password
 4. Create Firestore Database:
