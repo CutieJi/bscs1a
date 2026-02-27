@@ -43,46 +43,113 @@ function initializeDashboard() {
     initializeLogout();
     initializeRefresh();
     initializeExport();
-    initializeMobileMenu()
+    initializeSidebar();
+    initializeProfileDropdown();
+    initializeTheme();
 }
 
 function updateAdminInfo() {
+    const email = currentAdmin.email || '';
     const adminEmailEl = document.getElementById('adminEmail');
-    if (adminEmailEl) adminEmailEl.textContent = currentAdmin.email || '';
+    if (adminEmailEl) adminEmailEl.textContent = email;
+    const topbarEmailEl = document.getElementById('topbarAdminEmail');
+    if (topbarEmailEl) topbarEmailEl.textContent = email;
+    const profileViewEmailEl = document.getElementById('profileViewEmail');
+    if (profileViewEmailEl) profileViewEmailEl.textContent = email;
 }
 
 function initializeNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
     const views = document.querySelectorAll('.view-container');
+    const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
+
+    const viewLabels = {
+        dashboard: 'Dashboard',
+        equipment: 'Manage Equipment',
+        approvals: 'Pending Approvals',
+        borrowed: 'Currently Borrowed',
+        logs: 'Borrowing Logs',
+        users: 'User Management'
+    };
+
+    function activateView(viewId) {
+        navItems.forEach(nav => nav.classList.remove('active'));
+        sidebarItems.forEach(si => si.classList.remove('active'));
+        views.forEach(view => view.classList.remove('active'));
+
+        const matchingNav = document.querySelector(`.nav-item[data-view="${viewId}"]`);
+        if (matchingNav) {
+            matchingNav.classList.add('active');
+            const parentLi = matchingNav.closest('.sidebar-item');
+            if (parentLi) parentLi.classList.add('active');
+        }
+
+        const targetView = document.getElementById(`${viewId}View`);
+        if (!targetView) return;
+        targetView.classList.add('active');
+
+        const label = viewLabels[viewId] || viewId;
+        if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
+        const mobileTitle = document.getElementById('topbarMobileTitle');
+        if (mobileTitle) mobileTitle.textContent = label;
+
+        if (viewId === 'dashboard') loadDashboardData();
+        else if (viewId === 'equipment') loadAllEquipment();
+        else if (viewId === 'approvals') loadPendingRequests();
+        else if (viewId === 'borrowed') loadCurrentlyBorrowed();
+        else if (viewId === 'logs') loadBorrowingLogs();
+        else if (viewId === 'users') { loadUsers(); loadPending(); }
+
+        try { localStorage.setItem('admin-active-view', viewId); } catch (e) { }
+    }
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-
-            const viewId = item.getAttribute('data-view');
-
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-
-            views.forEach(view => view.classList.remove('active'));
-            const targetView = document.getElementById(`${viewId}View`);
-            if (targetView) {
-                targetView.classList.add('active');
-
-                if (viewId === 'dashboard') {
-                    loadDashboardData();
-                } else if (viewId === 'equipment') {
-                    loadAllEquipment();
-                } else if (viewId === 'borrowed') {
-                    loadCurrentlyBorrowed();
-                } else if (viewId === 'logs') {
-                    loadBorrowingLogs();
-                } else if (viewId === 'users') {
-                    loadUsers();
-                    loadPending();
-                }
-            }
+            activateView(item.getAttribute('data-view'));
         });
+    });
+
+    // Restore last view on refresh
+    const saved = (() => { try { return localStorage.getItem('admin-active-view'); } catch (e) { return null; } })();
+    if (saved && document.getElementById(`${saved}View`)) {
+        activateView(saved);
+    } else {
+        activateView('dashboard');
+    }
+}
+
+function initializeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const topbarToggle = document.getElementById('topbarToggle');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.toggle('mobile-open');
+            sidebarOverlay.classList.toggle('active');
+        } else {
+            sidebar.classList.toggle('collapsed');
+        }
+    }
+
+    if (topbarToggle) topbarToggle.addEventListener('click', toggleSidebar);
+    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        }
     });
 }
 
@@ -214,6 +281,202 @@ async function loadOverdueItems() {
                 </div>
             </div>
         `;
+    }
+}
+
+async function loadPendingRequests() {
+    const pendingGrid = document.getElementById('pendingRequestsGrid');
+    const badge = document.getElementById('approvalsBadge');
+
+    // Fallbacks just in case we are on dashboard still
+    const dashPendingCount = document.getElementById('pendingRequestsCount');
+
+    if (!pendingGrid) return;
+
+    try {
+        // Query both pending borrows and pending returns
+        const [borrowSnapshot, returnSnapshot] = await Promise.all([
+            db.collection('borrowings').where('status', '==', 'pending_borrow').get(),
+            db.collection('borrowings').where('status', '==', 'pending_return').get()
+        ]);
+
+        const pendingBorrows = borrowSnapshot.docs.map(doc => ({ id: doc.id, type: 'borrow', ...doc.data() }));
+        const pendingReturns = returnSnapshot.docs.map(doc => ({ id: doc.id, type: 'return', ...doc.data() }));
+
+        const allPending = [...pendingBorrows, ...pendingReturns].sort((a, b) => {
+            const timeA = a.borrowedAt ? a.borrowedAt.toDate() : new Date(0);
+            const timeB = b.borrowedAt ? b.borrowedAt.toDate() : new Date(0);
+            return timeB - timeA; // newest first
+        });
+
+        const count = allPending.length;
+
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
+        if (dashPendingCount) {
+            dashPendingCount.textContent = count;
+        }
+
+        if (count === 0) {
+            pendingGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="stat-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); color: var(--success); display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3>All Caught Up!</h3>
+                    <p style="color: var(--text-secondary);">There are no pending requests requiring your attention.</p>
+                </div>
+            `;
+            return;
+        }
+
+        pendingGrid.innerHTML = allPending.map(req => {
+            const isBorrow = req.type === 'borrow';
+            const actionColor = isBorrow ? 'var(--primary)' : 'var(--warning)';
+            const actionBg = isBorrow ? 'rgba(60, 255, 154, 0.1)' : 'rgba(245, 158, 11, 0.1)';
+            const actionLabel = isBorrow ? 'Borrow Request' : 'Return Request';
+            const icon = isBorrow
+                ? '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'
+                : '<polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path>';
+
+            return `
+                <div class="equipment-card" style="border-top: 4px solid ${actionColor}">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 class="card-title">${req.equipmentName}</h3>
+                            <span class="card-subtitle">ID: ${req.equipmentCode}</span>
+                        </div>
+                        <div class="stat-icon" style="background: ${actionBg}; color: ${actionColor}; width: 32px; height: 32px;">
+                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                 ${icon}
+                             </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="card-details" style="margin: 1rem 0;">
+                        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            ${actionLabel} by:
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <div class="topbar-user-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; background: var(--bg-secondary); color: var(--text-primary);">
+                                <span>${req.userName.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; font-weight: 500;">${req.userName}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${req.studentId}</div>
+                            </div>
+                        </div>
+                        
+                        ${isBorrow ? `
+                            <div class="detail-row"><span>Room:</span> <span>${req.room || 'N/A'}</span></div>
+                            <div class="detail-row"><span>Purpose:</span> <span>${req.purpose || 'N/A'}</span></div>
+                            <div class="detail-row"><span>Duration:</span> <span>Until ${req.expectedReturnTime}</span></div>
+                        ` : `
+                            <div class="detail-row"><span>Condition:</span> <span style="text-transform: capitalize;">${req.pendingReturnCondition || 'N/A'}</span></div>
+                            <div class="detail-row"><span>Notes:</span> <span>${req.pendingReturnNotes || 'None'}</span></div>
+                        `}
+                    </div>
+
+                    <div class="card-actions" style="margin-top: auto; display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="${isBorrow ? `approveBorrow('${req.id}', '${req.equipmentId}')` : `approveReturn('${req.id}', '${req.equipmentId}', '${req.pendingReturnCondition}')`}">Approve</button>
+                        <button class="btn btn-secondary" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="${isBorrow ? `rejectBorrow('${req.id}', '${req.equipmentId}')` : `rejectReturn('${req.id}', '${req.equipmentId}')`}">Reject</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error loading pending requests:', error);
+        pendingGrid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="alert-item warning">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Error</div>
+                        <div class="alert-message">Failed to load pending requests</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Action Handlers
+async function approveBorrow(borrowingId, equipmentId) {
+    if (!confirm('Approve this borrow request?')) return;
+    try {
+        await db.collection('borrowings').doc(borrowingId).update({ status: 'borrowed' });
+        await db.collection('equipment').doc(equipmentId).update({ status: 'borrowed' });
+        showToast('Borrow request approved', 'success');
+        loadPendingRequests();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error approving request', 'error');
+    }
+}
+
+async function rejectBorrow(borrowingId, equipmentId) {
+    if (!confirm('Reject this borrow request?')) return;
+    try {
+        await db.collection('borrowings').doc(borrowingId).update({ status: 'rejected' });
+        await db.collection('equipment').doc(equipmentId).update({ status: 'available' });
+        showToast('Borrow request rejected', 'success');
+        loadPendingRequests();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error rejecting request', 'error');
+    }
+}
+
+async function approveReturn(borrowingId, equipmentId, condition) {
+    if (!confirm('Approve this return request?')) return;
+    try {
+        // Fetch original item to get return details
+        const doc = await db.collection('borrowings').doc(borrowingId).get();
+        const data = doc.data();
+
+        await db.collection('borrowings').doc(borrowingId).update({
+            status: 'returned',
+            returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            returnCondition: data.pendingReturnCondition || condition,
+            returnNotes: data.pendingReturnNotes || ''
+        });
+
+        await db.collection('equipment').doc(equipmentId).update({
+            status: (data.pendingReturnCondition || condition) === 'damaged' ? 'maintenance' : 'available',
+            borrowedBy: null,
+            borrowedAt: null
+        });
+        showToast('Return request approved', 'success');
+        loadPendingRequests();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error approving return', 'error');
+    }
+}
+
+async function rejectReturn(borrowingId, equipmentId) {
+    if (!confirm('Reject this return request? The item will remain marked as Borrowed.')) return;
+    try {
+        await db.collection('borrowings').doc(borrowingId).update({
+            status: 'borrowed', // revert purely to borrowed
+            pendingReturnCondition: firebase.firestore.FieldValue.delete(),
+            pendingReturnNotes: firebase.firestore.FieldValue.delete()
+        });
+        await db.collection('equipment').doc(equipmentId).update({ status: 'borrowed' });
+        showToast('Return request rejected', 'success');
+        loadPendingRequests();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error rejecting return', 'error');
     }
 }
 
@@ -1234,42 +1497,133 @@ async function rejectUser(uid) {
 }
 
 function initializeMobileMenu() {
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
+}
 
-    if (!mobileMenuToggle || !sidebar || !sidebarOverlay) return;
+function initializeProfileDropdown() {
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileTrigger = document.getElementById('profileTrigger');
+    const viewProfileBtn = document.getElementById('viewProfileBtn');
+    const changePassBtn = document.getElementById('changePassBtn');
 
-    const openMenu = () => {
-        sidebar.classList.add('mobile-open');
-        sidebarOverlay.classList.add('active');
-        mobileMenuToggle.classList.add('is-open');
-        document.body.classList.add('sidebar-open');
-    };
+    if (!profileTrigger || !profileDropdown) return;
 
-    const closeMenu = () => {
-        sidebar.classList.remove('mobile-open');
-        sidebarOverlay.classList.remove('active');
-        mobileMenuToggle.classList.remove('is-open');
-        document.body.classList.remove('sidebar-open');
-    };
-
-    mobileMenuToggle.addEventListener('click', () => {
-        const isOpen = sidebar.classList.contains('mobile-open');
-        isOpen ? closeMenu() : openMenu();
+    profileTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = profileDropdown.classList.contains('open');
+        profileDropdown.classList.toggle('open', !isOpen);
+        profileTrigger.setAttribute('aria-expanded', String(!isOpen));
     });
 
-    sidebarOverlay.addEventListener('click', closeMenu);
+    document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target)) {
+            profileDropdown.classList.remove('open');
+            profileTrigger.setAttribute('aria-expanded', 'false');
+        }
+    });
 
-    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (window.innerWidth <= 768) closeMenu();
+    if (viewProfileBtn) {
+        viewProfileBtn.addEventListener('click', () => {
+            profileDropdown.classList.remove('open');
+            document.getElementById('profileModal')?.classList.add('active');
         });
-    });
+    }
 
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) closeMenu();
-    });
+    if (changePassBtn) {
+        changePassBtn.addEventListener('click', () => {
+            profileDropdown.classList.remove('open');
+            document.getElementById('changePassModal')?.classList.add('active');
+        });
+    }
+
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    if (closeProfileModal) {
+        closeProfileModal.addEventListener('click', () => {
+            document.getElementById('profileModal')?.classList.remove('active');
+        });
+    }
+
+    const closeChangePassModal = document.getElementById('closeChangePassModal');
+    const cancelChangePass = document.getElementById('cancelChangePass');
+    const changePassModal = document.getElementById('changePassModal');
+
+    const closeChangePw = () => {
+        changePassModal?.classList.remove('active');
+        document.getElementById('changePassForm')?.reset();
+    };
+
+    if (closeChangePassModal) closeChangePassModal.addEventListener('click', closeChangePw);
+    if (cancelChangePass) cancelChangePass.addEventListener('click', closeChangePw);
+
+    if (changePassModal) {
+        changePassModal.addEventListener('click', (e) => {
+            if (e.target === changePassModal) closeChangePw();
+        });
+    }
+
+    const changePassForm = document.getElementById('changePassForm');
+    if (changePassForm) {
+        changePassForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+
+            const submitBtn = changePassForm.querySelector('button[type="submit"]');
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Updating...</span>';
+
+            try {
+                const user = auth.currentUser;
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(newPassword);
+                showToast('Password updated successfully!', 'success');
+                closeChangePw();
+            } catch (error) {
+                console.error('Change password error:', error);
+                if (error.code === 'auth/wrong-password') {
+                    showToast('Current password is incorrect', 'error');
+                } else {
+                    showToast('Failed to update password: ' + (error.message || ''), 'error');
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+            }
+        });
+    }
+}
+
+function initializeTheme() {
+    const themeCheckbox = document.getElementById('themeCheckbox');
+    const themeLabel = document.querySelector('.theme-label');
+    const themeIcon = document.querySelector('.theme-icon');
+
+    const applyTheme = (isDark) => {
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        if (themeLabel) themeLabel.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+        if (themeIcon) {
+            themeIcon.innerHTML = isDark
+                ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+                : '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+            themeIcon.setAttribute('fill', isDark ? 'currentColor' : 'none');
+        }
+        if (themeCheckbox) themeCheckbox.checked = isDark;
+        try { localStorage.setItem('mislend-theme', isDark ? 'dark' : 'light'); } catch (e) { }
+    };
+
+    const saved = (() => { try { return localStorage.getItem('mislend-theme'); } catch (e) { return null; } })();
+    applyTheme(saved === 'dark');
+
+    if (themeCheckbox) {
+        themeCheckbox.addEventListener('change', () => applyTheme(themeCheckbox.checked));
+    }
 }
 
 window.generateQRCode = generateQRCode;

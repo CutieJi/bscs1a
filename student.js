@@ -83,55 +83,92 @@ function initializeDashboard() {
     loadBorrowedItems();
     setupQRScanner();
     initializeModals();
-    initializeLogout();
     initializeFilters();
-    initializeMobileMenu();
+    initializeSidebar();
+    initializeProfileDropdown();
+    initializeTheme();
 }
 
 function updateUserInfo() {
-    const userNameEl = document.getElementById('userName');
-    const userEmailEl = document.getElementById('userEmail');
-    const userInitialEl = document.getElementById('userInitial');
+    const name = currentUserData.name || 'Student';
+    const email = currentUser.email || '';
+    const initials = getUserInitials(name);
 
-    if (userNameEl) userNameEl.textContent = currentUserData.name || 'Student';
-    if (userEmailEl) userEmailEl.textContent = currentUser.email || '';
-
-    if (userInitialEl && currentUserData.name) {
-        userInitialEl.textContent = getUserInitials(currentUserData.name);
-    }
+    const els = {
+        userName: name, userEmail: email, userInitial: initials,
+        topbarUserName: name, topbarInitial: initials,
+        menuUserName: name, menuUserEmail: email, menuInitial: initials
+    };
+    Object.entries(els).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    });
 }
 
 function initializeNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
     const views = document.querySelectorAll('.view-container');
+    const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
+    const topbarMobileTitle = document.getElementById('topbarMobileTitle');
+
+    const viewLabels = {
+        browse: 'Browse Equipment',
+        scan: 'Scan QR Code',
+        myborrowed: 'My Borrowed Items',
+        history: 'Borrowing History',
+        settings: 'Settings'
+    };
+
+    function activateView(viewId) {
+        navItems.forEach(nav => nav.classList.remove('active'));
+        sidebarItems.forEach(si => si.classList.remove('active'));
+        views.forEach(view => view.classList.remove('active'));
+
+        const matchingNav = document.querySelector(`.nav-item[data-view="${viewId}"]`);
+        if (matchingNav) {
+            matchingNav.classList.add('active');
+            const parentLi = matchingNav.closest('.sidebar-item');
+            if (parentLi) parentLi.classList.add('active');
+        }
+
+        const targetView = document.getElementById(`${viewId}View`);
+        if (!targetView) return;
+        targetView.classList.add('active');
+
+        const label = viewLabels[viewId] || viewId;
+        if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
+        if (topbarMobileTitle) topbarMobileTitle.textContent = label;
+
+        if (viewId === 'browse') loadEquipment();
+        else if (viewId === 'myborrowed') loadBorrowedItems();
+        else if (viewId === 'history') loadHistory();
+        else if (viewId === 'scan') startQRScanner();
+
+        try { localStorage.setItem('student-active-view', viewId); } catch (e) { }
+
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar')?.classList.remove('mobile-open');
+            document.getElementById('sidebarOverlay')?.classList.remove('active');
+        }
+    }
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-
-            const viewId = item.getAttribute('data-view');
-
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-
-            views.forEach(view => view.classList.remove('active'));
-            const targetView = document.getElementById(`${viewId}View`);
-            if (targetView) {
-                targetView.classList.add('active');
-
-                if (viewId === 'browse') {
-                    loadEquipment();
-                } else if (viewId === 'myborrowed') {
-                    loadBorrowedItems();
-                } else if (viewId === 'history') {
-                    loadHistory();
-                } else if (viewId === 'scan') {
-                    startQRScanner();
-                }
-            }
+            activateView(item.getAttribute('data-view'));
         });
     });
+
+    // Restore last active view on refresh
+    const saved = (() => { try { return localStorage.getItem('student-active-view'); } catch (e) { return null; } })();
+    if (saved && document.getElementById(`${saved}View`)) {
+        activateView(saved);
+    } else {
+        activateView('browse');
+    }
 }
+
 
 async function loadEquipment() {
     const equipmentGrid = document.getElementById('equipmentGrid');
@@ -271,48 +308,62 @@ function extractEquipmentId(decodedText) {
 }
 
 async function processQRCode(decodedText) {
+    showToast('🔍 Looking up equipment…', 'info');
+
     try {
         const equipmentId = extractEquipmentId(decodedText);
 
         if (!equipmentId) {
-            showToast("Invalid QR code content", "error");
+            showToast('Invalid QR code content', 'error');
+            setTimeout(() => startQRScanner(), 1500);
             return;
         }
 
-        const equipmentSnapshot = await db.collection("equipment")
-            .where("equipmentId", "==", equipmentId)
+        const equipmentSnapshot = await db.collection('equipment')
+            .where('equipmentId', '==', equipmentId)
             .limit(1)
             .get();
 
         if (equipmentSnapshot.empty) {
-            showToast(`Equipment not found: ${equipmentId}`, "error");
+            showToast(`Equipment not found: ${equipmentId}`, 'error');
+            setTimeout(() => startQRScanner(), 2000);
             return;
         }
 
         const equipmentDoc = equipmentSnapshot.docs[0];
         const equipment = { id: equipmentDoc.id, ...equipmentDoc.data() };
 
-        if (equipment.status === "available") {
-            openBorrowModal(equipment.id);
-        } else if (equipment.status === "borrowed") {
-            const borrowingSnapshot = await db.collection("borrowings")
-                .where("equipmentId", "==", equipment.id)
-                .where("userId", "==", currentUser.uid)
-                .where("status", "==", "borrowed")
+        if (equipment.status === 'available') {
+            // Navigate to browse view then open borrow modal
+            const browseNav = document.querySelector('.nav-item[data-view="browse"]');
+            if (browseNav) browseNav.click();
+            await openBorrowModal(equipment.id);
+
+        } else if (equipment.status === 'borrowed') {
+            const borrowingSnapshot = await db.collection('borrowings')
+                .where('equipmentId', '==', equipment.id)
+                .where('userId', '==', currentUser.uid)
+                .where('status', '==', 'borrowed')
                 .limit(1)
                 .get();
 
             if (!borrowingSnapshot.empty) {
-                openReturnModal(borrowingSnapshot.docs[0].id);
+                // Navigate to myborrowed view then open return modal
+                const borrowedNav = document.querySelector('.nav-item[data-view="myborrowed"]');
+                if (borrowedNav) borrowedNav.click();
+                await openReturnModal(borrowingSnapshot.docs[0].id);
             } else {
-                showToast("This equipment is currently borrowed by someone else", "error");
+                showToast('This equipment is currently borrowed by someone else', 'error');
+                setTimeout(() => startQRScanner(), 2000);
             }
         } else {
-            showToast("This equipment is under maintenance", "error");
+            showToast('This equipment is under maintenance', 'error');
+            setTimeout(() => startQRScanner(), 2000);
         }
     } catch (error) {
-        console.error("Error processing QR code:", error);
-        showToast("Error processing QR code", "error");
+        console.error('Error processing QR code:', error);
+        showToast('Error reading QR code. Please try again.', 'error');
+        setTimeout(() => startQRScanner(), 2000);
     }
 }
 
@@ -684,27 +735,117 @@ async function loadHistory() {
     }
 }
 
-function initializeLogout() {
+function initializeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const topbarToggle = document.getElementById('topbarToggle');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+
+    const openSidebar = () => {
+        sidebar?.classList.remove('collapsed');
+        sidebar?.classList.add('mobile-open');
+        sidebarOverlay?.classList.add('active');
+    };
+
+    const closeSidebar = () => {
+        sidebar?.classList.remove('mobile-open');
+        sidebarOverlay?.classList.remove('active');
+    };
+
+    const toggleDesktop = () => {
+        sidebar?.classList.toggle('collapsed');
+    };
+
+    if (topbarToggle) {
+        topbarToggle.addEventListener('click', () => {
+            if (window.innerWidth <= 768) openSidebar();
+            else toggleDesktop();
+        });
+    }
+
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', closeSidebar);
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) closeSidebar();
+    });
+}
+
+function initializeProfileDropdown() {
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileTrigger = document.getElementById('profileTrigger');
+    const viewProfileBtn = document.getElementById('viewProfileBtn');
+    const changePassBtn = document.getElementById('changePassBtn');
+    const settingsChangePassBtn = document.getElementById('settingsChangePassBtn');
     const logoutBtn = document.getElementById('logoutBtn');
+
+    if (!profileTrigger || !profileDropdown) return;
+
+    profileTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = profileDropdown.classList.contains('open');
+        profileDropdown.classList.toggle('open', !isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target)) {
+            profileDropdown.classList.remove('open');
+        }
+    });
+
+    if (viewProfileBtn) {
+        viewProfileBtn.addEventListener('click', () => {
+            profileDropdown.classList.remove('open');
+            openProfileModal();
+        });
+    }
+
+    const openChangePw = () => {
+        profileDropdown.classList.remove('open');
+        openPasswordModal();
+    };
+
+    if (changePassBtn) changePassBtn.addEventListener('click', openChangePw);
+    if (settingsChangePassBtn) settingsChangePassBtn.addEventListener('click', openChangePw);
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
+            profileDropdown.classList.remove('open');
             try {
-                if (html5QrCode) {
-                    try {
-                        await html5QrCode.stop();
-                    } catch (e) { }
-                }
-
+                if (html5QrCode) { try { await html5QrCode.stop(); } catch (e) { } }
                 await auth.signOut();
                 showToast('Logged out successfully', 'success');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
             } catch (error) {
                 console.error('Logout error:', error);
                 showToast('Failed to logout. Please try again.', 'error');
             }
         });
+    }
+}
+
+function initializeTheme() {
+    const themeCheckbox = document.getElementById('themeCheckbox');
+    const themeLabel = document.querySelector('.theme-label');
+    const themeIcon = document.querySelector('.theme-icon');
+
+    const applyTheme = (isDark) => {
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        if (themeLabel) themeLabel.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+        if (themeCheckbox) themeCheckbox.checked = isDark;
+        try { localStorage.setItem('mislend-theme', isDark ? 'dark' : 'light'); } catch (e) { }
+    };
+
+    const saved = (() => { try { return localStorage.getItem('mislend-theme'); } catch (e) { return null; } })();
+    applyTheme(saved === 'dark');
+
+    if (themeCheckbox) {
+        themeCheckbox.addEventListener('change', () => applyTheme(themeCheckbox.checked));
     }
 }
 
@@ -761,43 +902,10 @@ async function changePassword() {
 }
 
 function initializeMobileMenu() {
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-    if (!mobileMenuToggle || !sidebar || !sidebarOverlay) return;
-
-    const openMenu = () => {
-        sidebar.classList.add('mobile-open');
-        sidebarOverlay.classList.add('active');
-        mobileMenuToggle.classList.add('is-open');
-        document.body.classList.add('sidebar-open');
-    };
-
-    const closeMenu = () => {
-        sidebar.classList.remove('mobile-open');
-        sidebarOverlay.classList.remove('active');
-        mobileMenuToggle.classList.remove('is-open');
-        document.body.classList.remove('sidebar-open');
-    };
-
-    mobileMenuToggle.addEventListener('click', () => {
-        const isOpen = sidebar.classList.contains('mobile-open');
-        isOpen ? closeMenu() : openMenu();
-    });
-
-    sidebarOverlay.addEventListener('click', closeMenu);
-
-    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (window.innerWidth <= 768) closeMenu();
-        });
-    });
-
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) closeMenu();
-    });
+    // replaced by initializeSidebar
 }
+
+
 
 async function startQRScanner() {
     const readerEl = document.getElementById("qr-reader");

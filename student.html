@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Borrower - UCC | MIS</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="modal.css">
@@ -11,236 +11,386 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
         rel="stylesheet">
+    <script>(function () {
+            try {
+                var labels = { browse: 'Browse Equipment', scan: 'Scan QR Code', myborrowed: 'My Borrowed Items', history: 'Borrowing History', settings: 'Settings' };
+                var v = localStorage.getItem('student-active-view');
+                if (v) {
+                    document.addEventListener('DOMContentLoaded', function () {
+                        document.querySelectorAll('.view-container').forEach(function (el) { el.classList.remove('active'); });
+                        var t = document.getElementById(v + 'View');
+                        if (t) t.classList.add('active');
+                        var b = document.getElementById('breadcrumbCurrent');
+                        if (b) b.textContent = labels[v] || v;
+                        var m = document.getElementById('topbarMobileTitle');
+                        if (m) m.textContent = labels[v] || v;
+                        var n = document.querySelector('.nav-item[data-view="' + v + '"]');
+                        if (n) { n.classList.add('active'); var li = n.closest('.sidebar-item'); if (li) li.classList.add('active'); }
+                    });
+                }
+            } catch (e) { }
+        })();</script>
 </head>
 
 <body>
     <div class="dashboard-container">
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
-
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+        <!-- Mazer-style Dark Sidebar -->
         <aside class="sidebar" id="sidebar">
-
             <div class="sidebar-header">
                 <div class="logo">
-                    <img src="CS1A.png" width="32" height="32" alt="roshlogo">
+                    <img src="CS1A.png" width="32" height="32" alt="MISLend">
                     <span>MISLend</span>
                 </div>
+                <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Close sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
 
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-view="browse">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
-                    <span>Browse Equipment</span>
-                </a>
-                <a href="#" class="nav-item" data-view="scan">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="9" y1="3" x2="9" y2="21"></line>
-                        <line x1="15" y1="3" x2="15" y2="21"></line>
-                    </svg>
-                    <span>Scan QR Code</span>
-                </a>
-                <a href="#" class="nav-item" data-view="myborrowed">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path
-                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                        </path>
-                    </svg>
-                    <span>My Borrowed Items</span>
-                    <span class="nav-badge" id="borrowedCount">0</span>
-                </a>
-                <a href="#" class="nav-item" data-view="history">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Borrowing History</span>
-                </a>
-                <a href="#" class="nav-item" data-view="settings">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Settings</span>
-                </a>
+            <nav class="sidebar-menu">
+                <div class="sidebar-menu-label">MAIN MENU</div>
+                <ul class="sidebar-menu-inner">
+                    <li class="sidebar-item active">
+                        <a href="#" class="sidebar-link nav-item active" data-view="browse">
+                            <span class="sidebar-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-text">Browse Equipment</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link nav-item" data-view="scan">
+                            <span class="sidebar-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-text">Scan QR Code</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="sidebar-menu-label">MY ACTIVITY</div>
+                <ul class="sidebar-menu-inner">
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link nav-item" data-view="myborrowed">
+                            <span class="sidebar-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                                    </path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-text">My Borrowed Items</span>
+                            <span class="sidebar-badge" id="borrowedCount">0</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link nav-item" data-view="history">
+                            <span class="sidebar-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-text">Borrowing History</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link nav-item" data-view="settings">
+                            <span class="sidebar-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                    </path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-text">Settings</span>
+                        </a>
+                    </li>
+                </ul>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar" id="userAvatar">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar user-avatar">
                         <span id="userInitial">S</span>
                     </div>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Student Name</div>
-                        <div class="user-email" id="userEmail">student@email.com</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="userName">Student</div>
+                        <div class="sidebar-user-email" id="userEmail">student@email.com</div>
                     </div>
                 </div>
-                <button class="btn btn-logout" id="logoutBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
+
+                <!-- Dark/Light Mode Toggle -->
+                <div class="theme-toggle-row">
+                    <svg class="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                    Logout
-                </button>
+                    <span class="theme-label">Light Mode</span>
+                    <label class="theme-switch" id="themeToggle">
+                        <input type="checkbox" id="themeCheckbox">
+                        <span class="theme-switch-track">
+                            <span class="theme-switch-thumb">
+                                <svg class="sun-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="5" />
+                                </svg>
+                                <svg class="moon-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                                </svg>
+                            </span>
+                        </span>
+                    </label>
+                </div>
             </div>
         </aside>
 
         <main class="main-content">
-
-            <div class="view-container active" id="browseView">
-                <div class="content-header">
-                    <div>
-                        <h1 class="page-title">Browse Equipment</h1>
-                        <p class="page-subtitle">Find and borrow available equipment</p>
-                    </div>
-                </div>
-
-                <div class="equipment-filters">
-                    <div class="filter-group">
-                        <label>Category:</label>
-                        <select id="categoryFilter">
-                            <option value="all">All Categories</option>
-                            <option value="projector">Projectors</option>
-                            <option value="cable">Cables & Adapters</option>
-                            <option value="remote">Remotes</option>
-                            <option value="display">Displays</option>
-                            <option value="extension">Extensions</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Status:</label>
-                        <select id="statusFilter">
-                            <option value="available">Available Only</option>
-                            <option value="all">All Items</option>
-                        </select>
-                    </div>
-                    <div class="search-group">
-                        <input type="text" id="searchEquipment" placeholder="Search equipment...">
+            <!-- Topbar -->
+            <header class="topbar" id="topbar">
+                <div class="topbar-left">
+                    <button class="topbar-toggle" id="topbarToggle" aria-label="Toggle menu">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.35-4.35"></path>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
                         </svg>
-                    </div>
+                    </button>
+                    <nav class="topbar-breadcrumb" id="topbarBreadcrumb">
+                        <span class="breadcrumb-home">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                            Student
+                        </span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-current" id="breadcrumbCurrent">Browse Equipment</span>
+                    </nav>
                 </div>
 
-                <div class="equipment-grid" id="equipmentGrid">
-
-                </div>
-            </div>
-
-            <div class="view-container" id="scanView">
-                <div class="content-header">
-                    <div>
-                        <h1 class="page-title">Scan QR Code</h1>
-                        <p class="page-subtitle">Scan equipment QR code to borrow or return</p>
+                <!-- Mobile center: brand + page title -->
+                <div class="topbar-center">
+                    <div class="topbar-brand">
+                        <img src="CS1A.png" width="22" height="22" alt="MISLend">
+                        <span class="topbar-brand-name">MISLend</span>
                     </div>
+                    <span class="topbar-mobile-title" id="topbarMobileTitle">Browse Equipment</span>
                 </div>
 
-                <div class="qr-scanner-container">
-                    <div class="scanner-box">
-                        <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
-                        <div class="scanner-instructions">
-                            <h3>How to scan:</h3>
-                            <ol>
-                                <li>Allow camera access when prompted</li>
-                                <li>Point your camera at the QR code on the equipment</li>
-                                <li>The system will automatically detect and process the code</li>
-                            </ol>
-                        </div>
-                    </div>
-
-                    <div class="manual-entry">
-                        <h3>Or enter Equipment ID manually:</h3>
-                        <div class="manual-form">
-                            <input type="text" id="manualEquipmentId" placeholder="Enter Equipment ID (e.g., PROJ-001)">
-                            <button class="btn btn-primary" id="manualSubmitBtn">
-                                <span>Submit</span>
+                <div class="topbar-right">
+                    <div class="topbar-divider"></div>
+                    <!-- Profile Dropdown -->
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <button class="profile-trigger" id="profileTrigger" aria-expanded="false">
+                            <div class="topbar-user-avatar" id="topbarAvatar">
+                                <span id="topbarInitial">S</span>
+                            </div>
+                            <div class="topbar-user-info">
+                                <span class="topbar-user-name" id="topbarUserName">Student</span>
+                                <span class="topbar-user-role">Borrower</span>
+                            </div>
+                            <svg class="profile-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="profile-menu " id="profileMenu">
+                            <div class="profile-menu-header">
+                                <div class="profile-menu-avatar">
+                                    <span id="menuInitial">S</span>
+                                </div>
+                                <div>
+                                    <div class="profile-menu-name" id="menuUserName">Student</div>
+                                    <div class="profile-menu-email" id="menuUserEmail">student@email.com</div>
+                                </div>
+                            </div>
+                            <div class="profile-menu-divider"></div>
+                            <button class="profile-menu-item" id="viewProfileBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Profile
+                            </button>
+                            <button class="profile-menu-item" id="changePassBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                Change Password
+                            </button>
+                            <div class="profile-menu-divider"></div>
+                            <button class="profile-menu-item danger" id="logoutBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                Logout
                             </button>
                         </div>
                     </div>
                 </div>
+            </header>
+
+            <div class="main-content-inner">
+                <!-- Browse Equipment -->
+                <div class="view-container active" id="browseView">
+                    <div class="content-header">
+                        <div>
+                            <h1 class="page-title">Browse Equipment</h1>
+                            <p class="page-subtitle">Find and borrow available equipment</p>
+                        </div>
+                    </div>
+                    <div class="equipment-filters">
+                        <div class="filter-group">
+                            <label>Category:</label>
+                            <select id="categoryFilter">
+                                <option value="all">All Categories</option>
+                                <option value="projector">Projectors</option>
+                                <option value="cable">Cables &amp; Adapters</option>
+                                <option value="remote">Remotes</option>
+                                <option value="display">Displays</option>
+                                <option value="extension">Extensions</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Status:</label>
+                            <select id="statusFilter">
+                                <option value="available">Available Only</option>
+                                <option value="all">All Items</option>
+                            </select>
+                        </div>
+                        <div class="search-group">
+                            <input type="text" id="searchEquipment" placeholder="Search equipment...">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="equipment-grid" id="equipmentGrid"></div>
+                </div>
+
+                <!-- Scan QR -->
+                <div class="view-container" id="scanView">
+                    <div class="content-header">
+                        <div>
+                            <h1 class="page-title">Scan QR Code</h1>
+                            <p class="page-subtitle">Scan equipment QR code to borrow or return</p>
+                        </div>
+                    </div>
+                    <div class="qr-scanner-container">
+                        <div class="scanner-box">
+                            <div id="scanStatus" class="scan-status" style="display: none;"></div>
+                            <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+                            <div class="scanner-instructions">
+                                <h3>How to scan:</h3>
+                                <ol>
+                                    <li>Allow camera access when prompted</li>
+                                    <li>Point your camera at the QR code on the equipment</li>
+                                    <li>The system will automatically detect and process the code</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="manual-entry">
+                            <h3>Or enter Equipment ID manually:</h3>
+                            <div class="manual-form">
+                                <input type="text" id="manualEquipmentId"
+                                    placeholder="Enter Equipment ID (e.g., PROJ-001)">
+                                <button class="btn btn-primary" id="manualSubmitBtn"><span>Submit</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Borrowed Items -->
+                <div class="view-container" id="myborrowedView">
+                    <div class="content-header">
+                        <div>
+                            <h1 class="page-title">My Borrowed Items</h1>
+                            <p class="page-subtitle">Currently borrowed equipment</p>
+                        </div>
+                    </div>
+                    <div class="borrowed-items-grid" id="borrowedItemsGrid"></div>
+                </div>
+
+                <!-- Borrowing History -->
+                <div class="view-container" id="historyView">
+                    <div class="content-header">
+                        <div>
+                            <h1 class="page-title">Borrowing History</h1>
+                            <p class="page-subtitle">Complete history of your borrowing activities</p>
+                        </div>
+                    </div>
+                    <div class="history-list" id="historyList"></div>
+                </div>
+
+                <!-- Settings -->
+                <div class="view-container" id="settingsView">
+                    <div class="content-header">
+                        <div>
+                            <h1 class="page-title">Settings</h1>
+                            <p class="page-subtitle">Manage your account</p>
+                        </div>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>My Information</h3>
+                            <p>Edit name, email, student ID</p>
+                            <button class="btn btn-primary" onclick="openProfileModal()">Edit Info</button>
+                        </div>
+                        <div class="settings-card">
+                            <h3>Change Password</h3>
+                            <p>Update your login password</p>
+                            <button class="btn btn-secondary" id="settingsChangePassBtn">Change Password</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="view-container" id="myborrowedView">
-                <div class="content-header">
-                    <div>
-                        <h1 class="page-title">My Borrowed Items</h1>
-                        <p class="page-subtitle">Currently borrowed equipment</p>
-                    </div>
-                </div>
-
-                <div class="borrowed-items-grid" id="borrowedItemsGrid">
-
-                </div>
-            </div>
-
-            <div class="view-container" id="historyView">
-                <div class="content-header">
-                    <div>
-                        <h1 class="page-title">Borrowing History</h1>
-                        <p class="page-subtitle">Complete history of your borrowing activities</p>
-                    </div>
-                </div>
-
-                <div class="history-list" id="historyList">
-
-                </div>
-            </div>
-
-            <div class="view-container" id="settingsView">
-                <div class="content-header">
-                    <div>
-                        <h1 class="page-title">Settings</h1>
-                        <p class="page-subtitle">Manage your account</p>
-                    </div>
-                </div>
-                <div class="settings-grid">
-
-                    <div class="settings-card">
-                        <h3>My Information</h3>
-                        <p>Edit name, email, student ID</p>
-
-                        <button class="btn btn-primary" onclick="openProfileModal()">
-                            Edit Info
-                        </button>
-                    </div>
-
-                    <div class="settings-card">
-                        <h3>Change Password</h3>
-                        <p>Update your login password</p>
-                        <button class="btn btn-secondary" onclick="openPasswordModal()">
-                            Change Password
-                        </button>
-                    </div>
-                </div>
-            </div>
+        </main>
     </div>
-    </main>
-    </div>
 
-
+    <!-- Borrow Modal -->
     <div class="modal" id="borrowModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Confirm Borrowing</h2>
                 <button class="modal-close" id="closeBorrowModal">&times;</button>
             </div>
-            <div class="borrow-detail" id="borrowDetail">
-
-            </div>
+            <div class="borrow-detail" id="borrowDetail"></div>
             <div class="form-group">
                 <label for="returnTime">Expected Return Time</label>
                 <input type="time" id="returnTime" class="date-input" required>
@@ -265,16 +415,14 @@
         </div>
     </div>
 
-
+    <!-- Return Modal -->
     <div class="modal" id="returnModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Confirm Return</h2>
                 <button class="modal-close" id="closeReturnModal">&times;</button>
             </div>
-            <div class="return-detail" id="returnDetail">
-
-            </div>
+            <div class="return-detail" id="returnDetail"></div>
             <div class="form-group">
                 <label for="condition">Equipment Condition</label>
                 <select id="condition" required>
@@ -300,57 +448,53 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
     <div class="modal" id="profileModal">
         <div class="modal-content">
-
             <div class="modal-header">
                 <h2>Edit Profile</h2>
                 <button class="modal-close" onclick="closeProfileModal()">&times;</button>
             </div>
-
             <div class="login-form">
                 <div class="form-group">
                     <label>Name</label>
                     <input type="text" id="profileName">
                 </div>
-
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" id="profileEmail">
                 </div>
-
                 <div class="form-group">
                     <label>Student ID</label>
                     <input type="text" id="profileStudentId">
                 </div>
-
-                <button class="btn btn-primary" onclick="saveProfile()">
-                    Save Changes
-                </button>
+                <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
             </div>
-
         </div>
     </div>
 
+    <!-- Change Password Modal -->
     <div class="modal" id="passwordModal">
         <div class="modal-content">
-
             <div class="modal-header">
                 <h2>Change Password</h2>
                 <button class="modal-close" onclick="closePasswordModal()">&times;</button>
             </div>
-
             <div class="login-form">
                 <div class="form-group">
-                    <label>New Password</label>
-                    <input type="password" id="newPassword">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPasswordStudent">
                 </div>
-
-                <button class="btn btn-primary" onclick="changePassword()">
-                    Update Password
-                </button>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" minlength="8">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPasswordStudent" minlength="8">
+                </div>
+                <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
             </div>
-
         </div>
     </div>
 
@@ -359,9 +503,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
     <script src="https://unpkg.com/html5-qrcode"></script>
-
     <script src="app.js"></script>
     <script src="student.js"></script>
 </body>
