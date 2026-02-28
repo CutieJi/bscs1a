@@ -36,7 +36,6 @@
     <div class="dashboard-container">
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- Mazer-style Dark Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -137,7 +136,6 @@
                     </div>
                 </div>
 
-                <!-- Dark/Light Mode Toggle -->
                 <div class="theme-toggle-row">
                     <svg class="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
@@ -170,7 +168,6 @@
         </aside>
 
         <main class="main-content">
-            <!-- Topbar -->
             <header class="topbar" id="topbar">
                 <div class="topbar-left">
                     <button class="topbar-toggle" id="topbarToggle" aria-label="Toggle menu">
@@ -195,7 +192,6 @@
                     </nav>
                 </div>
 
-                <!-- Mobile center: brand + page title -->
                 <div class="topbar-center">
                     <div class="topbar-brand">
                         <img src="CS1A.png" width="22" height="22" alt="MISLend">
@@ -206,10 +202,9 @@
 
                 <div class="topbar-right">
                     <div class="topbar-divider"></div>
-                    <!-- Profile Dropdown -->
                     <div class="profile-dropdown" id="profileDropdown">
                         <button class="profile-trigger" id="profileTrigger" aria-expanded="false">
-                            <div class="topbar-user-avatar" id="topbarAvatar">
+                            <div class="topbar-user-avatar-s" id="topbarAvatar">
                                 <span id="topbarInitial">S</span>
                             </div>
                             <div class="topbar-user-info">
@@ -221,9 +216,9 @@
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </button>
-                        <div class="profile-menu " id="profileMenu">
+                        <div class="profile-menu" id="profileMenu">
                             <div class="profile-menu-header">
-                                <div class="profile-menu-avatar">
+                                <div class="profile-menu-avatar-s">
                                     <span id="menuInitial">S</span>
                                 </div>
                                 <div>
@@ -264,7 +259,6 @@
             </header>
 
             <div class="main-content-inner">
-                <!-- Browse Equipment -->
                 <div class="view-container active" id="browseView">
                     <div class="content-header">
                         <div>
@@ -304,7 +298,6 @@
                     <div class="equipment-grid" id="equipmentGrid"></div>
                 </div>
 
-                <!-- Scan QR -->
                 <div class="view-container" id="scanView">
                     <div class="content-header">
                         <div>
@@ -336,7 +329,6 @@
                     </div>
                 </div>
 
-                <!-- My Borrowed Items -->
                 <div class="view-container" id="myborrowedView">
                     <div class="content-header">
                         <div>
@@ -347,7 +339,6 @@
                     <div class="borrowed-items-grid" id="borrowedItemsGrid"></div>
                 </div>
 
-                <!-- Borrowing History -->
                 <div class="view-container" id="historyView">
                     <div class="content-header">
                         <div>
@@ -358,7 +349,6 @@
                     <div class="history-list" id="historyList"></div>
                 </div>
 
-                <!-- Settings -->
                 <div class="view-container" id="settingsView">
                     <div class="content-header">
                         <div>
@@ -383,7 +373,6 @@
         </main>
     </div>
 
-    <!-- Borrow Modal -->
     <div class="modal" id="borrowModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -415,40 +404,7 @@
         </div>
     </div>
 
-    <!-- Return Modal -->
-    <div class="modal" id="returnModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Confirm Return</h2>
-                <button class="modal-close" id="closeReturnModal">&times;</button>
-            </div>
-            <div class="return-detail" id="returnDetail"></div>
-            <div class="form-group">
-                <label for="condition">Equipment Condition</label>
-                <select id="condition" required>
-                    <option value="">Select condition</option>
-                    <option value="good">Good - No issues</option>
-                    <option value="minor">Minor Issues - Still functional</option>
-                    <option value="damaged">Damaged - Needs repair</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="notes">Additional Notes (Optional)</label>
-                <textarea id="notes" rows="3" placeholder="Any issues or comments..."></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelReturn">Cancel</button>
-                <button class="btn btn-primary" id="confirmReturn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Confirm Return
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Profile Modal -->
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -473,7 +429,6 @@
         </div>
     </div>
 
-    <!-- Change Password Modal -->
     <div class="modal" id="passwordModal">
         <div class="modal-content">
             <div class="modal-header">

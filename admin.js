@@ -2,26 +2,6 @@ let currentAdmin = null;
 let currentAdminData = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    auth.onAuthStateChanged(async (user) => {
-        if (!user) return;
-
-        try {
-            const userDoc = await db.collection("admin").doc(user.uid).get();
-            const userData = userDoc.data();
-
-            if (!userData) {
-                await auth.signOut();
-                return;
-            }
-
-            if (userData.role === "admin") window.location.href = "admin.html";
-            else window.location.href = "student.html";
-
-        } catch (err) {
-            console.error("Index redirect error:", err);
-        }
-    });
-
     try {
         const { user, userData } = await checkAuth('admin');
         currentAdmin = user;
@@ -111,7 +91,7 @@ function initializeNavigation() {
         });
     });
 
-    // Restore last view on refresh
+
     const saved = (() => { try { return localStorage.getItem('admin-active-view'); } catch (e) { return null; } })();
     if (saved && document.getElementById(`${saved}View`)) {
         activateView(saved);
@@ -288,13 +268,13 @@ async function loadPendingRequests() {
     const pendingGrid = document.getElementById('pendingRequestsGrid');
     const badge = document.getElementById('approvalsBadge');
 
-    // Fallbacks just in case we are on dashboard still
+
     const dashPendingCount = document.getElementById('pendingRequestsCount');
 
     if (!pendingGrid) return;
 
     try {
-        // Query both pending borrows and pending returns
+
         const [borrowSnapshot, returnSnapshot] = await Promise.all([
             db.collection('borrowings').where('status', '==', 'pending_borrow').get(),
             db.collection('borrowings').where('status', '==', 'pending_return').get()
@@ -405,12 +385,19 @@ async function loadPendingRequests() {
     }
 }
 
-// Action Handlers
+
 async function approveBorrow(borrowingId, equipmentId) {
     if (!confirm('Approve this borrow request?')) return;
     try {
+        const borrowDoc = await db.collection('borrowings').doc(borrowingId).get();
+        const borrowData = borrowDoc.data();
+
         await db.collection('borrowings').doc(borrowingId).update({ status: 'borrowed' });
-        await db.collection('equipment').doc(equipmentId).update({ status: 'borrowed' });
+        await db.collection('equipment').doc(equipmentId).update({
+            status: 'borrowed',
+            borrowedBy: borrowData.userId || null,
+            borrowedAt: borrowData.borrowedAt || firebase.firestore.FieldValue.serverTimestamp()
+        });
         showToast('Borrow request approved', 'success');
         loadPendingRequests();
         loadDashboardData();
@@ -424,7 +411,11 @@ async function rejectBorrow(borrowingId, equipmentId) {
     if (!confirm('Reject this borrow request?')) return;
     try {
         await db.collection('borrowings').doc(borrowingId).update({ status: 'rejected' });
-        await db.collection('equipment').doc(equipmentId).update({ status: 'available' });
+        await db.collection('equipment').doc(equipmentId).update({
+            status: 'available',
+            borrowedBy: null,
+            borrowedAt: null
+        });
         showToast('Borrow request rejected', 'success');
         loadPendingRequests();
         loadDashboardData();
@@ -437,7 +428,7 @@ async function rejectBorrow(borrowingId, equipmentId) {
 async function approveReturn(borrowingId, equipmentId, condition) {
     if (!confirm('Approve this return request?')) return;
     try {
-        // Fetch original item to get return details
+
         const doc = await db.collection('borrowings').doc(borrowingId).get();
         const data = doc.data();
 
@@ -466,7 +457,7 @@ async function rejectReturn(borrowingId, equipmentId) {
     if (!confirm('Reject this return request? The item will remain marked as Borrowed.')) return;
     try {
         await db.collection('borrowings').doc(borrowingId).update({
-            status: 'borrowed', // revert purely to borrowed
+            status: 'borrowed',
             pendingReturnCondition: firebase.firestore.FieldValue.delete(),
             pendingReturnNotes: firebase.firestore.FieldValue.delete()
         });
@@ -477,6 +468,35 @@ async function rejectReturn(borrowingId, equipmentId) {
     } catch (err) {
         console.error(err);
         showToast('Error rejecting return', 'error');
+    }
+}
+
+async function adminConfirmReturn(borrowingId, equipmentId) {
+    const conditionSelect = document.getElementById(`returnCondition_${borrowingId}`);
+    const condition = conditionSelect ? conditionSelect.value : 'good';
+
+    if (!confirm(`Confirm return of this item? Condition: ${condition}`)) return;
+
+    try {
+        await db.collection('borrowings').doc(borrowingId).update({
+            status: 'returned',
+            returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            returnCondition: condition,
+            returnNotes: ''
+        });
+
+        await db.collection('equipment').doc(equipmentId).update({
+            status: condition === 'damaged' ? 'maintenance' : 'available',
+            borrowedBy: null,
+            borrowedAt: null
+        });
+
+        showToast('Return confirmed successfully', 'success');
+        loadCurrentlyBorrowed();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error confirming return', 'error');
     }
 }
 
@@ -802,6 +822,20 @@ async function loadCurrentlyBorrowed() {
                             <strong>Room:</strong> ${item.room || 'N/A'}<br>
                             <strong>Purpose:</strong> ${item.purpose || 'N/A'}
                         </div>
+
+                        <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                            <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
+                                <option value="good">Good – No issues</option>
+                                <option value="minor">Minor Issues</option>
+                                <option value="damaged">Damaged – Needs repair</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" onclick="adminConfirmReturn('${item.id}', '${item.equipmentId}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Confirm Return
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -867,11 +901,20 @@ async function loadBorrowingLogs() {
                 </div>
             `;
         } else {
-            logsList.innerHTML = logs.map(log => `
+            logsList.innerHTML = logs.map(log => {
+                const statusLabels = {
+                    'pending_borrow': 'Pending Borrow',
+                    'pending_return': 'Pending Return',
+                    'borrowed': 'Borrowed',
+                    'returned': 'Returned',
+                    'rejected': 'Rejected'
+                };
+                const statusLabel = statusLabels[log.status] || capitalize(log.status);
+                return `
                 <div class="log-item">
                     <div class="log-item-header">
                         <span class="log-item-title">${log.equipmentName}</span>
-                        <span class="history-status ${log.status}">${capitalize(log.status)}</span>
+                        <span class="history-status ${log.status}">${statusLabel}</span>
                     </div>
 
                     <div class="log-item-info">
@@ -921,7 +964,8 @@ async function loadBorrowingLogs() {
                         ` : ''}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
     } catch (error) {
         console.error('Error loading logs:', error);
@@ -1496,8 +1540,7 @@ async function rejectUser(uid) {
     loadUsers();
 }
 
-function initializeMobileMenu() {
-}
+
 
 function initializeProfileDropdown() {
     const profileDropdown = document.getElementById('profileDropdown');

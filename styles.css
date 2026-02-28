@@ -737,7 +737,7 @@ textarea {
     gap: 1rem;
 }
 
-/* Desktop: center zone hidden; mobile: it takes over */
+
 .topbar-center {
     display: none;
     flex-direction: column;
@@ -874,6 +874,20 @@ textarea {
     height: 36px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--danger));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.topbar-user-avatar-s {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     display: flex;
     align-items: center;
@@ -1394,6 +1408,11 @@ textarea {
     color: var(--danger);
 }
 
+.equipment-status.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
 .equipment-name {
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
@@ -1584,6 +1603,21 @@ textarea {
 .history-status.borrowed {
     background: rgba(6, 182, 212, 0.1);
     color: var(--primary);
+}
+
+.history-status.pending_borrow {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.history-status.pending_return {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.history-status.rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
 }
 
 .history-item-details {
@@ -2805,7 +2839,7 @@ textarea {
         display: none;
     }
 
-    /* Show centered brand+title on mobile */
+
     .topbar-center {
         display: flex;
     }
@@ -2814,7 +2848,7 @@ textarea {
         display: none;
     }
 
-    /* Professional mobile polish */
+
     .topbar-toggle {
         min-width: 40px;
         min-height: 40px;
@@ -2862,7 +2896,7 @@ textarea {
     }
 
 
-    /* === ADMIN CONTENT: all views readable on mobile === */
+
     .main-content-inner {
         padding: calc(60px + 0.85rem) 0.85rem 1rem;
     }
@@ -2976,10 +3010,10 @@ textarea {
     }
 }
 
-/* Narrow phones: 300–400px */
+
 @media (max-width: 400px) {
 
-    /* === TOPBAR === */
+
     .topbar {
         height: 56px;
         padding: 0 0.5rem;
@@ -3013,7 +3047,7 @@ textarea {
         padding: 0.35rem;
     }
 
-    /* === SIDEBAR === */
+
     .sidebar {
         width: min(220px, 78vw) !important;
     }
@@ -3053,12 +3087,12 @@ textarea {
         display: none;
     }
 
-    /* === MAIN CONTENT === */
+
     .main-content-inner {
         padding: calc(56px + 0.75rem) 0.6rem 0.75rem;
     }
 
-    /* === PAGE TITLES === */
+
     .page-title {
         font-size: 1.1rem !important;
         color: var(--text-primary) !important;
@@ -3081,7 +3115,7 @@ textarea {
         padding: 0.4rem 0.75rem;
     }
 
-    /* === STATS GRID === */
+
     .stats-grid {
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
@@ -3106,7 +3140,7 @@ textarea {
         font-size: 0.7rem;
     }
 
-    /* === DASHBOARD CARDS (Recent / Overdue) === */
+
     .dashboard-grid {
         grid-template-columns: 1fr;
         gap: 0.75rem;
@@ -3117,7 +3151,7 @@ textarea {
         padding: 0.85rem;
     }
 
-    /* === EQUIPMENT === */
+
     .equipment-grid {
         grid-template-columns: 1fr;
     }
@@ -3146,12 +3180,12 @@ textarea {
         font-size: 0.85rem;
     }
 
-    /* === BORROWED LIST === */
+
     .borrowed-item-card {
         padding: 0.75rem;
     }
 
-    /* === LOGS === */
+
     .log-item {
         padding: 0.6rem;
     }
@@ -3161,7 +3195,7 @@ textarea {
         gap: 0.25rem;
     }
 
-    /* === USERS === */
+
     .users-grid,
     .pending-grid {
         grid-template-columns: 1fr;
@@ -3172,7 +3206,7 @@ textarea {
         padding: 0.75rem;
     }
 
-    /* === FORMS === */
+
     .form-actions {
         flex-direction: column;
         gap: 0.5rem;
@@ -3182,7 +3216,7 @@ textarea {
         width: 100%;
     }
 
-    /* === MODALS on narrow screens === */
+
     .modal-content {
         width: calc(100vw - 1.5rem);
         margin: 0.5rem;
@@ -3192,9 +3226,7 @@ textarea {
 }
 
 
-/* =============================================
-   DARK MODE
-   ============================================= */
+
 [data-theme="dark"] {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
@@ -3272,9 +3304,7 @@ textarea {
     border-color: #334155;
 }
 
-/* =============================================
-   DARK MODE THEME TOGGLE (SIDEBAR)
-   ============================================= */
+
 .theme-toggle-row {
     display: flex;
     align-items: center;
@@ -3373,9 +3403,7 @@ textarea {
     padding: 0.55rem 0;
 }
 
-/* =============================================
-   PROFILE DROPDOWN
-   ============================================= */
+
 .profile-dropdown {
     position: relative;
 }
@@ -3452,6 +3480,20 @@ textarea {
     flex-shrink: 0;
 }
 
+.profile-menu-avatar-s {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
 .profile-menu-name {
     font-weight: 700;
     font-size: 0.875rem;
@@ -3503,9 +3545,7 @@ textarea {
     color: var(--danger);
 }
 
-/* =============================================
-   PROFILE & CHANGE PASSWORD MODAL
-   ============================================= */
+
 .profile-view {
     display: flex;
     flex-direction: column;
@@ -3539,186 +3579,4 @@ textarea {
     font-size: 0.875rem;
     color: var(--text-secondary);
     margin-bottom: 0.5rem;
-}
-
-/* =============================================
-   SEARCH & FILTERS (Search Bar Design)
-   ============================================= */
-.equipment-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface);
-    padding: 1rem 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px var(--shadow), 0 2px 4px -1px var(--shadow);
-    border: 1px solid var(--border);
-}
-
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.filter-group label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.filter-group select,
-.filter-group input[type="date"] {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--background);
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.875rem;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-.filter-group select {
-    padding-right: 2rem;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1rem;
-}
-
-.filter-group select:focus,
-.filter-group select:hover,
-.filter-group input[type="date"]:focus,
-.filter-group input[type="date"]:hover {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.filter-group span {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.search-group {
-    position: relative;
-    flex-grow: 1;
-    max-width: 400px;
-    margin-left: auto;
-}
-
-.search-group input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    border: 1px solid var(--border);
-    border-radius: 50px;
-    background: var(--background);
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.95rem;
-    outline: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
-}
-
-.search-group input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15), inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    background: var(--surface);
-}
-
-.search-group svg {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    transition: color 0.3s ease;
-    pointer-events: none;
-}
-
-.search-group input:focus+svg {
-    color: var(--primary);
-}
-
-/* =============================================
-   IMPROVED MOBILE STYLES
-   ============================================= */
-@media (max-width: 480px) {
-    .topbar-breadcrumb {
-        display: none;
-    }
-
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .page-title {
-        font-size: 1.35rem;
-    }
-
-    .page-subtitle {
-        font-size: 0.8rem;
-    }
-
-    .content-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .log-item-info {
-        grid-template-columns: 1fr;
-    }
-
-    .main-content-inner {
-        padding: 1rem;
-    }
-
-    .profile-menu {
-        right: -10px;
-        width: 210px;
-    }
-
-    .topbar-user-info {
-        display: none;
-    }
-
-    .stat-value {
-        font-size: 1.5rem;
-    }
-
-    .equipment-filters {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-        padding: 1rem;
-    }
-
-    .search-group {
-        max-width: 100%;
-        width: 100%;
-        margin-left: 0;
-    }
-
-    .filter-group {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .filter-group select {
-        flex-grow: 1;
-        max-width: 65%;
-    }
 }

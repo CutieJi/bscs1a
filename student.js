@@ -5,26 +5,6 @@ let selectedEquipmentForBorrow = null;
 let selectedBorrowingForReturn = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    auth.onAuthStateChanged(async (user) => {
-        if (!user) return;
-
-        try {
-            const userDoc = await db.collection("student").doc(user.uid).get();
-            const userData = userDoc.data();
-
-            if (!userData) {
-                await auth.signOut();
-                return;
-            }
-
-            if (userData.role === "admin") window.location.href = "admin.html";
-            else window.location.href = "student.html";
-
-        } catch (err) {
-            console.error("Index redirect error:", err);
-        }
-    });
-
     try {
         const { user, userData } = await checkAuth('student');
         currentUser = user;
@@ -160,7 +140,6 @@ function initializeNavigation() {
         });
     });
 
-    // Restore last active view on refresh
     const saved = (() => { try { return localStorage.getItem('student-active-view'); } catch (e) { return null; } })();
     if (saved && document.getElementById(`${saved}View`)) {
         activateView(saved);
@@ -168,7 +147,6 @@ function initializeNavigation() {
         activateView('browse');
     }
 }
-
 
 async function loadEquipment() {
     const equipmentGrid = document.getElementById('equipmentGrid');
@@ -334,7 +312,6 @@ async function processQRCode(decodedText) {
         const equipment = { id: equipmentDoc.id, ...equipmentDoc.data() };
 
         if (equipment.status === 'available') {
-            // Navigate to browse view then open borrow modal
             const browseNav = document.querySelector('.nav-item[data-view="browse"]');
             if (browseNav) browseNav.click();
             await openBorrowModal(equipment.id);
@@ -348,7 +325,6 @@ async function processQRCode(decodedText) {
                 .get();
 
             if (!borrowingSnapshot.empty) {
-                // Navigate to myborrowed view then open return modal
                 const borrowedNav = document.querySelector('.nav-item[data-view="myborrowed"]');
                 if (borrowedNav) borrowedNav.click();
                 await openReturnModal(borrowingSnapshot.docs[0].id);
@@ -357,7 +333,7 @@ async function processQRCode(decodedText) {
                 setTimeout(() => startQRScanner(), 2000);
             }
         } else {
-            showToast('This equipment is under maintenance', 'error');
+            showToast('This equipment is currently unavailable', 'error');
             setTimeout(() => startQRScanner(), 2000);
         }
     } catch (error) {
@@ -502,16 +478,10 @@ async function borrowEquipment() {
             expectedReturnTime: returnTime,
 
             purpose: purpose || 'Not specified',
-            status: 'borrowed'
+            status: 'pending_borrow'
         });
 
-        await db.collection('equipment').doc(selectedEquipmentForBorrow.id).update({
-            status: 'borrowed',
-            borrowedBy: currentUser.uid,
-            borrowedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        showToast('Equipment borrowed successfully!', 'success');
+        showToast('Borrow request submitted! Awaiting admin approval.', 'success');
         document.getElementById('borrowModal').classList.remove('active');
 
         document.getElementById('room').value = '';
@@ -522,7 +492,7 @@ async function borrowEquipment() {
 
     } catch (error) {
         console.error('Error borrowing equipment:', error);
-        showToast('Failed to borrow equipment', 'error');
+        showToast('Failed to submit borrow request', 'error');
     } finally {
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = originalContent;
@@ -536,18 +506,22 @@ async function loadBorrowedItems() {
     if (!borrowedItemsGrid) return;
 
     try {
-        const snapshot = await db.collection('borrowings')
-            .where('userId', '==', currentUser.uid)
-            .where('status', '==', 'borrowed')
-            .get();
+        const [borrowedSnap, pendingBorrowSnap] = await Promise.all([
+            db.collection('borrowings').where('userId', '==', currentUser.uid).where('status', '==', 'borrowed').get(),
+            db.collection('borrowings').where('userId', '==', currentUser.uid).where('status', '==', 'pending_borrow').get()
+        ]);
 
-        const borrowedItems = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const borrowedItems = [
+            ...borrowedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+            ...pendingBorrowSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        ].sort((a, b) => {
+            const aTime = a.borrowedAt?.seconds || 0;
+            const bTime = b.borrowedAt?.seconds || 0;
+            return bTime - aTime;
+        });
 
         if (borrowedCountBadge) {
-            borrowedCountBadge.textContent = borrowedItems.length;
+            borrowedCountBadge.textContent = borrowedItems.filter(i => i.status === 'borrowed').length;
         }
 
         if (borrowedItems.length === 0) {
@@ -562,6 +536,20 @@ async function loadBorrowedItems() {
             `;
         } else {
             borrowedItemsGrid.innerHTML = borrowedItems.map(item => {
+                const isPendingBorrow = item.status === 'pending_borrow';
+                const isBorrowed = item.status === 'borrowed';
+
+                let statusBadge = '';
+                if (isPendingBorrow) {
+                    statusBadge = `<span class="badge badge-status" style="background: rgba(245,158,11,0.1); color: var(--warning); font-size:0.75rem;">⏳ Pending Approval</span>`;
+                } else if (isBorrowed) {
+                    statusBadge = `<span class="badge badge-status" style="background: rgba(16,185,129,0.1); color: var(--success); font-size:0.75rem;">✅ Approved</span>`;
+                }
+
+                const returnBtn = `<div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 0.5rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        📋 Return is confirmed by the admin
+                    </div>`;
+
                 return `
                     <div class="borrowed-item-card">
                         <div class="borrowed-item-header">
@@ -569,6 +557,7 @@ async function loadBorrowedItems() {
                                 <div class="borrowed-item-name">${item.equipmentName}</div>
                                 <div class="borrowed-item-id">ID: ${item.equipmentCode || 'N/A'}</div>
                             </div>
+                            ${statusBadge}
                         </div>
                         <div class="borrowed-item-meta">
                             <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
@@ -578,15 +567,10 @@ async function loadBorrowedItems() {
                         </div>
                         <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
                             <strong>Room:</strong> ${item.room || 'N/A'}
-                            <strong>Purpose:</strong> ${item.purpose}
+                            &nbsp; <strong>Purpose:</strong> ${item.purpose}
                         </div>
                         <div class="borrowed-item-actions">
-                            <button class="btn btn-primary" onclick="openReturnModal('${item.id}')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                                Return Equipment
-                            </button>
+                            ${returnBtn}
                         </div>
                     </div>
                 `;
@@ -644,19 +628,12 @@ async function returnEquipment() {
         confirmBtn.innerHTML = '<span>Processing...</span>';
 
         await db.collection('borrowings').doc(selectedBorrowingForReturn.id).update({
-            returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            returnCondition: condition,
-            returnNotes: notes || '',
-            status: 'returned'
+            status: 'pending_return',
+            pendingReturnCondition: condition,
+            pendingReturnNotes: notes || ''
         });
 
-        await db.collection('equipment').doc(selectedBorrowingForReturn.equipmentId).update({
-            status: condition === 'damaged' ? 'maintenance' : 'available',
-            borrowedBy: null,
-            borrowedAt: null
-        });
-
-        showToast('Equipment returned successfully!', 'success');
+        showToast('Return request submitted! Awaiting admin approval.', 'success');
         document.getElementById('returnModal').classList.remove('active');
 
         document.getElementById('condition').value = '';
@@ -666,8 +643,8 @@ async function returnEquipment() {
         loadHistory();
 
     } catch (error) {
-        console.error('Error returning equipment:', error);
-        showToast('Failed to return equipment', 'error');
+        console.error('Error submitting return request:', error);
+        showToast('Failed to submit return request', 'error');
     } finally {
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = originalContent;
@@ -707,11 +684,20 @@ async function loadHistory() {
                 </div>
             `;
         } else {
-            historyList.innerHTML = history.map(item => `
+            historyList.innerHTML = history.map(item => {
+                const statusLabels = {
+                    'pending_borrow': 'Pending Approval',
+                    'pending_return': 'Return Pending',
+                    'borrowed': 'Borrowed',
+                    'returned': 'Returned',
+                    'rejected': 'Rejected'
+                };
+                const statusLabel = statusLabels[item.status] || capitalize(item.status);
+                return `
                 <div class="history-item">
                     <div class="history-item-header">
                         <div class="history-item-title">${item.equipmentName}</div>
-                        <span class="history-status ${item.status}">${capitalize(item.status)}</span>
+                        <span class="history-status ${item.status}">${statusLabel}</span>
                     </div>
                     <div class="history-item-details">
                         <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
@@ -722,7 +708,8 @@ async function loadHistory() {
                         <span>📝 Purpose: ${item.purpose}</span>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
     } catch (error) {
         console.error('Error loading history:', error);
@@ -900,11 +887,6 @@ async function changePassword() {
     showToast("Password updated", "success");
     closePasswordModal();
 }
-
-function initializeMobileMenu() {
-    // replaced by initializeSidebar
-}
-
 
 
 async function startQRScanner() {
