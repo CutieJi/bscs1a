@@ -4,439 +4,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - UCC | MIS</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>About MISLend | UCC MIS Equipment System</title>
+    <meta name="description"
+        content="Learn about MISLend - The smart equipment borrowing system with QR code tracking for UCC MIS.">
     <link rel="shortcut icon" href="CS1A.png" type="image/x-icon">
     <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
-<body>
-    <div class="about-container">
-        <div class="animated-bg">
-            <div class="gradient-orb orb-1"></div>
-            <div class="gradient-orb orb-2"></div>
-            <div class="gradient-orb orb-3"></div>
-        </div>
+<body class="page-landing">
+    <div class="bg-layer"></div>
+    <div class="mesh-grid"></div>
+    <div class="floating-orb orb-a"></div>
+    <div class="floating-orb orb-b"></div>
 
+    <div class="page-wrap">
         <nav class="navbar">
-            <div class="nav-content">
-                <div class="logo">
-                    <img src="CS1A.png" width="32" height="32" alt="roshlogo">
-                    <span>MISLend</span>
+            <a href="index.html" class="nav-logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    </svg>
                 </div>
-                <div class="nav-links">
-                    <a href="index.html" class="nav-link">Home</a>
-                    <a href="about.html" class="nav-link active">About</a>
-                </div>
+                MIS<span class="logo-dot">Lend</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link active">About</a>
+                <a href="index.html#login" class="nav-link nav-cta">Sign In</a>
             </div>
         </nav>
 
-        <main class="about-content">
-            <section class="about-hero">
-                <div class="about-hero-badge">
-                    <span class="badge-dot"></span>
+        <main>
+            <header class="about-header">
+                <div class="about-badge">
+                    <span class="badge-pulse"></span>
                     About MISLend
                 </div>
-                <h1 class="about-title">
-                    MIS Equipment Management Through
-                    <span class="gradient-text">QR Code Technology</span>
-                </h1>
-                <p class="about-description">
-                    MISLend is a modern equipment borrowing and lending system designed to streamline the process of
-                    managing educational resources through intelligent QR code tracking and real-time monitoring.
-                </p>
-            </section>
+                <h1 class="about-title">Next-Gen Equipment<br>Management with <span class="grad">QR Tech</span></h1>
+                <p class="about-desc">We streamline the process of managing educational resources through intelligent QR
+                    tracking, making borrowing faster and accountability clearer.</p>
+            </header>
 
-            <section class="mission-vision-section">
-                <div class="mission-vision-grid">
-                    <div class="mission-card">
-                        <div class="mission-icon">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                                </path>
-                            </svg>
-                        </div>
-                        <h2>Our Mission</h2>
-                        <p>To revolutionize equipment management in educational institutions by providing a seamless,
-                            efficient, and accountable system that enables students and staff to easily borrow and
-                            return equipment while maintaining complete transparency and real-time tracking.</p>
-                    </div>
-
-                    <div class="mission-card">
-                        <div class="mission-icon vision-icon">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                                <polyline points="17 6 23 6 23 12"></polyline>
-                            </svg>
-                        </div>
-                        <h2>Our Vision</h2>
-                        <p>To become the leading equipment management solution for educational institutions worldwide,
-                            setting new standards for accessibility, accountability, and efficiency in resource sharing
-                            through innovative technology and user-centered design.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="features-showcase">
-                <div class="section-header">
-                    <h2 class="section-title">What is MISLend?</h2>
-                    <p class="section-subtitle">A comprehensive solution for equipment management</p>
-                </div>
-
-                <div class="what-is-content">
-                    <p
-                        style="text-align: center; max-width: 800px; margin: 0 auto 3rem; font-size: 1.125rem; line-height: 1.8; color: var(--text-secondary);">
-                        MISLend is a web-based equipment borrowing system that uses QR code technology to simplify
-                        the process of lending and tracking educational equipment such as projectors, HDMI cables, power
-                        cords, remotes, and other classroom devices. Students can quickly scan QR codes to borrow or
-                        return items, while administrators maintain complete oversight through a powerful management
-                        dashboard.
-                    </p>
-                </div>
-
-                <div class="showcase-grid">
-                    <div class="showcase-card">
-                        <div class="showcase-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="9" y1="3" x2="9" y2="21"></line>
-                                <line x1="15" y1="3" x2="15" y2="21"></line>
-                            </svg>
-                        </div>
-                        <h3>QR Code Scanning</h3>
-                        <p>Instant equipment identification through camera-based QR code scanning for quick borrowing
-                            and returning.</p>
-                    </div>
-
-                    <div class="showcase-card">
-                        <div class="showcase-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                        </div>
-                        <h3>Real-Time Tracking</h3>
-                        <p>Live status updates of all equipment showing what's available, borrowed, or under
-                            maintenance.</p>
-                    </div>
-
-                    <div class="showcase-card">
-                        <div class="showcase-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                        </div>
-                        <h3>Complete History</h3>
-                        <p>Detailed logs of all borrowing activities with timestamps, student information, and equipment
-                            condition.</p>
-                    </div>
-
-                    <div class="showcase-card">
-                        <div class="showcase-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <h3>User Management</h3>
-                        <p>Role-based access control with separate interfaces for students and administrators.</p>
-                    </div>
-
-                    <div class="showcase-card">
-                        <div class="showcase-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                            </svg>
-                        </div>
-                        <h3>Export & Reports</h3>
-                        <p>Generate CSV exports and detailed reports for record-keeping and analysis.</p>
-                    </div>
-
-                    <div class="showcase-card">
-                        <div class="showcase-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                <line x1="8" y1="21" x2="16" y2="21"></line>
-                                <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg>
-                        </div>
-                        <h3>Responsive Design</h3>
-                        <p>Works seamlessly on desktop, tablet, and mobile devices for maximum accessibility.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="how-it-works">
-                <div class="section-header">
-                    <h2 class="section-title">Equipment We Manage</h2>
-                    <p class="section-subtitle">Supporting a wide range of educational resources</p>
-                </div>
-
-                <div class="equipment-types">
-                    <div class="equipment-type-card">
-                        <div class="equipment-icon">📽️</div>
-                        <h3>Projectors</h3>
-                        <p>LCD, DLP, and portable projectors for presentations and lectures</p>
-                    </div>
-                    <div class="equipment-type-card">
-                        <div class="equipment-icon">🔌</div>
-                        <h3>Power & Extensions</h3>
-                        <p>Power cords, extension cables, and power strips</p>
-                    </div>
-                    <div class="equipment-type-card">
-                        <div class="equipment-icon">🔗</div>
-                        <h3>Cables & Adapters</h3>
-                        <p>HDMI, VGA, USB-C, and various adapters</p>
-                    </div>
-                    <div class="equipment-type-card">
-                        <div class="equipment-icon">📺</div>
-                        <h3>Displays</h3>
-                        <p>TVs, monitors, and digital display screens</p>
-                    </div>
-                    <div class="equipment-type-card">
-                        <div class="equipment-icon">🎮</div>
-                        <h3>Remote Controls</h3>
-                        <p>Projector remotes, presentation clickers, and controllers</p>
-                    </div>
-                    <div class="equipment-type-card">
-                        <div class="equipment-icon">📦</div>
-                        <h3>Other Equipment</h3>
-                        <p>Whiteboards, speakers, cameras, and more</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="how-it-works">
-                <div class="section-header">
-                    <h2 class="section-title">How It Works</h2>
-                    <p class="section-subtitle">A simple three-step process</p>
-                </div>
-
-                <div class="process-timeline">
-                    <div class="process-step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h3>Scan QR Code</h3>
-                            <p>Students use their smartphone or device camera to scan the QR code attached to any
-                                equipment. The system instantly identifies the item and displays its current status and
-                                details.</p>
-                        </div>
-                    </div>
-
-                    <div class="process-step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h3>Borrow Equipment</h3>
-                            <p>After scanning, students can immediately borrow available equipment by selecting a return
-                                date and specifying the purpose. The system logs the transaction with complete details
-                                including timestamp and user information.</p>
-                        </div>
-                    </div>
-
-                    <div class="process-step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h3>Return & Track</h3>
-                            <p>When finished, students scan the QR code again to return the equipment. They can rate the
-                                condition and add notes. Administrators can track all activities, view analytics, and
-                                manage overdue items.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="tech-stack">
-                <div class="section-header">
-                    <h2 class="section-title">Built With Modern Technology</h2>
-                    <p class="section-subtitle">Reliable, secure, and scalable</p>
-                </div>
-
-                <div class="tech-grid">
-                    <div class="tech-item">
-                        <div class="tech-icon">🔥</div>
-                        <h4>Firebase</h4>
-                        <p>Real-time database, authentication, and hosting</p>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-icon">📱</div>
-                        <h4>QR Technology</h4>
-                        <p>HTML5 QR scanner and generator libraries</p>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-icon">🎨</div>
-                        <h4>Modern Web</h4>
-                        <p>HTML5, CSS3, and JavaScript ES6+</p>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-icon">📊</div>
-                        <h4>Real-Time Sync</h4>
-                        <p>Cloud Firestore for instant updates</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="values-section">
-                <div class="section-header">
-                    <h2 class="section-title">Benefits</h2>
-                    <p class="section-subtitle">Why institutions choose MISLend</p>
-                </div>
-
-                <div class="values-grid">
-                    <div class="value-card">
-                        <div class="value-icon">⚡</div>
-                        <h3>Time Savings</h3>
-                        <p>Reduce equipment checkout time from minutes to seconds with instant QR code scanning.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">📋</div>
-                        <h3>Complete Accountability</h3>
-                        <p>Track who borrowed what, when, and for how long with detailed audit trails.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">🔍</div>
-                        <h3>Easy Tracking</h3>
-                        <p>Real-time visibility into equipment status, location, and availability.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">💰</div>
-                        <h3>Cost Effective</h3>
-                        <p>Reduce equipment loss and damage with better tracking and accountability.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">📈</div>
-                        <h3>Data Insights</h3>
-                        <p>Understand equipment utilization patterns and make informed purchasing decisions.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">🌐</div>
-                        <h3>Accessible Anywhere</h3>
-                        <p>Web-based system accessible from any device with an internet connection.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="stats-section">
-                <div class="stats-container">
-                    <div class="stat-box">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Cloud-Based</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Available</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number">Real-Time</div>
-                        <div class="stat-label">Updates</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number">Secure</div>
-                        <div class="stat-label">Firebase Auth</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="values-section">
-                <div class="section-header">
-                    <h2 class="section-title">Perfect For</h2>
-                    <p class="section-subtitle">Ideal for various educational settings</p>
-                </div>
-
-                <div class="values-grid">
-                    <div class="value-card">
-                        <div class="value-icon">🎓</div>
-                        <h3>Universities</h3>
-                        <p>Manage equipment across multiple departments, buildings, and campuses.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">🏫</div>
-                        <h3>Schools</h3>
-                        <p>Track projectors, tablets, and teaching materials used by faculty and students.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">📚</div>
-                        <h3>Libraries</h3>
-                        <p>Manage laptops, chargers, and other technology available for checkout.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">🔬</div>
-                        <h3>Labs</h3>
-                        <p>Track scientific equipment, tools, and specialized devices.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">💻</div>
-                        <h3>IT Departments</h3>
-                        <p>Manage technology assets and equipment loans to students and staff.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">🎭</div>
-                        <h3>Media Centers</h3>
-                        <p>Track cameras, microphones, and multimedia equipment.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="cta-section">
-                <div class="cta-content">
-                    <h2>Ready to Streamline Your Equipment Management?</h2>
-                    <p>Start tracking your equipment with QR codes today.</p>
-                    <a href="index.html#login" class="btn btn-primary btn-large">
-                        <span>Get Started Now</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            <section class="mission-vision">
+                <div class="mv-card">
+                    <div class="mv-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
-                            <path d="M5 12h14m-7-7l7 7-7 7" />
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h2>Our Mission</h2>
+                    <p>To revolutionize equipment management by providing a seamless, accountable system that lets
+                        students and staff easily borrow items while maintaining complete transparency and real-time
+                        tracking.</p>
+                </div>
+                <div class="mv-card">
+                    <div class="mv-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                    </div>
+                    <h2>Our Vision</h2>
+                    <p>To become the leading management solution for educational institutions worldwide, setting
+                        standards for accessibility, accountability, and efficiency in resource sharing via innovative
+                        design.</p>
+                </div>
+            </section>
+
+            <div class="stats-bar">
+                <div class="stat-block">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Cloud-Based</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">System Access</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number">Live</div>
+                    <div class="stat-label">Real-time Sync</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number">Auth</div>
+                    <div class="stat-label">Secure Access</div>
+                </div>
+            </div>
+
+            <section class="page-section">
+                <div class="section-inner">
+                    <div class="section-heading">
+                        <p>Core System</p>
+                        <h2>What makes MISLend unique?</h2>
+                    </div>
+                    <div class="grid-cards">
+                        <div class="card-box">
+                            <div class="card-icon">⚡</div>
+                            <h3>Time Savings</h3>
+                            <p>Reduce equipment checkout from minutes to seconds with instant QR code scanning.</p>
+                        </div>
+                        <div class="card-box">
+                            <div class="card-icon">📋</div>
+                            <h3>Accountability</h3>
+                            <p>Track who borrowed what, when, and for how long with detailed tamper-proof audit trails.
+                            </p>
+                        </div>
+                        <div class="card-box">
+                            <div class="card-icon">🔍</div>
+                            <h3>Easy Tracking</h3>
+                            <p>Real-time visibility into equipment status, condition, location, and overall
+                                availability.</p>
+                        </div>
+                        <div class="card-box">
+                            <div class="card-icon">🔐</div>
+                            <h3>Role-Based Access</h3>
+                            <p>Secure isolated dashboards for administrators and students, tailored to their workflows.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="page-section">
+                <div class="section-inner">
+                    <div class="section-heading">
+                        <p>Simple Process</p>
+                        <h2>How It Works</h2>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-step">
+                            <div class="step-num">1</div>
+                            <div class="step-info">
+                                <h3>Scan QR Code</h3>
+                                <p>Students scan the QR code attached to any equipment using their camera. The system
+                                    instantly identifies the item and pulls its availability status.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="step-num">2</div>
+                            <div class="step-info">
+                                <h3>Send Request</h3>
+                                <p>Students select an expected return date and provide a purpose. The borrow request is
+                                    instantly queued for admin approval.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="step-num">3</div>
+                            <div class="step-info">
+                                <h3>Admin Approval</h3>
+                                <p>Admins review all pending requests on their dashboard and approve constraints. A
+                                    real-time notification loop keeps everyone informed.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="step-num">4</div>
+                            <div class="step-info">
+                                <h3>Return & Evaluate</h3>
+                                <p>Once finished, students return the item and rate its condition. Admins finalize the
+                                    transaction, freeing the item for the next user.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div style="padding: 0 1.5rem;">
+                <div class="cta-box">
+                    <h2>Ready to organize your equipment?</h2>
+                    <p>Join the secure, efficient, and robust borrowing system built for modern education.</p>
+                    <a href="index.html#login" class="cta-btn">
+                        Get Started
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
                         </svg>
                     </a>
                 </div>
-            </section>
+            </div>
         </main>
 
         <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="logo">
-                        <img src="CS1A.png" width="32" height="32" alt="roshlogo">
-                        <span style="color: white;">MISLend</span>
-                    </div>
-                    <p class="footer-description">MIS equipment management through QR code technology.</p>
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-logo">
+                        <div class="logo-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                                stroke-width="2.5">
+                                <path
+                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                            </svg>
+                        </div>
+                        MIS<span class="logo-dot">Lend</span>
+                    </a>
+                    <p>Smart equipment management through QR code technology for UCC MIS.</p>
                 </div>
 
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul class="footer-links">
+                <div class="footer-col">
+                    <h4>Navigate</h4>
+                    <ul>
                         <li><a href="index.html">Home</a></li>
                         <li><a href="about.html">About</a></li>
-                        <li><a href="index.html#features">Features</a></li>
                     </ul>
                 </div>
 
-                <div class="footer-section">
-                    <h4>Legal</h4>
-                    <ul class="footer-links">
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
                         <li><a href="documentation.html">Documentation</a></li>
                         <li><a href="support.html">Support</a></li>
                         <li><a href="privacy.html">Privacy Policy</a></li>
                     </ul>
                 </div>
 
-                <div class="footer-section">
+                <div class="footer-col">
                     <h4>Contact</h4>
-                    <ul class="footer-links">
+                    <ul>
                         <li>support@cs1a.mis</li>
                         <li>+63 (975) 922-4758</li>
                     </ul>
@@ -444,7 +234,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2026 MISLend. All rights reserved. Built for educational purposes.</p>
+                &copy; 2026 MISLend. All rights reserved. Built for educational purposes.
             </div>
         </footer>
     </div>
