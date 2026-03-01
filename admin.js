@@ -255,7 +255,7 @@ async function loadOverdueItems() {
         const now = new Date();
 
         const snapshot = await db.collection('borrowings')
-            .where('status', '==', 'borrowed')
+            .where('status', 'in', ['borrowed', 'pending_extension'])
             .get();
 
         const overdue = snapshot.docs
@@ -413,12 +413,20 @@ async function loadPendingRequests() {
 
         pendingGrid.innerHTML = allPending.map(req => {
             const isBorrow = req.type === 'borrow';
-            const actionColor = isBorrow ? 'var(--primary)' : 'var(--warning)';
-            const actionBg = isBorrow ? 'rgba(60, 255, 154, 0.1)' : 'rgba(245, 158, 11, 0.1)';
-            const actionLabel = isBorrow ? 'Borrow Request' : 'Return Request';
-            const icon = isBorrow
-                ? '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'
-                : '<polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path>';
+            const isReturn = req.type === 'return';
+            const isExtension = req.type === 'extension';
+
+            let actionColor = 'var(--primary)';
+            let actionBg = 'rgba(60, 255, 154, 0.1)';
+            let actionLabel = 'Borrow Request';
+            let icon = '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>';
+
+            if (isReturn) {
+                actionColor = 'var(--warning)';
+                actionBg = 'rgba(245, 158, 11, 0.1)';
+                actionLabel = 'Return Request';
+                icon = '<polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path>';
+            }
 
             return `
                 <div class="equipment-card" style="border-top: 4px solid ${actionColor}">
@@ -452,9 +460,13 @@ async function loadPendingRequests() {
                             <div class="detail-row"><span>Room:</span> <span>${req.room || 'N/A'}</span></div>
                             <div class="detail-row"><span>Purpose:</span> <span>${req.purpose || 'N/A'}</span></div>
                             <div class="detail-row"><span>Duration:</span> <span>Until ${req.expectedReturnTime}</span></div>
-                        ` : `
+                        ` : isReturn ? `
                             <div class="detail-row"><span>Condition:</span> <span style="text-transform: capitalize;">${req.pendingReturnCondition || 'N/A'}</span></div>
-                            <div class="detail-row"><span>Notes:</span> <span>${req.pendingReturnNotes || 'None'}</span></div>
+                            <div class="detail-row"><span>Notes:</span> <span style="font-style: italic;">${req.pendingReturnNotes || 'None'}</span></div>
+                        ` : `
+                            <div class="detail-row"><span>Current Due:</span> <span>${req.expectedReturnTime}</span></div>
+                            <div class="detail-row"><span>New Requested:</span> <span style="font-weight:700; color:#1e40af;">${req.requestedReturnTime}</span></div>
+                            <div class="detail-row"><span>Reason:</span> <span>${req.extensionReason || 'N/A'}</span></div>
                         `}
                     </div>
 
@@ -565,6 +577,48 @@ async function rejectReturn(borrowingId, equipmentId) {
     } catch (err) {
         console.error(err);
         showToast('Error rejecting return', 'error');
+    }
+}
+
+async function approveExtension(borrowingId) {
+    if (!confirm('Approve this time extension request?')) return;
+    try {
+        const doc = await db.collection('borrowings').doc(borrowingId).get();
+        const data = doc.data();
+
+        await db.collection('borrowings').doc(borrowingId).update({
+            status: 'borrowed',
+            expectedReturnTime: data.requestedReturnTime,
+            requestedReturnTime: firebase.firestore.FieldValue.delete(),
+            extensionReason: firebase.firestore.FieldValue.delete()
+        });
+
+        showToast('Extension request approved', 'success');
+        loadPendingRequests();
+        loadCurrentlyBorrowed();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error approving extension', 'error');
+    }
+}
+
+async function rejectExtension(borrowingId) {
+    if (!confirm('Reject this time extension request?')) return;
+    try {
+        await db.collection('borrowings').doc(borrowingId).update({
+            status: 'borrowed',
+            requestedReturnTime: firebase.firestore.FieldValue.delete(),
+            extensionReason: firebase.firestore.FieldValue.delete()
+        });
+
+        showToast('Extension request rejected', 'success');
+        loadPendingRequests();
+        loadCurrentlyBorrowed();
+        loadDashboardData();
+    } catch (err) {
+        console.error(err);
+        showToast('Error rejecting extension', 'error');
     }
 }
 
@@ -868,10 +922,35 @@ async function loadCurrentlyBorrowed() {
         const now = new Date();
 
         const snapshot = await db.collection('borrowings')
-            .where('status', '==', 'borrowed')
+            .where('status', 'in', ['borrowed', 'pending_extension'])
             .get();
 
-        const borrowed = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let borrowed = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const sortVal = document.getElementById('borrowedSort')?.value || 'borrowedAt_desc';
+        const [field, direction] = sortVal.split('_');
+
+        borrowed.sort((a, b) => {
+            let valA = a[field];
+            let valB = b[field];
+
+            if (valA?.toDate) valA = valA.toDate();
+            if (valB?.toDate) valB = valB.toDate();
+
+            if (valA == null) return 1;
+            if (valB == null) return -1;
+
+            if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (direction === 'asc') {
+                return valA > valB ? 1 : -1;
+            } else {
+                return valA < valB ? 1 : -1;
+            }
+        });
 
         if (borrowed.length === 0) {
             borrowedList.innerHTML = `
@@ -886,6 +965,7 @@ async function loadCurrentlyBorrowed() {
                     ? Math.floor((new Date() - item.borrowedAt.toDate()) / (1000 * 60 * 60 * 24))
                     : 0;
 
+                const isPendingExtend = item.status === 'pending_extension';
                 let isOverdue = false;
                 if (item.borrowedAt && item.expectedReturnTime) {
                     const borrowedDate = item.borrowedAt.toDate();
@@ -898,7 +978,7 @@ async function loadCurrentlyBorrowed() {
                 }
 
                 return `
-                    <div class="borrowed-list-item">
+                    <div class="borrowed-list-item" ${isPendingExtend ? 'style="border-left: 4px solid #1e40af; background: rgba(30, 64, 175, 0.02);"' : ''}>
                         <div class="borrowed-list-header">
                             <div>
                                 <div class="borrowed-student">${item.userName}</div>
@@ -906,38 +986,56 @@ async function loadCurrentlyBorrowed() {
                                     📧 ${item.userEmail} • 🆔 ${item.studentId}
                                 </div>
                             </div>
-                            ${isOverdue
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                ${isPendingExtend
+                        ? '<span class="badge badge-status" style="background: rgba(30, 64, 175, 0.1); color: #1e40af">EXTENSION REQUESTED</span>'
+                        : ''}
+                                ${isOverdue
                         ? '<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger)">OVERDUE</span>'
                         : ''
                     }
+                            </div>
                         </div>
 
                         <div class="borrowed-list-details" style="margin-top: 1rem;">
                             <strong>Equipment:</strong> ${item.equipmentName}<br>
-                            <strong>Borrowed:</strong> ${formatDate(item.borrowedAt)} (${daysBorrowed} days ago)<br>
-                            <strong>Due Time:</strong> ${item.expectedReturnTime || 'N/A'}<br>
-                            <strong>Room:</strong> ${item.room || 'N/A'}<br>
-                            <strong>Purpose:</strong> ${item.purpose || 'N/A'}
+                            <strong>Borrowed:</strong> ${formatDate(item.borrowedAt)}<br>
+                            <strong>Current Due:</strong> ${item.expectedReturnTime || 'N/A'}<br>
+                            ${isPendingExtend ? `
+                                <div style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(30, 64, 175, 0.05); border-radius: var(--radius-md); border: 1px dashed #1e40af;">
+                                    <strong style="color: #1e40af;">New Requested Time:</strong> <span style="font-weight:700; color: #1e40af;">${item.requestedReturnTime}</span><br>
+                                    <strong style="color: #1e40af;">Reason:</strong> ${item.extensionReason || 'Not specified'}
+                                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+                                        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="approveExtension('${item.id}')">Approve Extension</button>
+                                        <button class="btn btn-secondary btn-sm" style="flex:1; border-color: var(--danger); color: var(--danger);" onclick="rejectExtension('${item.id}')">Reject</button>
+                                    </div>
+                                </div>
+                            ` : `
+                                <strong>Room:</strong> ${item.room || 'N/A'}<br>
+                                <strong>Purpose:</strong> ${item.purpose || 'N/A'}
+                            `}
                         </div>
 
-                        <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                            ${item.userId ? `
-                                <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
-                                    💬
+                        ${!isPendingExtend ? `
+                            <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                                ${item.userId ? `
+                                    <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
+                                        💬
+                                    </button>
+                                ` : ''}
+                                <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
+                                    <option value="good">Good – No issues</option>
+                                    <option value="minor">Minor Issues</option>
+                                    <option value="damaged">Damaged – Needs repair</option>
+                                </select>
+                                <button class="btn btn-primary btn-sm" onclick="adminConfirmReturn('${item.id}', '${item.equipmentId}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    Confirm Return
                                 </button>
-                            ` : ''}
-                            <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
-                                <option value="good">Good – No issues</option>
-                                <option value="minor">Minor Issues</option>
-                                <option value="damaged">Damaged – Needs repair</option>
-                            </select>
-                            <button class="btn btn-primary btn-sm" onclick="adminConfirmReturn('${item.id}', '${item.equipmentId}')">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                                Confirm Return
-                            </button>
-                        </div>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -1890,3 +1988,10 @@ window.deleteEquipment = deleteEquipment;
 window.deleteUser = deleteUser;
 window.sendSMSOverdue = sendSMSOverdue;
 window.sendEmailOverdue = sendEmailOverdue;
+window.approveBorrow = approveBorrow;
+window.rejectBorrow = rejectBorrow;
+window.approveReturn = approveReturn;
+window.rejectReturn = rejectReturn;
+window.approveExtension = approveExtension;
+window.rejectExtension = rejectExtension;
+window.adminConfirmReturn = adminConfirmReturn;

@@ -407,7 +407,32 @@
             </div>
         </div>
     </div>
-
+    <div class="modal" id="extendModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Request Extension</h2>
+                <button class="modal-close" id="closeExtendModal">&times;</button>
+            </div>
+            <div id="extendDetail" style="margin-bottom: 1.5rem;"></div>
+            <div class="form-group">
+                <label for="newReturnTime">New Expected Return Time</label>
+                <input type="time" id="newReturnTime" class="date-input" required>
+            </div>
+            <div class="form-group">
+                <label for="extendReason">Reason for Extension</label>
+                <textarea id="extendReason" rows="3" placeholder="e.g., Presentation is running late..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelExtend">Cancel</button>
+                <button class="btn btn-primary" id="confirmExtend">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Send Request
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="modal" id="profileModal">
         <div class="modal-content">

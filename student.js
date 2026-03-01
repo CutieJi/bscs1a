@@ -3,6 +3,7 @@ let currentUserData = null;
 let html5QrCode = null;
 let selectedEquipmentForBorrow = null;
 let selectedBorrowingForReturn = null;
+let selectedBorrowingForExtend = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -441,6 +442,21 @@ function initializeModals() {
             }
         });
     }
+
+    const extendModal = document.getElementById('extendModal');
+    const closeExtendModal = document.getElementById('closeExtendModal');
+    const cancelExtend = document.getElementById('cancelExtend');
+    const confirmExtend = document.getElementById('confirmExtend');
+
+    if (closeExtendModal) closeExtendModal.onclick = () => extendModal.classList.remove('active');
+    if (cancelExtend) cancelExtend.onclick = () => extendModal.classList.remove('active');
+    if (confirmExtend) confirmExtend.onclick = () => requestExtension();
+
+    if (extendModal) {
+        extendModal.onclick = (e) => {
+            if (e.target === extendModal) extendModal.classList.remove('active');
+        }
+    }
 }
 
 async function borrowEquipment() {
@@ -455,6 +471,21 @@ async function borrowEquipment() {
 
     if (!returnTime) {
         showToast('Please select a return time', 'error');
+        return;
+    }
+
+    const now = new Date();
+    const [hh, mm] = returnTime.split(':').map(Number);
+    const target = new Date();
+    target.setHours(hh, mm, 0, 0);
+
+    if (target < now) {
+        target.setDate(target.getDate() + 1);
+    }
+
+    const diffHours = (target - now) / (1000 * 60 * 60);
+    if (diffHours > 3.01) {
+        showToast('Maximum borrowing time is 3 hours', 'error');
         return;
     }
 
@@ -509,14 +540,16 @@ async function loadBorrowedItems() {
     if (!borrowedItemsGrid) return;
 
     try {
-        const [borrowedSnap, pendingBorrowSnap] = await Promise.all([
+        const [borrowedSnap, pendingBorrowSnap, pendingExtendSnap] = await Promise.all([
             db.collection('borrowings').where('userId', '==', currentUser.uid).where('status', '==', 'borrowed').get(),
-            db.collection('borrowings').where('userId', '==', currentUser.uid).where('status', '==', 'pending_borrow').get()
+            db.collection('borrowings').where('userId', '==', currentUser.uid).where('status', '==', 'pending_borrow').get(),
+            db.collection('borrowings').where('userId', '==', currentUser.uid).where('status', '==', 'pending_extension').get()
         ]);
 
         const borrowedItems = [
             ...borrowedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-            ...pendingBorrowSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            ...pendingBorrowSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+            ...pendingExtendSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
         ].sort((a, b) => {
             const aTime = a.borrowedAt?.seconds || 0;
             const bTime = b.borrowedAt?.seconds || 0;
@@ -540,18 +573,43 @@ async function loadBorrowedItems() {
         } else {
             borrowedItemsGrid.innerHTML = borrowedItems.map(item => {
                 const isPendingBorrow = item.status === 'pending_borrow';
+                const isPendingReturn = item.status === 'pending_return';
+                const isPendingExtend = item.status === 'pending_extension';
                 const isBorrowed = item.status === 'borrowed';
 
                 let statusBadge = '';
                 if (isPendingBorrow) {
                     statusBadge = `<span class="badge badge-status" style="background: rgba(245,158,11,0.1); color: var(--warning); font-size:0.75rem;">⏳ Pending Approval</span>`;
+                } else if (isPendingExtend) {
+                    statusBadge = `<span class="badge badge-status" style="background: rgba(30,64,175,0.1); color: #1e40af; font-size:0.75rem;">⏳ Extension Pending</span>`;
                 } else if (isBorrowed) {
                     statusBadge = `<span class="badge badge-status" style="background: rgba(16,185,129,0.1); color: var(--success); font-size:0.75rem;">✅ Approved</span>`;
                 }
 
-                const returnBtn = `<div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 0.5rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
-                        📋 Return is confirmed by the admin
+                let actions = '';
+                if (isBorrowed) {
+                    actions = `
+                        <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="openExtendModal('${item.id}')">
+                            Extend Time
+                        </button>
+                    `;
+                } else if (isPendingBorrow) {
+                    actions = `
+                        <button class="btn btn-secondary btn-sm" style="flex:1; border-color: var(--danger); color: var(--danger);" onclick="cancelBorrowRequest('${item.id}')">
+                            Cancel Request
+                        </button>
+                    `;
+                } else if (isPendingExtend) {
+                    actions = `
+                        <button class="btn btn-secondary btn-sm" style="flex:1; border-color: var(--danger); color: var(--danger);" onclick="cancelExtensionRequest('${item.id}')">
+                            Cancel Extension
+                        </button>
+                    `;
+                } else {
+                    actions = `<div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 0.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); width:100%;">
+                        📋 Action is confirmed by the admin
                     </div>`;
+                }
 
                 return `
                     <div class="borrowed-item-card">
@@ -572,8 +630,8 @@ async function loadBorrowedItems() {
                             <strong>Room:</strong> ${item.room || 'N/A'}
                             &nbsp; <strong>Purpose:</strong> ${item.purpose}
                         </div>
-                        <div class="borrowed-item-actions">
-                            ${returnBtn}
+                        <div class="borrowed-item-actions" style="display:flex; gap:0.5rem;">
+                            ${actions}
                         </div>
                     </div>
                 `;
@@ -931,5 +989,120 @@ async function startQRScanner() {
     }
 }
 
+async function openExtendModal(borrowingId) {
+    try {
+        const doc = await db.collection("borrowings").doc(borrowingId).get();
+        if (!doc.exists) return;
+        const data = { id: doc.id, ...doc.data() };
+        selectedBorrowingForExtend = data;
+
+        const extendDetail = document.getElementById("extendDetail");
+        extendDetail.innerHTML = `
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">${data.equipmentName}</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Current Due: ${data.expectedReturnTime}</div>
+            </div>
+        `;
+
+        const newReturnTimeInput = document.getElementById("newReturnTime");
+        if (newReturnTimeInput) {
+            const date = new Date();
+            date.setHours(date.getHours() + 1);
+            date.setSeconds(0, 0);
+
+            const hh = String(date.getHours()).padStart(2, "0");
+            const mm = String(date.getMinutes()).padStart(2, "0");
+            newReturnTimeInput.value = `${hh}:${mm}`;
+        }
+
+        document.getElementById("extendModal").classList.add("active");
+    } catch (err) {
+        console.error(err);
+        showToast("Error opening extension modal", "error");
+    }
+}
+
+async function requestExtension() {
+    const newTime = document.getElementById("newReturnTime").value;
+    const reason = document.getElementById("extendReason").value;
+
+    if (!newTime) {
+        showToast("Please select a new return time", "error");
+        return;
+    }
+
+    const now = new Date();
+    const [hh, mm] = newTime.split(':').map(Number);
+    const target = new Date();
+    target.setHours(hh, mm, 0, 0);
+
+    if (target < now) {
+        target.setDate(target.getDate() + 1);
+    }
+
+    const diffHours = (target - now) / (1000 * 60 * 60);
+    if (diffHours > 3.01) {
+        showToast('Maximum time limit is 3 hours from now', 'error');
+        return;
+    }
+
+    const confirmBtn = document.getElementById("confirmExtend");
+    const originalContent = confirmBtn.innerHTML;
+
+    try {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = "<span>Sending...</span>";
+
+        await db.collection("borrowings").doc(selectedBorrowingForExtend.id).update({
+            status: "pending_extension",
+            requestedReturnTime: newTime,
+            extensionReason: reason || "Not specified",
+        });
+
+        showToast("Extension request sent! Awaiting admin approval.", "success");
+        document.getElementById("extendModal").classList.remove("active");
+        document.getElementById("extendReason").value = "";
+        loadBorrowedItems();
+    } catch (err) {
+        console.error(err);
+        showToast("Failed to send extension request", "error");
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalContent;
+    }
+}
+
+async function cancelBorrowRequest(borrowingId) {
+    if (!confirm("Are you sure you want to cancel this borrow request?")) return;
+    try {
+        console.log("Cancelling Request ID:", borrowingId);
+        await db.collection("borrowings").doc(borrowingId).delete();
+        showToast("Borrow request cancelled", "success");
+        loadBorrowedItems();
+    } catch (err) {
+        console.error("Cancellation Error Detailed:", err);
+        showToast("Error: " + (err.message || "Unknown error"), "error");
+    }
+}
+
+async function cancelExtensionRequest(borrowingId) {
+    if (!confirm("Are you sure you want to cancel this extension request?")) return;
+    try {
+        await db.collection("borrowings").doc(borrowingId).update({
+            status: "borrowed",
+            requestedReturnTime: firebase.firestore.FieldValue.delete(),
+            extensionReason: firebase.firestore.FieldValue.delete(),
+        });
+        showToast("Extension request cancelled", "success");
+        loadBorrowedItems();
+    } catch (err) {
+        console.error(err);
+        showToast("Error cancelling extension", "error");
+    }
+}
+
 window.openBorrowModal = openBorrowModal;
 window.openReturnModal = openReturnModal;
+window.openExtendModal = openExtendModal;
+window.cancelBorrowRequest = cancelBorrowRequest;
+window.cancelExtensionRequest = cancelExtensionRequest;

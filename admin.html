@@ -37,7 +37,7 @@
         <div class="loader-spinner"></div>
     </div>
 
-    <div class="dashboard-container page-content-fade" id="pageContent">
+    <div class="dashboard-container" id="pageContent">
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <aside class="sidebar" id="sidebar">
@@ -444,6 +444,20 @@
                         <div>
                             <h1 class="page-title">Currently Borrowed Equipment</h1>
                             <p class="page-subtitle">Track active borrowings</p>
+                        </div>
+                        <div class="header-actions">
+                            <div class="filter-group">
+                                <label for="borrowedSort"
+                                    style="font-size: 0.85rem; color: var(--text-secondary); margin-right: 0.5rem;">Sort
+                                    By:</label>
+                                <select id="borrowedSort" class="sort-select" onchange="loadCurrentlyBorrowed()"
+                                    style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem;">
+                                    <option value="borrowedAt_desc">Newest First</option>
+                                    <option value="borrowedAt_asc">Oldest First</option>
+                                    <option value="userName_asc">Student Name (A-Z)</option>
+                                    <option value="equipmentName_asc">Equipment Name (A-Z)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
