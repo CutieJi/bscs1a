@@ -8,11 +8,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentAdminData = userData;
 
         initializeDashboard();
-        loadPending();
     } catch (error) {
-        console.error('Authentication error:', error);
+        initializeDashboard();
+        loadPending();
     }
 });
+
+function initializeUserManagement() {
+    const roleSelect = document.getElementById('newUserRole');
+    const additionalFields = document.getElementById('additionalStudentFields');
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', (e) => {
+            const isStudent = e.target.value === 'student';
+            if (additionalFields) additionalFields.style.display = isStudent ? 'block' : 'none';
+
+            const studentIdInput = document.getElementById('newUserStudentId');
+            if (studentIdInput) studentIdInput.required = isStudent;
+        });
+    }
+
+    const editRoleSelect = document.getElementById('editUserRole');
+    const editStudentContainer = document.getElementById('editStudentFieldsContainers');
+    if (editRoleSelect && editStudentContainer) {
+        editRoleSelect.addEventListener('change', (e) => {
+            editStudentContainer.style.display = e.target.value === 'student' ? 'block' : 'none';
+        });
+    }
+
+    const addUserForm = document.getElementById('addUserForm');
+    if (addUserForm) {
+        addUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await createNewUser();
+        });
+    }
+
+    const closeAddUserModal = document.getElementById('closeAddUserModal');
+    const cancelAddUser = document.getElementById('cancelAddUser');
+    const addUserModal = document.getElementById('addUserModal');
+
+    const closeAddUser = () => {
+        addUserModal?.classList.remove('active');
+        addUserForm?.reset();
+        if (additionalFields) additionalFields.style.display = 'none';
+    };
+
+    if (closeAddUserModal) closeAddUserModal.addEventListener('click', closeAddUser);
+    if (cancelAddUser) cancelAddUser.addEventListener('click', closeAddUser);
+}
 
 function initializeDashboard() {
     updateAdminInfo();
@@ -249,6 +293,11 @@ async function loadOverdueItems() {
                             Borrowed by ${item.userName} - Due Time: ${item.expectedReturnTime || 'N/A'}
                         </div>
                     </div>
+                    <div class="alert-actions" style="margin-left: auto; display: flex; align-items: center;">
+                        <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}')" title="Send SMS Reminder">
+                            💬
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -288,7 +337,7 @@ async function loadPendingRequests() {
         const allPending = [...pendingBorrows, ...pendingReturns].sort((a, b) => {
             const timeA = a.borrowedAt ? a.borrowedAt.toDate() : new Date(0);
             const timeB = b.borrowedAt ? b.borrowedAt.toDate() : new Date(0);
-            return timeB - timeA; // newest first
+            return timeB - timeA;
         });
 
         const count = allPending.length;
@@ -826,6 +875,11 @@ async function loadCurrentlyBorrowed() {
                         </div>
 
                         <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                            ${item.userId ? `
+                                <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}')" title="Send SMS Reminder">
+                                    💬
+                                </button>
+                            ` : ''}
                             <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
                                 <option value="good">Good – No issues</option>
                                 <option value="minor">Minor Issues</option>
@@ -916,7 +970,14 @@ async function loadBorrowingLogs() {
                 <div class="log-item">
                     <div class="log-item-header">
                         <span class="log-item-title">${log.equipmentName}</span>
-                        <span class="history-status ${log.status}">${statusLabel}</span>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            ${(log.status === 'borrowed' || log.status === 'pending_return') && log.userId ? `
+                                <button class="btn btn-icon btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}')" title="Send SMS Reminder">
+                                    💬
+                                </button>
+                            ` : ''}
+                            <span class="history-status ${log.status}">${statusLabel}</span>
+                        </div>
                     </div>
 
                     <div class="log-item-info">
@@ -1189,46 +1250,45 @@ function initializeUserManagement() {
     const cancelAddUser = document.getElementById('cancelAddUser');
     const addUserForm = document.getElementById('addUserForm');
     const newUserRole = document.getElementById('newUserRole');
-    const studentIdGroup = document.getElementById('studentIdGroup');
+    const additionalFields = document.getElementById('additionalStudentFields');
 
     if (addUserBtn) {
         addUserBtn.addEventListener('click', () => {
-            addUserModal.classList.add('active');
+            addUserModal?.classList.add('active');
         });
     }
 
-    if (closeAddUserModal) {
-        closeAddUserModal.addEventListener('click', () => {
-            addUserModal.classList.remove('active');
-            addUserForm.reset();
+    if (newUserRole) {
+        newUserRole.addEventListener('change', (e) => {
+            const isStudent = e.target.value === 'student';
+            if (additionalFields) additionalFields.style.display = isStudent ? 'block' : 'none';
+
+            const studentIdInput = document.getElementById('newUserStudentId');
+            if (studentIdInput) studentIdInput.required = isStudent;
         });
     }
 
-    if (cancelAddUser) {
-        cancelAddUser.addEventListener('click', () => {
-            addUserModal.classList.remove('active');
-            addUserForm.reset();
-        });
-    }
+    // Modal Close Logic
+    const closeAddUser = () => {
+        addUserModal?.classList.remove('active');
+        addUserForm?.reset();
+        if (additionalFields) additionalFields.style.display = 'none';
+    };
 
+    if (closeAddUserModal) closeAddUserModal.addEventListener('click', closeAddUser);
+    if (cancelAddUser) cancelAddUser.addEventListener('click', closeAddUser);
     if (addUserModal) {
         addUserModal.addEventListener('click', (e) => {
-            if (e.target === addUserModal) {
-                addUserModal.classList.remove('active');
-                addUserForm.reset();
-            }
+            if (e.target === addUserModal) closeAddUser();
         });
     }
 
-    if (newUserRole && studentIdGroup) {
-        newUserRole.addEventListener('change', () => {
-            if (newUserRole.value === 'admin') {
-                studentIdGroup.classList.add('hidden');
-                document.getElementById('newUserStudentId').required = false;
-            } else {
-                studentIdGroup.classList.remove('hidden');
-                document.getElementById('newUserStudentId').required = true;
-            }
+    // Edit User Role Logic
+    const editRoleSelect = document.getElementById('editUserRole');
+    const editStudentContainer = document.getElementById('editStudentFieldsContainers');
+    if (editRoleSelect && editStudentContainer) {
+        editRoleSelect.addEventListener('change', (e) => {
+            editStudentContainer.style.display = e.target.value === 'student' ? 'block' : 'none';
         });
     }
 
@@ -1245,7 +1305,11 @@ async function createNewUser() {
     const email = document.getElementById('newUserEmail').value.trim();
     const password = document.getElementById('newUserPassword').value;
     const role = document.getElementById('newUserRole').value;
-    const studentId = document.getElementById('newUserStudentId').value.trim();
+    const studentId = document.getElementById('newUserStudentId')?.value.trim();
+    const mobile = document.getElementById('newUserMobile')?.value.trim();
+    const gender = document.getElementById('newUserGender')?.value;
+    const course = document.getElementById('newUserCourse')?.value.trim();
+    const yearSection = document.getElementById('newUserYearSection')?.value.trim();
 
     const submitBtn = document.querySelector('#addUserForm button[type="submit"]');
     const originalBtnContent = submitBtn.innerHTML;
@@ -1268,7 +1332,14 @@ async function createNewUser() {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if (role === 'student') userData.studentId = studentId || "";
+        if (role === 'student') {
+            userData.studentId = studentId || "";
+            userData.mobile = mobile || "";
+            userData.gender = gender || "";
+            userData.course = course || "";
+            userData.yearSection = yearSection || "";
+        }
+
 
         await db.collection('users').doc(newUser.uid).set(userData);
 
@@ -1335,9 +1406,14 @@ async function loadUsers() {
                         </div>
                         <div class="user-card-actions">
                             ${user.id !== currentAdmin.uid ? `
-                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}')">
+                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}')" title="Edit">
                                     ✏️
                                 </button>
+                                ${user.role === 'student' && user.mobile ? `
+                                    <a class="btn btn-icon" href="sms:${user.mobile}?body=Hello ${user.name}, this is UCC MIS Office. Just a reminder regarding your equipment borrowing." title="Send Message">
+                                        💬
+                                    </a>
+                                ` : ''}
                                 <button class="btn btn-icon danger" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
                                     🗑
                                 </button>
@@ -1452,14 +1528,21 @@ document.getElementById("editEquipmentForm").addEventListener("submit", async e 
     loadDashboardData();
 });
 
-function openEditUser(id, name, email, role, studentId) {
+function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection) {
     document.getElementById("editUserId").value = id;
     document.getElementById("editUserName").value = name;
     document.getElementById("editUserEmail").value = email;
     document.getElementById("editUserRole").value = role;
-    document.getElementById("editUserStudentId").value = studentId;
-    document.getElementById("editUserStudentId").setAttribute("minlength", "10");
-    document.getElementById("editUserStudentId").setAttribute("maxlength", "10");
+    document.getElementById("editUserStudentId").value = studentId || "";
+    document.getElementById("editUserMobile").value = mobile || "";
+    document.getElementById("editUserGender").value = gender || "";
+    document.getElementById("editUserCourse").value = course || "";
+    document.getElementById("editUserYearSection").value = yearSection || "";
+
+    const studentContainer = document.getElementById("editStudentFieldsContainers");
+    if (studentContainer) {
+        studentContainer.style.display = role === 'student' ? 'block' : 'none';
+    }
 
     document.getElementById("editUserModal").classList.add("active");
 }
@@ -1472,13 +1555,23 @@ document.getElementById("editUserForm").addEventListener("submit", async e => {
     e.preventDefault();
 
     const id = document.getElementById("editUserId").value;
+    const role = document.getElementById("editUserRole").value;
 
-    await db.collection("users").doc(id).update({
+    const updateData = {
         name: document.getElementById("editUserName").value,
         email: document.getElementById("editUserEmail").value,
-        role: document.getElementById("editUserRole").value,
+        role: role,
         studentId: document.getElementById("editUserStudentId").value
-    });
+    };
+
+    if (role === 'student') {
+        updateData.mobile = document.getElementById("editUserMobile").value;
+        updateData.gender = document.getElementById("editUserGender").value;
+        updateData.course = document.getElementById("editUserCourse").value;
+        updateData.yearSection = document.getElementById("editUserYearSection").value;
+    }
+
+    await db.collection("users").doc(id).update(updateData);
 
     showToast("User updated", "success");
     document.getElementById("editUserModal").classList.remove("active");
@@ -1676,6 +1769,23 @@ function initializeTheme() {
     }
 }
 
+async function sendSMSOverdue(userId, equipmentName) {
+    try {
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.data();
+        if (userData && userData.mobile) {
+            const message = `Hello ${userData.name}, this is UCC MIS Office. Reminder: your borrowed equipment (${equipmentName}) is now overdue. Please return it as soon as possible. Thank you!`;
+            window.location.href = `sms:${userData.mobile}?body=${encodeURIComponent(message)}`;
+        } else {
+            showToast("User has no mobile number registered.", "warning");
+        }
+    } catch (error) {
+        console.error("Error sending SMS:", error);
+        showToast("Failed to initiate SMS.", "error");
+    }
+}
+
 window.generateQRCode = generateQRCode;
 window.deleteEquipment = deleteEquipment;
 window.deleteUser = deleteUser;
+window.sendSMSOverdue = sendSMSOverdue;

@@ -842,8 +842,10 @@ function openProfileModal() {
     document.getElementById("profileName").value = currentUserData.name || "";
     document.getElementById("profileEmail").value = currentUser.email || "";
     document.getElementById("profileStudentId").value = currentUserData.studentId || "";
-    document.getElementById("profileStudentId").setAttribute("minlength", "10");
-    document.getElementById("profileStudentId").setAttribute("maxlength", "10");
+    document.getElementById("profileMobile").value = currentUserData.mobile || "";
+    document.getElementById("profileGender").value = currentUserData.gender || "";
+    document.getElementById("profileCourse").value = currentUserData.course || "";
+    document.getElementById("profileYearSection").value = currentUserData.yearSection || "";
 }
 
 function closeProfileModal() {
@@ -851,13 +853,19 @@ function closeProfileModal() {
 }
 
 async function saveProfile() {
-    const name = profileName.value;
-    const email = profileEmail.value;
-    const studentId = profileStudentId.value;
+    const name = document.getElementById("profileName").value;
+    const email = document.getElementById("profileEmail").value;
+    const studentId = document.getElementById("profileStudentId").value;
+    const mobile = document.getElementById("profileMobile").value;
+    const gender = document.getElementById("profileGender").value;
+    const course = document.getElementById("profileCourse").value;
+    const yearSection = document.getElementById("profileYearSection").value;
 
-    await db.collection("users").doc(currentUser.uid).update({
-        name, email, studentId
-    });
+    const updateData = {
+        name, email, studentId, mobile, gender, course, yearSection
+    };
+
+    await db.collection("users").doc(currentUser.uid).update(updateData);
 
     if (email !== currentUser.email) {
         await currentUser.updateEmail(email);

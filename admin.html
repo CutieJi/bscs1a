@@ -631,10 +631,38 @@
                         <option value="admin">Admin</option>
                     </select>
                 </div>
-                <div class="form-group" id="studentIdGroup">
-                    <label for="newUserStudentId">Student ID</label>
-                    <input type="text" id="newUserStudentId" placeholder="20250000-S" minlength="10" maxlength="10"
-                        required>
+                <div id="additionalStudentFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserStudentId">Student ID</label>
+                            <input type="text" id="newUserStudentId" placeholder="20250000-S" minlength="10"
+                                maxlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserMobile">Mobile No.</label>
+                            <input type="tel" id="newUserMobile" placeholder="09*********" minlength="11"
+                                maxlength="11">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserGender">Gender</label>
+                            <select id="newUserGender">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserCourse">Course / Program</label>
+                            <input type="text" id="newUserCourse" placeholder="e.g., BSCS">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserYearSection">Year Level & Section</label>
+                        <input type="text" id="newUserYearSection" placeholder="e.g., 1-A">
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>
@@ -721,6 +749,25 @@
 
                 <label>Student ID</label>
                 <input id="editUserStudentId">
+
+                <div id="editStudentFieldsContainers">
+                    <label>Mobile No.</label>
+                    <input type="tel" id="editUserMobile" minlength="11" maxlength="11">
+
+                    <label>Gender</label>
+                    <select id="editUserGender">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label>Course / Program</label>
+                    <input id="editUserCourse">
+
+                    <label>Year & Section</label>
+                    <input id="editUserYearSection">
+                </div>
 
                 <button class="btn btn-primary">Save</button>
             </form>

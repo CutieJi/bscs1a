@@ -118,9 +118,9 @@
 
                     <form id="unifiedLoginForm">
                         <div class="form-group">
-                            <label for="loginEmail">Email</label>
-                            <input type="email" id="loginEmail" placeholder="your@email.com" required
-                                autocomplete="email">
+                            <label for="loginEmail">Email or Student ID</label>
+                            <input type="text" id="loginEmail" placeholder="e.g., 20250000-S or your@email.com" required
+                                autocomplete="username">
                         </div>
                         <div class="form-group">
                             <label for="loginPassword">Password</label>
@@ -263,6 +263,31 @@
                     <label for="registerStudentId">Student ID</label>
                     <input type="text" id="registerStudentId" placeholder="20250000-S" minlength="10" maxlength="10"
                         required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registerMobile">Mobile No.</label>
+                        <input type="tel" id="registerMobile" placeholder="09*********" minlength="11" maxlength="11"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerGender">Gender</label>
+                        <select id="registerGender" required>
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registerCourse">Course / Program</label>
+                        <input type="text" id="registerCourse" placeholder="e.g., BSCS" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerYearSection">Year Level & Section</label>
+                        <input type="text" id="registerYearSection" placeholder="e.g., 1-A" required>
+                    </div>
                 </div>
                 <button type="submit" class="btn-create">Create Account</button>
             </form>

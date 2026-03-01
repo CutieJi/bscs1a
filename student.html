@@ -424,6 +424,28 @@
                     <label>Student ID</label>
                     <input type="text" id="profileStudentId">
                 </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Mobile No.</label>
+                        <input type="tel" id="profileMobile" minlength="11" maxlength="11">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="profileGender">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Course / Program</label>
+                    <input type="text" id="profileCourse">
+                </div>
+                <div class="form-group">
+                    <label>Year Level & Section</label>
+                    <input type="text" id="profileYearSection">
+                </div>
                 <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
             </div>
         </div>
@@ -438,15 +460,15 @@
             <div class="login-form">
                 <div class="form-group">
                     <label>Current Password</label>
-                    <input type="password" id="currentPasswordStudent">
+                    <input type="password" id="currentPasswordStudent" placeholder="Enter current password"  required>
                 </div>
                 <div class="form-group">
                     <label>New Password</label>
-                    <input type="password" id="newPassword" minlength="8">
+                    <input type="password" id="newPassword" minlength="8" placeholder="At least 8 characters" required>
                 </div>
                 <div class="form-group">
                     <label>Confirm New Password</label>
-                    <input type="password" id="confirmPasswordStudent" minlength="8">
+                    <input type="password" id="confirmPasswordStudent" placeholder="Repeat new password" autocomplete="new-password" minlength="8" required>
                 </div>
                 <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
             </div>
