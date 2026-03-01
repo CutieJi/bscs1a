@@ -1,207 +1,118 @@
-# Table of Contents
-- [Requirements](#1-requirements)
-- [Firebase Setup (Step-by-step)](#2-firebase-setup-step-by-step)
-- [Firestore Collections (Data Structure)](#3-firestore-collections-data-structure)
-- [Create Admin Account (Important)](#4-create-admin-account-important)
-- [Security Rules (Basic idea)](#5-security-rules-basic-idea)
-- [How to Use the Website](#6-how-to-use-the-website-step-by-step)
-- [Demo Accounts](#7-demo-accounts-for-testing)
-- [QR Scanner Notes](#8-notes-important)
+# 🛰️ MISLend: Smart Equipment Management System
+
+**MISLend** is a professional, high-performance web application designed for the **UCC MIS Department** to streamline the borrowing and returning of technical equipment. Built with a focus on ease of use, security, and administrative control, it leverages Firebase for real-time data and authentication.
 
 ---
 
-# MISLend (Equipment Borrowing System) - README
-
-A student project for borrowing/returning school equipment using Firebase + QR scanning.
-
-- [Live demo here!](https://uccmis.netlify.app/)
-- [Full guide here!](https://uccmis.netlify.app/documentation.html)
-- [Support guide here!](https://uccmis.netlify.app/support.html)
-- [Privacy policy here!](https://uccmis.netlify.app/privacy.html)
-
----
-
-## 1) Requirements
-- Browser (Chrome/Edge recommended)
-- Firebase Project
-- Firebase Auth enabled (Email/Password)
-- Firestore Database created
-- Hosting (optional but recommended) for QR scanning camera access:
-  - Use HTTPS (Firebase Hosting / Netlify / Vercel) or localhost
+## 📖 Table of Contents
+- [✨ Key Features](#-key-features)
+- [🛠️ Technology Stack](#-technology-stack)
+- [🚀 Quick Setup Guide](#-quick-setup-guide)
+- [🏗️ Database Architecture](#-database-architecture)
+- [🔐 Security & Access Control](#-security--access-control)
+- [👤 User Roles & Workflows](#-user-roles--workflows)
+- [🧹 Maintenance & Clean-up](#-maintenance--clean-up)
 
 ---
 
-## 2) Firebase Setup (Step-by-step)
-1. Go to Firebase Console
-2. Create a project (example: MISLend)
-3. Enable Authentication:
-   - Auth > Sign-in method > enable Email/Password
-4. Create Firestore Database:
-   - Firestore > Create database (test mode first, then apply rules)
-5. Copy your Firebase config:
-   - Project settings > General > Web app config
-6. Paste config to your `app.js` (firebase initialization)
+## ✨ Key Features
+- **Student Account Approval**: Robust registration flow where new students are "Pending" until verified by an admin.
+- **QR Code Integration**: Scan equipment for instant borrowing and returning (requires HTTPS).
+- **Dashboard Analytics**: Real-time stats on available equipment, active borrows, and overdue items.
+- **Automated Logging**: Full transaction history with return condition tracking (Good/Damaged).
+- **Modern Responsive UI**: Premium dark/light mode support with a sleek "Glassmorphism" aesthetic.
 
 ---
 
-## 3) Firestore Collections (Data Structure)
-
-### equipment (collection)
-Each document example:
-- equipmentId: "PROJ-001"
-- name: "Projector Epson EB-X41"
-- category: "projector"
-- description: "Optional"
-- status: "available" | "borrowed" | "maintenance"
-- borrowedBy: userId/null
-- borrowedAt: timestamp/null
-- createdAt: timestamp
-
-### users (collection)
-Each document uses auth uid:
-- name
-- email
-- role: "student" | "admin"
-- studentId (optional)
-- status: "pending" | "approved"
-- createdAt: timestamp
-
-### borrowings (collection)
-Each document:
-- equipmentId (doc id of equipment)
-- equipmentCode (equipmentId string)
-- equipmentName
-- equipmentCategory
-- userId
-- userName
-- userEmail
-- studentId
-- room
-- purpose
-- borrowedAt (timestamp)
-- expectedReturn (timestamp) OR expectedReturnTime (string) depending on your system
-- returnedAt (timestamp optional)
-- returnCondition: "good" | "damaged"
-- returnNotes
-- status: "borrowed" | "returned"
+## 🛠️ Technology Stack
+- **Frontend**: Vanilla JavaScript (ES6+), Modern CSS3 (Grid/Flexbox/Animations), HTML5.
+- **Backend**: Firebase Firestore (NoSQL Database).
+- **Authentication**: Firebase Auth (Email/Password).
+- **Deployment**: Optimized for Static Hosting (Netlify, Vercel, or Firebase Hosting).
 
 ---
 
-## 4) Create Admin Account (Important)
-Option A (Simple):
-1. Register an account using the app
-2. In Firestore > users > find your UID
-3. Set role = "admin"
-4. Set status = "approved"
+## 🚀 Quick Setup Guide
 
-Option B (Better):
-Use a dedicated admin creation screen (your project already has Add User in admin).
+### 1. Firebase Project Creation
+1. Go to the [Firebase Console](https://console.firebase.google.com/).
+2. Create a new project (e.g., `mislend-app`).
+3. Enable **Authentication**:
+   - Go to `Authentication > Sign-in method`.
+   - Enable **Email/Password**.
+4. Create a **Firestore Database**:
+   - Go to `Cloud Firestore > Create database`.
+   - Start in **Test Mode** (update rules before production).
 
----
+### 2. Connect Your App
+1. Register a **Web App** in your Firebase project.
+2. Copy the `firebaseConfig` object.
+3. Open `app.js` and paste your config into the `firebaseConfig` constant.
 
-## 5) Security Rules (Basic idea)
-- Students can read their own user doc and their borrowings
-- Admin can read/update/delete all equipment, users, borrowings
+```javascript
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT",
+    // ... rest of your config
+};
+```
 
-⚠️ Make sure your rules match your final features.
-
----
-
-## 6) How to Use the Website (Step-by-step)
-
-[Click for Full Guide!](https://uccmis.netlify.app/documentation.html)
-
-### A) Student Side (Borrower)
-1. Open the website (example: `index.html`)
-2. Click **Login** and sign in using your student account.
-3. If your account is new, you may see **Pending** status:
-   - Wait for admin approval (Admin → User Management → Pending Approvals → Approve)
-4. After approved, go to **Browse Equipment**
-5. Use filters (Category / Status / Search)
-6. Click **Borrow** on an available equipment
-7. Fill up the form:
-   - **Room** (required)
-   - **Return Time** (required)
-   - Purpose (optional)
-8. Click **Confirm Borrow**
-9. To return:
-   - Go to **My Borrowed**
-   - Click **Return Equipment**
-   - Select condition:
-     - **Good** → equipment goes back to `available`
-     - **Damaged / Not Good** → equipment goes to `maintenance`
-   - Add notes if needed
-10. Optional (QR):
-   - Go to **Scan**
-   - Allow camera permission (must be HTTPS or localhost)
-   - Scan equipment QR to borrow/return faster
-   - If camera blocked, use manual equipment ID input
+### 3. Initialize Admin Account
+1. Open the app and register a new account.
+2. Go to your **Firestore Console > users collection**.
+3. Locate your user document (via UID) and manually set:
+   - `role`: `"admin"`
+   - `status`: `"approved"`
 
 ---
 
-### B) Admin Side (Manager)
-1. Login using admin account
-2. Dashboard shows:
-   - Total equipment, available, borrowed, today borrows, total users
-   - Recent activities + overdue list
-3. **Manage Equipment**
-   - Add new equipment (must have unique Equipment ID)
-   - Edit equipment details
-   - Generate QR code
-   - Delete equipment (only if NOT currently borrowed)
-4. **Item Condition / Status**
-   - Admin can set equipment status to:
-     - `available` (ready to borrow)
-     - `maintenance` (not good / under repair)
-     - `borrowed` (optional manual override)
-   - If item returned but “not good”, admin can edit it later and set back to `available` after repair.
-5. **User Management**
-   - Approve/reject pending accounts
-   - Add users (student/admin)
-   - Edit user info
-   - Delete user (Firestore only unless using Admin SDK for Auth delete)
-6. **Borrowing Logs**
-   - Filter by date/student/equipment
-   - Export to CSV
+## 🏗️ Database Architecture
+
+### `users` (Collection)
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `name` | String | Full name of the user |
+| `email` | String | Registered email address |
+| `role` | String | `"student"` or `"admin"` |
+| `status` | String | `"pending"` or `"approved"` |
+| `studentId`| String | (Optional) School ID number |
+
+### `equipment` (Collection)
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `equipmentId`| String | Unique Hardware ID (e.g., PROJ-001) |
+| `name` | String | Display name of the item |
+| `status` | String | `"available"`, `"borrowed"`, or `"maintenance"` |
 
 ---
 
-## 7) Demo Accounts (For Testing)
+## 🔐 Security & Access Control
 
-> These are sample accounts you can create in Firebase Auth for demo/testing.
-> Replace the emails/passwords based on your actual setup.
-
-### Admin Demo Account
-- Name: `Admin`
-- Email: `admin@cs1a.com`
-- Password: `admin123!`
-- Firestore users doc:
-  - role = `admin`
-
-### Student Demo Account (Approved)
-- Name: `Student Default`
-- Email: `student@cs1a.com`
-- Password: `studentcs1a`
-- Firestore users doc:
-  - role = `student`
-  - status = `approved`
-  - studentId = `20251234-S`
-
-### Student Demo Account (Pending)
-- Name: `Student2 Default`
-- Email: `student2@cs1a.com`
-- Password: `student2cs1a`
-- Firestore users doc:
-  - role = `student`
-  - status = `pending`
-  - studentId = `20251235-S`
-
-✅ Admin must approve pending accounts:
-Admin → User Management → Pending Approvals → Approve
+### Account Approval Flow
+- Newly registered students are created with `status: "pending"`.
+- They are **automatically logged out** and cannot access the dashboard until an Admin clicks **Approve** in the Admin Panel.
+- The "All Users" list only displays approved members to keep the management view clean.
 
 ---
 
-## 8) Notes (Important)
-- Camera scan works only on **HTTPS** (or localhost).
-- If a user is deleted from Firestore, it may NOT automatically delete the account from Firebase Authentication unless you use Firebase Admin SDK.
-- Do NOT use real passwords in public repositories. Use demo/test accounts only.
+## 🧹 Maintenance & Clean-up
+
+### Deleting Users
+> [!IMPORTANT]
+> **Manual Authentication Cleanup**: Due to Firebase security protocols, deleting a user from the Admin Dashboard removes their data from Firestore, but **not** their email from the Authentication list.
+> 
+> **Admin Workflow**:
+> 1. Delete/Reject the user in the **MISLend Admin Panel**.
+> 2. Log in to the **Firebase Console > Authentication**.
+> 3. Delete the matching email address to fully remove the account.
+
+---
+
+## 📡 Deployment Notes
+- **HTTPS is required** for the QR scanner to access the camera on mobile devices.
+- For local testing, use `localhost` or a VS Code Live Server.
+
+---
+
+*This project is maintained for the UCC MIS Office.*
