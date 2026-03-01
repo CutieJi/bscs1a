@@ -635,8 +635,12 @@ textarea {
     font-size: 0.9rem;
     font-weight: 500;
     transition: opacity 0.2s;
+    color: #aeaeb7;
 }
 
+.sidebar svg {
+    color: #aeaeb7;
+}
 .sidebar-badge {
     margin-left: auto;
     background: var(--danger);
@@ -3239,16 +3243,30 @@ textarea {
     }
 }
 
-
-
 [data-theme="dark"] {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #263249;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-tertiary: #64748b;
+    --text-primary: #ffffff;
+    --text-secondary: #f1f5f9;
+    --text-tertiary: #cbd5e1;
     --border: #334155;
+    color: #ffffff;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div,
+[data-theme="dark"] label,
+[data-theme="dark"] .modal-content h2 {
+    color: #ffffff;
 }
 
 [data-theme="dark"] .topbar {
@@ -3266,8 +3284,12 @@ textarea {
 [data-theme="dark"] .borrowed-item-card,
 [data-theme="dark"] .pending-section,
 [data-theme="dark"] .scanner-box,
-[data-theme="dark"] .manual-entry {
-    background: #1e293b;
+[data-theme="dark"] .manual-entry,
+[data-theme="dark"] .pending-card,
+[data-theme="dark"] .user-card,
+[data-theme="dark"] .equipment-card,
+[data-theme="dark"] .settings-card {
+    background: #243043;
     border-color: #334155;
 }
 
@@ -3279,7 +3301,7 @@ textarea {
 [data-theme="dark"] .filter-group input {
     background: #263249;
     border-color: #334155;
-    color: #f1f5f9;
+    color: #ffffff;
 }
 
 [data-theme="dark"] .modal-content {
@@ -3710,15 +3732,21 @@ textarea {
 }
 
 .logo-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--green-500), var(--green-400));
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1rem;
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+.logo-icon img {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
 }
 
 .logo-dot {
