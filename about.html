@@ -15,12 +15,16 @@
 </head>
 
 <body class="page-landing">
+    <div class="loader-wrapper" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
     <div class="bg-layer"></div>
     <div class="mesh-grid"></div>
     <div class="floating-orb orb-a"></div>
     <div class="floating-orb orb-b"></div>
 
-    <div class="page-wrap">
+    <div class="page-wrap page-content-fade" id="pageContent">
         <nav class="navbar">
             <a href="index.html" class="nav-logo">
                 <div class="logo-icon">
@@ -231,6 +235,18 @@
             </div>
         </footer>
     </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('pageLoader');
+            const content = document.getElementById('pageContent');
+            if (loader) {
+                loader.classList.add('fade-out');
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }
+            if (content) content.classList.add('visible');
+        });
+    </script>
 </body>
 
 </html>

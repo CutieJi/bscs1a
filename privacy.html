@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Privacy Policy - UCC MIS | MISLend</title>
     <link rel="stylesheet" href="support.css" />
+    <link rel="stylesheet" href="styles.css" />
     <link rel="shortcut icon" href="13.png" type="image/x-icon">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
@@ -13,7 +14,11 @@
 </head>
 
 <body class="info-page">
-    <div class="info-shell">
+    <div class="loader-wrapper" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="info-shell page-content-fade" id="pageContent">
 
         <div class="info-topbar">
             <a class="info-brand" href="index.html">
@@ -101,6 +106,16 @@
 
     <script>
         document.getElementById("year").textContent = new Date().getFullYear();
+
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('pageLoader');
+            const content = document.getElementById('pageContent');
+            if (loader) {
+                loader.classList.add('fade-out');
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }
+            if (content) content.classList.add('visible');
+        });
     </script>
 </body>
 

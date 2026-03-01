@@ -16,6 +16,23 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => console.log("Persistence: LOCAL"))
     .catch(err => console.error("Persistence error:", err));
 
+window.addEventListener('load', () => {
+    const loader = document.getElementById('pageLoader');
+    const content = document.getElementById('pageContent');
+
+    if (loader) {
+        loader.classList.add('fade-out');
+        setTimeout(() => {
+            loader.style.display = 'none';
+        }, 500);
+    }
+
+    if (content) {
+        content.classList.add('visible');
+    }
+});
+
+
 function getSecondaryAuth() {
     try {
         return firebase.app("Secondary").auth();

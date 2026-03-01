@@ -32,8 +32,12 @@
         })();</script>
 </head>
 
-<body>
-    <div class="dashboard-container">
+<body class="dashboard-page">
+    <div class="loader-wrapper" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="dashboard-container page-content-fade" id="pageContent">
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <aside class="sidebar" id="sidebar">
@@ -782,7 +786,7 @@
                         <option value="">Select</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        <option value="Custom">Custom</option>
                     </select>
 
                     <label>Course / Program</label>

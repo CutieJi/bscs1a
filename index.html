@@ -4,9 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MISLend — UCC MIS | Equipment Borrowing System</title>
+    <title>MISLend — | UCC MIS Smart Equipment Management</title>
     <meta name="description"
-        content="Smart equipment borrowing system with QR code tracking for UCC MIS students and staff.">
+        content="Streamline equipment borrowing at UCC MIS with MISLend. Scan QR codes for instant tracking, automated logs, and real-time availability.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uccmis.netlify.app/">
+    <meta property="og:title" content="MISLend — | UCC MIS Smart Equipment Management">
+    <meta property="og:description"
+        content="Instant QR-based equipment borrowing for UCC MIS students and staff. Fast, paperless, and real-time.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/CutieJi/bscs1a/main/wprev.png">
     <link rel="shortcut icon" href="13.png" type="image/x-icon">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
@@ -15,13 +21,17 @@
 </head>
 
 <body class="page-landing">
+    <div class="loader-wrapper" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
     <div class="bg-layer"></div>
     <div class="mesh-grid"></div>
     <div class="floating-orb orb-a"></div>
     <div class="floating-orb orb-b"></div>
     <div class="floating-orb orb-c"></div>
 
-    <div class="page-wrap">
+    <div class="page-wrap page-content-fade" id="pageContent">
         <nav class="navbar">
             <a href="#" class="nav-logo">
                 <div class="logo-icon">
@@ -50,8 +60,8 @@
                 </h1>
 
                 <p class="hero-description">
-                    Borrow projectors, cables, and classroom devices instantly using QR code scanning.
-                    Real-time tracking, automated logs, and overdue alerts — all in one place.
+                    A smarter, paperless solution for managing classroom tools. Borrow projectors, cables,
+                    and devices instantly with QR scanning and real-time status tracking.
                 </p>
 
                 <div class="hero-stats">
@@ -119,12 +129,12 @@
                     <form id="unifiedLoginForm">
                         <div class="form-group">
                             <label for="loginEmail">Email or Student ID</label>
-                            <input type="text" id="loginEmail" placeholder="e.g., 20250000-S or your@email.com" required
+                            <input type="text" id="loginEmail" placeholder="email or student id" required
                                 autocomplete="username">
                         </div>
                         <div class="form-group">
                             <label for="loginPassword">Password</label>
-                            <input type="password" id="loginPassword" placeholder="••••••••" minlength="8" required
+                            <input type="password" id="loginPassword" placeholder="password" minlength="8" required
                                 autocomplete="current-password">
                         </div>
                         <button type="submit" class="btn-signin" id="signinBtn">
@@ -249,11 +259,11 @@
             <form id="registerForm">
                 <div class="form-group">
                     <label for="registerName">Full Name</label>
-                    <input type="text" id="registerName" placeholder="Juan dela Cruz" required>
+                    <input type="text" id="registerName" placeholder="fullname" required>
                 </div>
                 <div class="form-group">
                     <label for="registerEmail">Email</label>
-                    <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                    <input type="email" id="registerEmail" placeholder="email" required>
                 </div>
                 <div class="form-group">
                     <label for="registerPassword">Password</label>
@@ -261,7 +271,7 @@
                 </div>
                 <div class="form-group">
                     <label for="registerStudentId">Student ID</label>
-                    <input type="text" id="registerStudentId" placeholder="20250000-S" minlength="10" maxlength="10"
+                    <input type="text" id="registerStudentId" placeholder="student id" minlength="10" maxlength="10"
                         required>
                 </div>
                 <div class="form-row">
@@ -271,11 +281,12 @@
                             required>
                     </div>
                     <div class="form-group">
-                        <label for="registerGender">Gender</label>
+                        <label for="registerGender">Select your gender</label>
                         <select id="registerGender" required>
                             <option value="">Select</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
+                            <option value="Custom">Custom</option>
                         </select>
                     </div>
                 </div>
