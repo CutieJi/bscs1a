@@ -1,5 +1,7 @@
 # 🛰️ MISLend: Smart Equipment Management System
 
+![MISLend](wprev.png)
+
 **MISLend** is a professional, high-performance web application designed for the **UCC MIS Department** to streamline the borrowing and returning of technical equipment. Built with a focus on ease of use, security, and administrative control, it leverages Firebase for real-time data and authentication.
 
 ---
