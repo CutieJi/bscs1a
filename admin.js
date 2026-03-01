@@ -138,7 +138,9 @@ async function loadDashboardData() {
         const equipmentSnapshot = await db.collection('equipment').get();
         const equipment = equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         const usersSnapshot = await db.collection('users').get();
-        const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const users = usersSnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(u => u.status === 'approved');
 
         const totalEquipment = equipment.length;
         const availableEquipment = equipment.filter(e => e.status === 'available').length;
@@ -1307,7 +1309,9 @@ async function loadUsers() {
             .orderBy('createdAt', 'desc')
             .get();
 
-        const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const users = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(user => user.status === 'approved');
 
         if (users.length === 0) {
             usersGrid.innerHTML = `
@@ -1355,13 +1359,13 @@ async function loadUsers() {
 }
 
 async function deleteUser(userId, userEmail) {
-    if (!confirm(`Are you sure you want to delete the user: ${userEmail}?\n\nThis action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete the user: ${userEmail}?\n\nIMPORTANT: Deleting here only removes their dashboard access. You MUST also manually delete this email (${userEmail}) from the Firebase Console > Authentication to fully remove the account.`)) {
         return;
     }
 
     try {
         await db.collection('users').doc(userId).delete();
-        showToast('User removed from database', 'success');
+        showToast('User removed from dashboard. Remember to delete their email in Auth Console!', 'success');
         loadUsers();
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -1532,10 +1536,13 @@ async function approveUser(uid) {
 }
 
 async function rejectUser(uid) {
-    if (!confirm("Delete account?")) return;
+    const userDoc = await db.collection("users").doc(uid).get();
+    const email = userDoc.data()?.email || "this user";
+
+    if (!confirm(`Reject and delete account for ${email}?\n\nREMINDER: You must also manually delete this email from the Firebase Console > Authentication.`)) return;
 
     await db.collection("users").doc(uid).delete();
-    showToast("User rejected", "error");
+    showToast("User rejected. Please clean up their account in Auth Console.", "error");
     loadPending();
     loadUsers();
 }
