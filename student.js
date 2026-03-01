@@ -272,10 +272,13 @@ function extractEquipmentId(decodedText) {
     try {
         if (text.startsWith("http")) {
             const url = new URL(text);
-            const fromQuery = url.searchParams.get("id") || url.searchParams.get("equipmentId");
+            const fromQuery = url.searchParams.get("id") ||
+                url.searchParams.get("equipmentId") ||
+                url.searchParams.get("borrow");
             if (fromQuery) return fromQuery.trim();
+
             const last = url.pathname.split("/").pop();
-            if (last) return last.trim();
+            if (last && !last.endsWith(".html")) return last.trim();
         }
     } catch (e) { }
 
