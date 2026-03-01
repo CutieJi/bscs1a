@@ -1792,26 +1792,35 @@ function initializeTheme() {
 
 async function sendSMSOverdue(userId, equipmentName, borrowingId) {
     try {
+        showToast("Initiating SMS reminder...", "info");
         const userDoc = await db.collection('users').doc(userId).get();
         const userData = userDoc.data();
+
         if (userData && userData.mobile) {
             const message = `Hello ${userData.name}, this is UCC MIS Office. Reminder: your borrowed equipment (${equipmentName}) is now overdue. Please return it as soon as possible. Thank you!`;
 
-            window.location.href = `sms:${userData.mobile}?body=${encodeURIComponent(message)}`;
+            const smsUrl = `sms:${userData.mobile}?body=${encodeURIComponent(message)}`;
+
+            try {
+                window.location.href = smsUrl;
+            } catch (e) {
+                console.error("Location redirect failed, trying window.open", e);
+                window.open(smsUrl, '_blank');
+            }
 
             if (borrowingId) {
                 await db.collection('borrowings').doc(borrowingId).update({
                     lastNotified: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 console.log(`Updated lastNotified for borrowing ${borrowingId}`);
-                setTimeout(() => loadDashboardData(), 2000);
+                setTimeout(() => loadDashboardData(), 1500);
             }
         } else {
             showToast("User has no mobile number registered.", "warning");
         }
     } catch (error) {
         console.error("Error sending SMS:", error);
-        showToast("Failed to initiate SMS.", "error");
+        showToast("Failed to initiate SMS: " + error.message, "error");
     }
 }
 
