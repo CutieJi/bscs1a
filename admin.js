@@ -274,7 +274,6 @@ async function loadOverdueItems() {
                 return now > due;
             });
 
-        // Set up Batch buttons
         if (sendAllRemindersBtn) {
             sendAllRemindersBtn.style.display = overdue.length > 0 ? 'inline-flex' : 'none';
             sendAllRemindersBtn.onclick = () => sendAllSMSReminders(overdue);
