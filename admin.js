@@ -274,9 +274,16 @@ async function loadOverdueItems() {
                 return now > due;
             });
 
+        // Set up Batch buttons
         if (sendAllRemindersBtn) {
-            sendAllRemindersBtn.style.display = overdue.length > 0 ? 'flex' : 'none';
+            sendAllRemindersBtn.style.display = overdue.length > 0 ? 'inline-flex' : 'none';
             sendAllRemindersBtn.onclick = () => sendAllSMSReminders(overdue);
+        }
+
+        const sendAllEmailRemindersBtn = document.getElementById('sendAllEmailRemindersBtn');
+        if (sendAllEmailRemindersBtn) {
+            sendAllEmailRemindersBtn.style.display = overdue.length > 0 ? 'inline-flex' : 'none';
+            sendAllEmailRemindersBtn.onclick = () => sendAllEmailReminders(overdue);
         }
 
         if (overdue.length === 0) {
@@ -292,6 +299,7 @@ async function loadOverdueItems() {
         } else {
             overdueList.innerHTML = overdue.map(item => {
                 const lastNotified = item.lastNotified ? formatDate(item.lastNotified) : 'Never';
+                const typeLabel = item.notificationType ? ` (${item.notificationType.toUpperCase()})` : '';
                 return `
                 <div class="alert-item warning">
                     <div class="alert-icon">⚠️</div>
@@ -299,12 +307,15 @@ async function loadOverdueItems() {
                         <div class="alert-title">${item.equipmentName}</div>
                         <div class="alert-message">
                             Borrowed by ${item.userName} - Due: ${item.expectedReturnTime || 'N/A'}<br>
-                            <small style="opacity: 0.7; font-size: 0.7rem;">Notified: ${lastNotified}</small>
+                            <small style="opacity: 0.7; font-size: 0.7rem;">Notified: ${lastNotified}${typeLabel}</small>
                         </div>
                     </div>
-                    <div class="alert-actions" style="margin-left: auto; display: flex; align-items: center;">
+                    <div class="alert-actions" style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;">
                         <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
                             💬
+                        </button>
+                        <button class="btn btn-icon" onclick="sendEmailOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send Email Reminder">
+                            📧
                         </button>
                     </div>
                 </div>
@@ -336,6 +347,19 @@ async function sendAllSMSReminders(overdueItems) {
         await new Promise(r => setTimeout(r, 800));
     }
 }
+
+async function sendAllEmailReminders(overdueItems) {
+    if (!overdueItems || overdueItems.length === 0) return;
+
+    const count = overdueItems.length;
+    if (!confirm(`This will initiate Email reminders for ${count} users. Your mail app will open for each one. Continue?`)) return;
+
+    for (const item of overdueItems) {
+        await sendEmailOverdue(item.userId, item.equipmentName, item.id);
+        await new Promise(r => setTimeout(r, 1000));
+    }
+}
+
 
 
 async function loadPendingRequests() {
@@ -1810,9 +1834,10 @@ async function sendSMSOverdue(userId, equipmentName, borrowingId) {
 
             if (borrowingId) {
                 await db.collection('borrowings').doc(borrowingId).update({
-                    lastNotified: firebase.firestore.FieldValue.serverTimestamp()
+                    lastNotified: firebase.firestore.FieldValue.serverTimestamp(),
+                    notificationType: 'sms'
                 });
-                console.log(`Updated lastNotified for borrowing ${borrowingId}`);
+                console.log(`Updated lastNotified (SMS) for borrowing ${borrowingId}`);
                 setTimeout(() => loadDashboardData(), 1500);
             }
         } else {
@@ -1824,8 +1849,45 @@ async function sendSMSOverdue(userId, equipmentName, borrowingId) {
     }
 }
 
+async function sendEmailOverdue(userId, equipmentName, borrowingId) {
+    try {
+        showToast("Initiating Email reminder...", "info");
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.data();
+
+        if (userData && userData.email) {
+            const subject = encodeURIComponent(`Overdue Equipment Reminder: ${equipmentName}`);
+            const body = encodeURIComponent(`Hello ${userData.name},\n\nOur records show that the equipment (${equipmentName}) you borrowed from the UCC MIS Office is now overdue.\n\nPlease return it to the office as soon as possible to avoid any further issues.\n\nThank you,\nUCC MIS Office`);
+
+            const mailtoUrl = `mailto:${userData.email}?subject=${subject}&body=${body}`;
+
+            try {
+                window.location.href = mailtoUrl;
+            } catch (e) {
+                window.open(mailtoUrl, '_blank');
+            }
+
+            if (borrowingId) {
+                await db.collection('borrowings').doc(borrowingId).update({
+                    lastNotified: firebase.firestore.FieldValue.serverTimestamp(),
+                    notificationType: 'email'
+                });
+                console.log(`Updated lastNotified (Email) for borrowing ${borrowingId}`);
+                setTimeout(() => loadDashboardData(), 1500);
+            }
+        } else {
+            showToast("User has no email registered.", "warning");
+        }
+    } catch (error) {
+        console.error("Error sending Email:", error);
+        showToast("Failed to initiate Email: " + error.message, "error");
+    }
+}
+
+
 
 window.generateQRCode = generateQRCode;
 window.deleteEquipment = deleteEquipment;
 window.deleteUser = deleteUser;
 window.sendSMSOverdue = sendSMSOverdue;
+window.sendEmailOverdue = sendEmailOverdue;

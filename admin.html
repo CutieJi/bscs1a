@@ -380,10 +380,17 @@
                             <div class="card-header"
                                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                                 <h3 style="margin-bottom: 0;">Overdue Returns</h3>
-                                <button class="btn btn-primary" id="sendAllRemindersBtn"
-                                    style="display: none; padding: 6px 12px; font-size: 0.75rem;">
-                                    Send All Reminders
-                                </button>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-primary" id="sendAllRemindersBtn"
+                                        style="display: none; padding: 6px 12px; font-size: 0.75rem;">
+                                        Batch SMS
+                                    </button>
+                                    <button class="btn btn-secondary" id="sendAllEmailRemindersBtn"
+                                        style="display: none; padding: 6px 12px; font-size: 0.75rem;">
+                                        Batch Email
+                                    </button>
+                                </div>
+
                             </div>
                             <div class="alert-list" id="overdueList">
                             </div>
