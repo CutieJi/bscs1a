@@ -507,6 +507,7 @@ async function borrowEquipment() {
             userId: currentUser.uid,
             userName: currentUserData.name,
             userEmail: currentUser.email,
+            userMobile: currentUserData.mobile || 'N/A',
             studentId: currentUserData.studentId,
             borrowedAt: firebase.firestore.FieldValue.serverTimestamp(),
             expectedReturnTime: returnTime,
@@ -945,18 +946,58 @@ function closePasswordModal() {
 }
 
 async function changePassword() {
-    const pass = document.getElementById("newPassword").value;
-    if (pass.length < 8) {
-        showToast("Password must be at least 8 characters", "error");
+    const currentPass = document.getElementById("currentPasswordStudent").value;
+    const newPass = document.getElementById("newPassword").value;
+    const confirmPass = document.getElementById("confirmPasswordStudent").value;
+
+    if (!currentPass || !newPass || !confirmPass) {
+        showToast("Please fill in all password fields", "error");
         return;
     }
 
-    await currentUser.updatePassword(pass);
+    if (newPass.length < 8) {
+        showToast("New password must be at least 8 characters", "error");
+        return;
+    }
 
-    showToast("Password updated", "success");
-    closePasswordModal();
+    if (newPass !== confirmPass) {
+        showToast("New passwords do not match", "error");
+        return;
+    }
+
+    const changePassBtn = document.querySelector("#passwordModal .btn-primary");
+    const originalContent = changePassBtn.innerHTML;
+
+    try {
+        changePassBtn.disabled = true;
+        changePassBtn.innerHTML = "<span>Updating...</span>";
+
+        const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPass);
+        await currentUser.reauthenticateWithCredential(credential);
+
+        await currentUser.updatePassword(newPass);
+
+        showToast("Password updated successfully!", "success");
+        closePasswordModal();
+
+        document.getElementById("currentPasswordStudent").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmPasswordStudent").value = "";
+
+    } catch (err) {
+        console.error("Change password error:", err);
+        if (err.code === "auth/wrong-password") {
+            showToast("Current password is incorrect", "error");
+        } else if (err.code === "auth/requires-recent-login") {
+            showToast("Session expired. Please log out and log in again.", "error");
+        } else {
+            showToast(err.message || "Failed to update password", "error");
+        }
+    } finally {
+        changePassBtn.disabled = false;
+        changePassBtn.innerHTML = originalContent;
+    }
 }
-
 
 async function startQRScanner() {
     const readerEl = document.getElementById("qr-reader");
@@ -1106,3 +1147,6 @@ window.openReturnModal = openReturnModal;
 window.openExtendModal = openExtendModal;
 window.cancelBorrowRequest = cancelBorrowRequest;
 window.cancelExtensionRequest = cancelExtensionRequest;
+window.openPasswordModal = openPasswordModal;
+window.closePasswordModal = closePasswordModal;
+window.changePassword = changePassword;

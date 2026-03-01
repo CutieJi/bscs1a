@@ -199,10 +199,14 @@ async function loadDashboardData() {
 
         const todayBorrows = todayBorrowsSnapshot.size;
 
+        const allBorrowsSnapshot = await db.collection('borrowings').get();
+        const totalHistoricalBorrows = allBorrowsSnapshot.size;
+
         document.getElementById('totalEquipment').textContent = totalEquipment;
         document.getElementById('availableEquipment').textContent = availableEquipment;
         document.getElementById('borrowedEquipment').textContent = borrowedEquipment;
         document.getElementById('todayBorrows').textContent = todayBorrows;
+        document.getElementById('totalHistoricalBorrows').textContent = totalHistoricalBorrows;
         document.getElementById('borrowedBadge').textContent = borrowedEquipment;
         document.getElementById('totalUsers').textContent = totalUsers;
 
@@ -586,12 +590,19 @@ async function approveExtension(borrowingId) {
         const doc = await db.collection('borrowings').doc(borrowingId).get();
         const data = doc.data();
 
-        await db.collection('borrowings').doc(borrowingId).update({
+        const updateData = {
             status: 'borrowed',
             expectedReturnTime: data.requestedReturnTime,
             requestedReturnTime: firebase.firestore.FieldValue.delete(),
-            extensionReason: firebase.firestore.FieldValue.delete()
-        });
+            extensionReason: firebase.firestore.FieldValue.delete(),
+            hasExtension: true
+        };
+
+        if (!data.originalExpectedReturnTime) {
+            updateData.originalExpectedReturnTime = data.expectedReturnTime;
+        }
+
+        await db.collection('borrowings').doc(borrowingId).update(updateData);
 
         showToast('Extension request approved', 'success');
         loadPendingRequests();
@@ -629,11 +640,25 @@ async function adminConfirmReturn(borrowingId, equipmentId) {
     if (!confirm(`Confirm return of this item? Condition: ${condition}`)) return;
 
     try {
+        const doc = await db.collection('borrowings').doc(borrowingId).get();
+        const data = doc.data();
+
+        let wasOverdue = false;
+        if (data.expectedReturnTime) {
+            const now = new Date();
+            const borrowedDate = data.borrowedAt ? data.borrowedAt.toDate() : new Date();
+            const [hh, mm] = data.expectedReturnTime.split(':').map(Number);
+            const due = new Date(borrowedDate);
+            due.setHours(hh, mm, 0, 0);
+            wasOverdue = now > due;
+        }
+
         await db.collection('borrowings').doc(borrowingId).update({
             status: 'returned',
             returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
             returnCondition: condition,
-            returnNotes: ''
+            returnNotes: '',
+            wasOverdue: wasOverdue
         });
 
         await db.collection('equipment').doc(equipmentId).update({
@@ -1093,6 +1118,26 @@ async function loadBorrowingLogs() {
             );
         }
 
+        const sortValue = document.getElementById('logsSort')?.value || 'borrowedAt_desc';
+        const [field, order] = sortValue.split('_');
+
+        logs.sort((a, b) => {
+            let valA = a[field];
+            let valB = b[field];
+
+            if (field === 'borrowedAt') {
+                valA = valA?.toDate().getTime() || 0;
+                valB = valB?.toDate().getTime() || 0;
+            } else {
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+            }
+
+            if (valA < valB) return order === 'asc' ? -1 : 1;
+            if (valA > valB) return order === 'asc' ? 1 : -1;
+            return 0;
+        });
+
         if (logs.length === 0) {
             logsList.innerHTML = `
                 <div class="empty-state">
@@ -1134,12 +1179,25 @@ async function loadBorrowingLogs() {
                             <span class="log-value">${log.userEmail}</span>
                         </div>
                         <div class="log-field">
+                            <span class="log-label">Mobile:</span>
+                            <span class="log-value">${log.userMobile || 'N/A'}</span>
+                        </div>
+                        <div class="log-field">
                             <span class="log-label">Student ID:</span>
                             <span class="log-value">${log.studentId || 'N/A'}</span>
                         </div>
                         <div class="log-field">
                             <span class="log-label">Borrowed:</span>
                             <span class="log-value">${formatDate(log.borrowedAt)}</span>
+                        </div>
+
+                        <div class="log-field">
+                            <span class="log-label">Status History:</span>
+                            <span class="log-value">
+                                ${log.wasOverdue ? '<span class="badge" style="background:rgba(239,68,68,0.1); color:var(--danger); font-size:0.7rem; padding: 2px 6px;">WAS OVERDUE</span>' : ''}
+                                ${log.hasExtension ? '<span class="badge" style="background:rgba(30,64,175,0.1); color:#1e40af; font-size:0.7rem; padding: 2px 6px;">EXTENDED</span>' : ''}
+                                ${!log.wasOverdue && !log.hasExtension ? '<span style="color:var(--text-tertiary); font-size:0.8rem;">Regular</span>' : ''}
+                            </span>
                         </div>
 
                         ${log.returnedAt ? `
@@ -1266,22 +1324,26 @@ function initializeExport() {
 
                 const headers = [
                     "Equipment Name",
-                    "Equipment Code",
+                    "Equipment ID",
                     "Student Name",
                     "Student Email",
+                    "Mobile No.",
                     "Student ID",
                     "Borrowed At",
                     "Returned At",
-                    "Due Time",
+                    "Original Due",
+                    "Final Due",
                     "Room",
                     "Status",
-                    "Purpose",
-                    "Return Condition"
+                    "Was Overdue?",
+                    "Extended?",
+                    "Return Condition",
+                    "Purpose"
                 ];
 
                 const rows = [];
-                rows.push(["MISLend - Borrowing Logs"]);
-                rows.push([`Generated At: ${now.toLocaleString()}`]);
+                rows.push(["MISLend - COMPREHENSIVE BORROWING LOGS"]);
+                rows.push([`Report Generated: ${now.toLocaleString()} | Total Records: ${logs.length}`]);
                 rows.push([]);
                 rows.push(headers);
 
@@ -1291,14 +1353,18 @@ function initializeExport() {
                         safe(log.equipmentCode || log.equipmentId),
                         safe(log.userName),
                         safe(log.userEmail),
+                        safe(log.userMobile || "N/A"),
                         safe(log.studentId),
                         fmtDate(log.borrowedAt),
                         fmtDate(log.returnedAt),
+                        safe(log.originalExpectedReturnTime || log.expectedReturnTime),
                         safe(log.expectedReturnTime),
                         safe(log.room),
-                        safe(log.status),
-                        safe(log.purpose),
-                        safe(log.returnCondition)
+                        safe(log.status).toUpperCase(),
+                        log.wasOverdue ? "YES" : "NO",
+                        log.hasExtension ? "YES" : "NO",
+                        safe(log.returnCondition),
+                        safe(log.purpose)
                     ]);
                 });
 
@@ -1306,18 +1372,22 @@ function initializeExport() {
                 const ws = XLSX.utils.aoa_to_sheet(rows);
 
                 ws["!cols"] = [
-                    { wch: 28 },
-                    { wch: 18 },
+                    { wch: 30 },
+                    { wch: 15 },
                     { wch: 22 },
-                    { wch: 26 },
+                    { wch: 28 },
+                    { wch: 15 },
+                    { wch: 15 },
+                    { wch: 22 },
+                    { wch: 22 },
+                    { wch: 15 },
+                    { wch: 15 },
+                    { wch: 15 },
+                    { wch: 15 },
                     { wch: 14 },
-                    { wch: 20 },
-                    { wch: 20 },
                     { wch: 12 },
-                    { wch: 14 },
-                    { wch: 14 },
-                    { wch: 34 },
-                    { wch: 20 }
+                    { wch: 20 },
+                    { wch: 35 }
                 ];
 
                 ws["!merges"] = ws["!merges"] || [];
@@ -1330,16 +1400,44 @@ function initializeExport() {
                     e: { r: 1, c: headers.length - 1 }
                 });
 
-                setRowHeight(ws, 0, 28);
-                setRowHeight(ws, 1, 18);
-                setRowHeight(ws, 3, 20);
+                setRowHeight(ws, 0, 32);
+                setRowHeight(ws, 1, 20);
+                setRowHeight(ws, 3, 25);
+
+                const styles = {
+                    title: {
+                        font: { bold: true, sz: 18, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "1E293B" } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    },
+                    meta: {
+                        font: { sz: 10, color: { rgb: "64748B" }, italic: true },
+                        fill: { fgColor: { rgb: "F8FAFC" } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    },
+                    header: {
+                        font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "3B82F6" } },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            bottom: { style: "medium", color: { rgb: "1D4ED8" } }
+                        }
+                    },
+                    cell: {
+                        font: { sz: 10 },
+                        alignment: { vertical: "center", wrapText: true },
+                        border: {
+                            bottom: { style: "thin", color: { rgb: "E2E8F0" } }
+                        }
+                    },
+                    overdue: { font: { color: { rgb: "EF4444" }, bold: true } },
+                    extended: { font: { color: { rgb: "2563EB" }, bold: true } },
+                    zebra: { fill: { fgColor: { rgb: "F1F5F9" } } }
+                };
 
                 for (let c = 0; c < headers.length; c++) {
                     applyCellStyle(ws, 0, c, styles.title);
                     applyCellStyle(ws, 1, c, styles.meta);
-                }
-
-                for (let c = 0; c < headers.length; c++) {
                     applyCellStyle(ws, 3, c, styles.header);
                 }
 
@@ -1353,12 +1451,11 @@ function initializeExport() {
                         if (isZebra) applyCellStyle(ws, r, c, styles.zebra);
                     }
 
-                    const statusCellAddr = XLSX.utils.encode_cell({ r, c: 9 });
-                    const statusValue = (ws[statusCellAddr]?.v || "").toString().toLowerCase();
+                    const wasOverdue = rows[r][12] === "YES";
+                    const hasExtension = rows[r][13] === "YES";
 
-                    if (statusValue.includes("available")) applyCellStyle(ws, r, 9, styles.statusAvailable);
-                    else if (statusValue.includes("borrow")) applyCellStyle(ws, r, 9, styles.statusBorrowed);
-                    else if (statusValue.includes("maintenance")) applyCellStyle(ws, r, 9, styles.statusMaintenance);
+                    if (wasOverdue) applyCellStyle(ws, r, 12, styles.overdue);
+                    if (hasExtension) applyCellStyle(ws, r, 13, styles.extended);
                 }
 
                 ws["!autofilter"] = {
@@ -1371,14 +1468,13 @@ function initializeExport() {
                 ws["!sheetViews"] = [{
                     state: "frozen",
                     ySplit: 4,
-                    topLeftCell: "A5",
                     activePane: "bottomLeft"
                 }];
 
-                XLSX.utils.book_append_sheet(wb, ws, "Borrowing Logs");
+                XLSX.utils.book_append_sheet(wb, ws, "Borrowing History");
 
-                XLSX.writeFile(wb, `MIS-eBorrow-borrowing-logs-${fileDate}.xlsx`);
-                showToast("XLSX exported with professional styling!", "success");
+                XLSX.writeFile(wb, `MISLend-Logs-${fileDate}.xlsx`);
+                showToast("Professional report generated successfully!", "success");
             } catch (error) {
                 console.error("Error exporting logs:", error);
                 showToast("Failed to export XLSX", "error");
@@ -1980,8 +2076,6 @@ async function sendEmailOverdue(userId, equipmentName, borrowingId) {
         showToast("Failed to initiate Email: " + error.message, "error");
     }
 }
-
-
 
 window.generateQRCode = generateQRCode;
 window.deleteEquipment = deleteEquipment;
