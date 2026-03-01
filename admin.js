@@ -248,6 +248,7 @@ async function loadRecentActivities() {
 
 async function loadOverdueItems() {
     const overdueList = document.getElementById('overdueList');
+    const sendAllRemindersBtn = document.getElementById('sendAllRemindersBtn');
     if (!overdueList) return;
 
     try {
@@ -273,6 +274,11 @@ async function loadOverdueItems() {
                 return now > due;
             });
 
+        if (sendAllRemindersBtn) {
+            sendAllRemindersBtn.style.display = overdue.length > 0 ? 'flex' : 'none';
+            sendAllRemindersBtn.onclick = () => sendAllSMSReminders(overdue);
+        }
+
         if (overdue.length === 0) {
             overdueList.innerHTML = `
                 <div class="alert-item success">
@@ -284,22 +290,26 @@ async function loadOverdueItems() {
                 </div>
             `;
         } else {
-            overdueList.innerHTML = overdue.map(item => `
+            overdueList.innerHTML = overdue.map(item => {
+                const lastNotified = item.lastNotified ? formatDate(item.lastNotified) : 'Never';
+                return `
                 <div class="alert-item warning">
                     <div class="alert-icon">⚠️</div>
                     <div class="alert-content">
                         <div class="alert-title">${item.equipmentName}</div>
                         <div class="alert-message">
-                            Borrowed by ${item.userName} - Due Time: ${item.expectedReturnTime || 'N/A'}
+                            Borrowed by ${item.userName} - Due: ${item.expectedReturnTime || 'N/A'}<br>
+                            <small style="opacity: 0.7; font-size: 0.7rem;">Notified: ${lastNotified}</small>
                         </div>
                     </div>
                     <div class="alert-actions" style="margin-left: auto; display: flex; align-items: center;">
-                        <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}')" title="Send SMS Reminder">
+                        <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
                             💬
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
     } catch (error) {
         console.error('Error loading overdue items:', error);
@@ -314,6 +324,19 @@ async function loadOverdueItems() {
         `;
     }
 }
+
+async function sendAllSMSReminders(overdueItems) {
+    if (!overdueItems || overdueItems.length === 0) return;
+
+    const count = overdueItems.length;
+    if (!confirm(`This will initiate SMS reminders for ${count} users. You will need to click 'Send' in your SMS app for each one. Continue?`)) return;
+
+    for (const item of overdueItems) {
+        await sendSMSOverdue(item.userId, item.equipmentName, item.id);
+        await new Promise(r => setTimeout(r, 800));
+    }
+}
+
 
 async function loadPendingRequests() {
     const pendingGrid = document.getElementById('pendingRequestsGrid');
@@ -876,7 +899,7 @@ async function loadCurrentlyBorrowed() {
 
                         <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                             ${item.userId ? `
-                                <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}')" title="Send SMS Reminder">
+                                <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
                                     💬
                                 </button>
                             ` : ''}
@@ -972,7 +995,7 @@ async function loadBorrowingLogs() {
                         <span class="log-item-title">${log.equipmentName}</span>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${(log.status === 'borrowed' || log.status === 'pending_return') && log.userId ? `
-                                <button class="btn btn-icon btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}')" title="Send SMS Reminder">
+                                <button class="btn btn-icon btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
                                     💬
                                 </button>
                             ` : ''}
@@ -1268,7 +1291,6 @@ function initializeUserManagement() {
         });
     }
 
-    // Modal Close Logic
     const closeAddUser = () => {
         addUserModal?.classList.remove('active');
         addUserForm?.reset();
@@ -1283,7 +1305,6 @@ function initializeUserManagement() {
         });
     }
 
-    // Edit User Role Logic
     const editRoleSelect = document.getElementById('editUserRole');
     const editStudentContainer = document.getElementById('editStudentFieldsContainers');
     if (editRoleSelect && editStudentContainer) {
@@ -1769,13 +1790,22 @@ function initializeTheme() {
     }
 }
 
-async function sendSMSOverdue(userId, equipmentName) {
+async function sendSMSOverdue(userId, equipmentName, borrowingId) {
     try {
         const userDoc = await db.collection('users').doc(userId).get();
         const userData = userDoc.data();
         if (userData && userData.mobile) {
             const message = `Hello ${userData.name}, this is UCC MIS Office. Reminder: your borrowed equipment (${equipmentName}) is now overdue. Please return it as soon as possible. Thank you!`;
+
             window.location.href = `sms:${userData.mobile}?body=${encodeURIComponent(message)}`;
+
+            if (borrowingId) {
+                await db.collection('borrowings').doc(borrowingId).update({
+                    lastNotified: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log(`Updated lastNotified for borrowing ${borrowingId}`);
+                setTimeout(() => loadDashboardData(), 2000);
+            }
         } else {
             showToast("User has no mobile number registered.", "warning");
         }
@@ -1784,6 +1814,7 @@ async function sendSMSOverdue(userId, equipmentName) {
         showToast("Failed to initiate SMS.", "error");
     }
 }
+
 
 window.generateQRCode = generateQRCode;
 window.deleteEquipment = deleteEquipment;

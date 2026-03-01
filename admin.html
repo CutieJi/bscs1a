@@ -377,10 +377,18 @@
                         </div>
 
                         <div class="dashboard-card">
-                            <h3>Overdue Returns</h3>
+                            <div class="card-header"
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h3 style="margin-bottom: 0;">Overdue Returns</h3>
+                                <button class="btn btn-primary" id="sendAllRemindersBtn"
+                                    style="display: none; padding: 6px 12px; font-size: 0.75rem;">
+                                    Send All Reminders
+                                </button>
+                            </div>
                             <div class="alert-list" id="overdueList">
                             </div>
                         </div>
+
                     </div>
                 </div>
 
