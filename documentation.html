@@ -45,43 +45,48 @@
             <section class="info-card">
                 <h2>📌 Student Guide</h2>
                 <ul class="info-list">
-                    <li><strong>1)</strong> Login using your student account.</li>
-                    <li><strong>2)</strong> If status is <span class="kbd">pending</span>, wait for admin approval.</li>
-                    <li><strong>3)</strong> Open <span class="kbd">Browse Equipment</span> and search/filter items.</li>
-                    <li><strong>4)</strong> Click <span class="kbd">Borrow</span> on available equipment.</li>
-                    <li><strong>5)</strong> Fill required fields: <span class="kbd">Room</span> and <span
-                            class="kbd">Return Time</span>.</li>
-                    <li><strong>6)</strong> Submit and check <span class="kbd">My Borrowed</span> for active items.</li>
-                    <li><strong>7)</strong> When returning, choose condition:
-                        <br>✅ <span class="kbd">Good</span> → back to <span class="kbd">available</span>
-                        <br>⚠️ <span class="kbd">Not Good / Damaged</span> → becomes <span
-                            class="kbd">maintenance</span>
+                    <li><strong>1) Login:</strong> Access your dashboard using your student email or ID.</li>
+                    <li><strong>2) Account Status:</strong> If your account is <span class="kbd">pending</span>, please
+                        wait for an administrator to verify and approve your registration.</li>
+                    <li><strong>3) Find Equipment:</strong> Use the <span class="kbd">Browse Equipment</span> section to
+                        search for available tools. You can filter by category or status.</li>
+                    <li><strong>4) Borrowing:</strong> Click <span class="kbd">Borrow</span> on an available item. Fill
+                        in the <span class="kbd">Room Number</span> and your expected <span class="kbd">Return
+                            Time</span>.</li>
+                    <li><strong>5) Confirmation:</strong> Once submitted, the item will appear in your <span
+                            class="kbd">My Borrowed</span> list.</li>
+                    <li><strong>6) Returning:</strong> Locate the item in <span class="kbd">My Borrowed</span> and click
+                        <span class="kbd">Return</span>. Select the item's condition:
+                        <br>— ✅ <span class="kbd">Good</span>: Item returns to available status immediately.
+                        <br>— ⚠️ <span class="kbd">Not Good / Damaged</span>: Item is flagged for <span
+                            class="kbd">maintenance</span>.
                     </li>
-                    <li><strong>8)</strong> Optional: Use <span class="kbd">Scan</span> to borrow/return using QR code.
-                    </li>
+                    <li><strong>7) QR Convenience:</strong> Use the <span class="kbd">Scan</span> feature for rapid
+                        borrowing and returning by scanning the physical QR code on the equipment.</li>
                 </ul>
             </section>
 
             <aside class="info-card">
                 <h2>🔐 Demo Accounts</h2>
-                <p>Use these for testing only (change to your own before real deployment).</p>
+                <p>For testing and evaluation purposes only. Please use your official accounts for actual operations.
+                </p>
                 <ul class="info-list">
                     <li>
-                        <strong>Admin</strong><br>
+                        <strong>Administrator</strong><br>
                         Email: <span class="kbd">admin@cs1a.com</span><br>
+                        User: <span class="kbd">admin</span><br>
                         Password: <span class="kbd">admin123</span>
                     </li>
                     <li>
-                        <strong>Student (Approved)</strong><br>
+                        <strong>Student (Active)</strong><br>
                         Email: <span class="kbd">student@cs1a.com</span><br>
-                        Password: <span class="kbd">studentcs1a</span><br>
-                        Student ID: <span class="kbd">20251234-S</span>
+                        Student ID / User: <span class="kbd">20251234-S</span><br>
+                        Password: <span class="kbd">studentcs1a</span>
                     </li>
                     <li>
                         <strong>Student (Pending)</strong><br>
                         Email: <span class="kbd">student2@cs1a.com</span><br>
-                        Password: <span class="kbd">student2cs1a</span><br>
-                        Student ID: <span class="kbd">20251235-S</span>
+                        Password: <span class="kbd">student2cs1a</span>
                     </li>
                 </ul>
             </aside>
@@ -89,37 +94,32 @@
             <section class="info-card">
                 <h2>🛠 Admin Guide</h2>
                 <ul class="info-list">
-                    <li><strong>1)</strong> Login using an admin account.</li>
-                    <li><strong>2)</strong> Dashboard shows: equipment totals, borrowed badge, today borrows, users.
+                    <li><strong>1) System Overview:</strong> The main dashboard provides live counts of total, borrowed,
+                        and maintenance equipment.</li>
+                    <li><strong>2) Equipment Management:</strong>
+                        <br>— <span class="kbd">Add</span>: Create new equipment entries with unique IDs.
+                        <br>— <span class="kbd">Edit</span>: Update names, IDs, or manually change status.
+                        <br>— <span class="kbd">QR</span>: Generate and download QR codes for physical tagging.
                     </li>
-                    <li><strong>3)</strong> Manage Equipment:
-                        <br>➕ Add equipment
-                        <br>✏️ Edit equipment
-                        <br>🧾 Generate QR
-                        <br>🗑 Delete (only if not borrowed)
-                    </li>
-                    <li><strong>4)</strong> Pending approvals:
-                        <br>User Management → Pending → <span class="kbd">Approve</span> or <span
-                            class="kbd">Reject</span>
-                    </li>
-                    <li><strong>5)</strong> Borrowing Logs:
-                        <br>Filter by date / student / equipment then export CSV.
-                    </li>
+                    <li><strong>3) User Approvals:</strong> Navigate to <span class="kbd">Users</span> → <span
+                            class="kbd">Pending</span> to review registrations. Approve legitimate students or reject
+                        invalid requests.</li>
+                    <li><strong>4) Data Export:</strong> Use <span class="kbd">Logs</span> to filter borrowing history
+                        and export to <span class="kbd">Excel/CSV</span> for reporting and compliance audits.</li>
                 </ul>
             </section>
 
             <aside class="info-card">
-                <h2>✅ Equipment Condition Rules</h2>
-                <p>
-                    If an item was returned and marked <span class="kbd">Not Good</span>,
-                    it should be set to <span class="kbd">maintenance</span>.
-                </p>
+                <h2>💡 Quick Tips & Best Practices</h2>
                 <ul class="info-list">
-                    <li><strong>After repair</strong>, admin can edit equipment status and set it back to <span
-                            class="kbd">available</span>.</li>
-                    <li><strong>Only available</strong> items are shown to students by default.</li>
-                    <li><strong>QR scanning</strong> requires <span class="kbd">HTTPS</span> or <span
-                            class="kbd">localhost</span>.</li>
+                    <li><strong>Equipment Care:</strong> Always verify cables and accessories are included before
+                        returning an item.</li>
+                    <li><strong>Reporting:</strong> If an item is damaged, use the <span class="kbd">Not Good</span>
+                        status during return and leave a brief note if prompted.</li>
+                    <li><strong>Scanner Setup:</strong> Ensure you are using <span class="kbd">HTTPS</span> for the QR
+                        scanner to function on mobile devices.</li>
+                    <li><strong>Maintenance:</strong> Admin should regularly check items in the <span
+                            class="kbd">maintenance</span> queue.</li>
                 </ul>
             </aside>
         </div>

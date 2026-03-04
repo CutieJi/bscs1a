@@ -36,62 +36,69 @@
         <section class="info-hero">
             <h1 class="info-title">Privacy Policy</h1>
             <p class="info-subtitle">
-                This page explains what information MISLend collects, how it is used, and how we protect it.
+                Effective Date: February 29, 2026. This policy describes how MISLend handles your personal and system data.
             </p>
         </section>
 
         <div class="info-grid">
             <section class="info-card">
-                <h2>🔎 Information We Collect</h2>
+                <h2>🔎 Information We Process</h2>
                 <ul class="info-list">
-                    <li><strong>Account info:</strong> name, email, role (student/admin), student ID (students only).
-                    </li>
-                    <li><strong>Borrowing records:</strong> equipment borrowed, date/time, return time, room, purpose,
-                        condition, notes.</li>
-                    <li><strong>System activity:</strong> logs used for auditing and monitoring usage.</li>
+                    <li><strong>Account Identification:</strong> We collect your full name, institutional email address,
+                        and Student ID to verify eligibility.</li>
+                    <li><strong>Service Data:</strong> Borrowing records, including item IDs, timestamps, and locations,
+                        are stored to manage the equipment lifecycle.</li>
+                    <li><strong>Technical Logs:</strong> Basic device information and system interaction logs are used
+                        for security and troubleshooting.</li>
                 </ul>
             </section>
 
             <aside class="info-card">
-                <h2>🧠 Why We Collect It</h2>
+                <h2>☁️ Service Providers</h2>
+                <p>MISLend utilizes <strong>Google Firebase</strong> for backend infrastructure.</p>
                 <ul class="info-list">
-                    <li><strong>To manage borrowing:</strong> track who borrowed what and when.</li>
-                    <li><strong>To ensure accountability:</strong> overdue monitoring and equipment condition tracking.
-                    </li>
-                    <li><strong>To improve service:</strong> detect issues and improve system experience.</li>
+                    <li><strong>Authentication:</strong> Securely manages login credentials.</li>
+                    <li><strong>Firestore:</strong> Stores encrypted system data and records.</li>
+                    <li><strong>Hosting:</strong> Provides the web application interface.</li>
                 </ul>
             </aside>
 
             <section class="info-card">
-                <h2>🔐 Data Protection</h2>
+                <h2>🔐 Security Measures</h2>
                 <ul class="info-list">
-                    <li>We store data securely using Firebase Authentication and Firestore database rules.</li>
-                    <li>Only admins can view all users and full borrowing logs.</li>
-                    <li>Students can only access their own borrowing records.</li>
+                    <li><strong>Access Control:</strong> Data is protected by Firestore Security Rules, ensuring
+                        students only see their own records.</li>
+                    <li><strong>Encryption:</strong> Data in transit and at rest is encrypted using industry-standard
+                        protocols.</li>
+                    <li><strong>Admin Oversight:</strong> Only authorized MIS personnel have access to system-wide logs.
+                    </li>
                 </ul>
             </section>
 
             <aside class="info-card">
-                <h2>🗑 Data Retention</h2>
+                <h2>⚖️ Your Rights</h2>
                 <ul class="info-list">
-                    <li>Borrowing logs may be kept for school reporting and auditing purposes.</li>
-                    <li>Users may request account removal from the system (handled by admin).</li>
+                    <li><strong>Access:</strong> View your borrowing history at any time through your dashboard.</li>
+                    <li><strong>Correction:</strong> Request updates to inaccurate profile information via an
+                        administrator.</li>
+                    <li><strong>Deletion:</strong> Accounts and associated personal data can be removed upon graduation
+                        or request.</li>
                 </ul>
             </aside>
 
             <section class="info-card">
-                <h2>📨 Contact</h2>
+                <h2>📅 Data Retention</h2>
                 <p>
-                    If you have privacy concerns, please contact the administrator via the Support page.
+                    Records are retained for the duration of the academic semester for auditing. Academic-related
+                    borrowing history may be archived for system performance analysis but will be anonymized where
+                    possible.
                 </p>
             </section>
 
             <aside class="info-card">
-                <h2>⚠️ Notes</h2>
-                <ul class="info-list">
-                    <li>Do not share your password with anyone.</li>
-                    <li>Use demo/test accounts only for development.</li>
-                </ul>
+                <h2>⚠️ Security Responsibility</h2>
+                <p>Users are responsible for maintaining the confidentiality of their credentials. MISLend will never
+                    ask for your password via email or SMS.</p>
             </aside>
         </div>
 
