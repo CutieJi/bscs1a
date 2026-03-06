@@ -185,10 +185,6 @@ async function loadEquipment() {
         if (equipment.length === 0) {
             equipmentGrid.innerHTML = `
                 <div class="empty-state">
-                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
                     <h3>No equipment found</h3>
                     <p>Try adjusting your filters</p>
                 </div>
@@ -206,9 +202,6 @@ async function loadEquipment() {
                     <div class="equipment-actions">
                         ${item.status === 'available' ? `
                             <button class="btn btn-primary btn-sm" onclick="openBorrowModal('${item.id}')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
                                 Borrow
                             </button>
                         ` : `
@@ -564,9 +557,6 @@ async function loadBorrowedItems() {
         if (borrowedItems.length === 0) {
             borrowedItemsGrid.innerHTML = `
                 <div class="empty-state">
-                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    </svg>
                     <h3>No borrowed items</h3>
                     <p>You haven't borrowed any equipment yet</p>
                 </div>
@@ -580,11 +570,11 @@ async function loadBorrowedItems() {
 
                 let statusBadge = '';
                 if (isPendingBorrow) {
-                    statusBadge = `<span class="badge badge-status" style="background: rgba(245,158,11,0.1); color: var(--warning); font-size:0.75rem;">⏳ Pending Approval</span>`;
+                    statusBadge = `<span class="badge badge-status" style="background: rgba(245,158,11,0.1); color: var(--warning); font-size:0.75rem;">Pending Approval</span>`;
                 } else if (isPendingExtend) {
-                    statusBadge = `<span class="badge badge-status" style="background: rgba(30,64,175,0.1); color: #1e40af; font-size:0.75rem;">⏳ Extension Pending</span>`;
+                    statusBadge = `<span class="badge badge-status" style="background: rgba(30,64,175,0.1); color: #1e40af; font-size:0.75rem;">Extension Pending</span>`;
                 } else if (isBorrowed) {
-                    statusBadge = `<span class="badge badge-status" style="background: rgba(16,185,129,0.1); color: var(--success); font-size:0.75rem;">✅ Approved</span>`;
+                    statusBadge = `<span class="badge badge-status" style="background: rgba(16,185,129,0.1); color: var(--success); font-size:0.75rem;">Approved</span>`;
                 }
 
                 let actions = '';
@@ -622,9 +612,10 @@ async function loadBorrowedItems() {
                             ${statusBadge}
                         </div>
                         <div class="borrowed-item-meta">
-                            <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
+                            <span><i class="fa-solid fa-calendar"></i> Borrowed: ${formatDate(item.borrowedAt)}</span>
+                            |
                             <span class="due-date">
-                                ⏰ Due Time: ${item.expectedReturnTime || 'N/A'}
+                                <i class="fa-solid fa-clock"></i> Due Time: ${item.expectedReturnTime || 'N/A'}
                             </span>
                         </div>
                         <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
@@ -737,10 +728,6 @@ async function loadHistory() {
         if (history.length === 0) {
             historyList.innerHTML = `
                 <div class="empty-state">
-                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
                     <h3>No history yet</h3>
                     <p>Your borrowing history will appear here</p>
                 </div>
@@ -764,7 +751,7 @@ async function loadHistory() {
                     <div class="history-item-details">
                         <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
                         ${item.expectedReturnTime ? `<span>⏰ Due Time: ${item.expectedReturnTime}</span>` : ''}
-                        ${item.returnedAt ? `<span>✅ Returned: ${formatDate(item.returnedAt)}</span>` : ''}
+                        ${item.returnedAt ? `<span><i class="fa-solid fa-square-check" style="color: rgb(99, 230, 190);"></i> Returned: ${formatDate(item.returnedAt)}</span>` : ''}
                         ${item.returnCondition ? `<span>🔧 Condition: ${capitalize(item.returnCondition)}</span>` : ''}
                         ${item.room ? `<span>🏫 Room: ${item.room}</span>` : ''}
                         <span>📝 Purpose: ${item.purpose}</span>

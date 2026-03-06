@@ -236,7 +236,7 @@ async function loadRecentActivities() {
         } else {
             activitiesList.innerHTML = activities.map(activity => `
                 <div class="transaction-item">
-                    <div class="transaction-icon">${activity.status === 'returned' ? '✅' : '📦'}</div>
+                    <div class="transaction-icon">${activity.status === 'returned' ? '<i class="fa-solid fa-square-check" style="color: rgb(99, 230, 190);"></i>' : '<i class="fa-solid fa-box" style="color: rgb(255, 212, 59);"></i>'}</div>
                     <div class="transaction-details">
                         <div class="transaction-title">${activity.status === 'returned' ? 'Returned' : 'Borrowed'}: ${activity.equipmentName}</div>
                         <div class="transaction-meta">${activity.userName}</div>
@@ -292,7 +292,7 @@ async function loadOverdueItems() {
         if (overdue.length === 0) {
             overdueList.innerHTML = `
                 <div class="alert-item success">
-                    <div class="alert-icon">✅</div>
+                    <div class="alert-icon"><i class="fa-solid fa-square-check" style="color: rgb(99, 230, 190);"></i></div>
                     <div class="alert-content">
                         <div class="alert-title">All Clear</div>
                         <div class="alert-message">No overdue items</div>
@@ -305,7 +305,7 @@ async function loadOverdueItems() {
                 const typeLabel = item.notificationType ? ` (${item.notificationType.toUpperCase()})` : '';
                 return `
                 <div class="alert-item warning">
-                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation" style="color: rgb(255, 212, 59);"></i></div>
                     <div class="alert-content">
                         <div class="alert-title">${item.equipmentName}</div>
                         <div class="alert-message">
@@ -315,10 +315,10 @@ async function loadOverdueItems() {
                     </div>
                     <div class="alert-actions" style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;">
                         <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
-                            💬
+                            <i class="fa-solid fa-comment-dots"></i>
                         </button>
                         <button class="btn btn-icon" onclick="sendEmailOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send Email Reminder">
-                            📧
+                            <i class="fa-solid fa-envelope"></i>
                         </button>
                     </div>
                 </div>
@@ -329,7 +329,7 @@ async function loadOverdueItems() {
         console.error('Error loading overdue items:', error);
         overdueList.innerHTML = `
             <div class="alert-item warning">
-                <div class="alert-icon">⚠️</div>
+                <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation" style="color: rgb(255, 212, 59);"></i></div>
                 <div class="alert-content">
                     <div class="alert-title">Error</div>
                     <div class="alert-message">Failed to load overdue list</div>
@@ -404,9 +404,7 @@ async function loadPendingRequests() {
             pendingGrid.innerHTML = `
                 <div class="empty-state" style="grid-column: 1 / -1;">
                     <div class="stat-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); color: var(--success); display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
+                        <i class="fa-solid fa-check"></i>
                     </div>
                     <h3>All Caught Up!</h3>
                     <p style="color: var(--text-secondary);">There are no pending requests requiring your attention.</p>
@@ -440,9 +438,9 @@ async function loadPendingRequests() {
                             <span class="card-subtitle">ID: ${req.equipmentCode}</span>
                         </div>
                         <div class="stat-icon" style="background: ${actionBg}; color: ${actionColor}; width: 32px; height: 32px;">
-                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                 ${icon}
-                             </svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                ${icon}
+                            </svg>
                         </div>
                     </div>
                     
@@ -487,7 +485,7 @@ async function loadPendingRequests() {
         pendingGrid.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1;">
                 <div class="alert-item warning">
-                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation" style="color: rgb(255, 212, 59);"></i></div>
                     <div class="alert-content">
                         <div class="alert-title">Error</div>
                         <div class="alert-message">Failed to load pending requests</div>
@@ -800,7 +798,7 @@ async function loadAllEquipment() {
                     </div>
                     <div class="equipment-list-actions">
                     <button class="btn btn-icon" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.description || ''}', '${item.status}')" title="Edit">
-                    ✏️
+                    <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                         <button class="btn btn-secondary btn-sm" onclick="generateQRCode('${item.id}', '${item.equipmentId}', '${item.name}')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -811,7 +809,7 @@ async function loadAllEquipment() {
                             QR Code
                         </button>
                         <button class="btn btn-icon danger" onclick="deleteEquipment('${item.id}', '${item.name}')" title="Delete">
-                        🗑    
+                        <i class="fa-solid fa-trash"></i>    
                         </button>
                     </div>
                 </div>
@@ -1008,7 +1006,7 @@ async function loadCurrentlyBorrowed() {
                             <div>
                                 <div class="borrowed-student">${item.userName}</div>
                                 <div class="borrowed-list-details">
-                                    📧 ${item.userEmail} • 🆔 ${item.studentId}
+                                    ${item.userEmail} • ${item.studentId}
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -1045,7 +1043,7 @@ async function loadCurrentlyBorrowed() {
                             <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                                 ${item.userId ? `
                                     <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
-                                        💬
+                                        <i class="fa-solid fa-message"></i>
                                     </button>
                                 ` : ''}
                                 <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
@@ -1162,7 +1160,7 @@ async function loadBorrowingLogs() {
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${(log.status === 'borrowed' || log.status === 'pending_return') && log.userId ? `
                                 <button class="btn btn-icon btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
-                                    💬
+                                    <i class="fa-solid fa-message"></i>
                                 </button>
                             ` : ''}
                             <span class="history-status ${log.status}">${statusLabel}</span>
@@ -1645,15 +1643,15 @@ async function loadUsers() {
                         <div class="user-card-actions">
                             ${user.id !== currentAdmin.uid ? `
                                 <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}')" title="Edit">
-                                    ✏️
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 ${user.role === 'student' && user.mobile ? `
-                                    <a class="btn btn-icon" href="sms:${user.mobile}?body=Hello ${user.name}, this is UCC MIS Office. Just a reminder regarding your equipment borrowing." title="Send Message">
-                                        💬
-                                    </a>
+                                    <button class="btn btn-icon" href="sms:${user.mobile}?body=Hello ${user.name}, this is UCC MIS Office. Just a reminder regarding your equipment borrowing." title="Send Message">
+                                        <i class="fa-solid fa-message"></i>
+                                    </button>
                                 ` : ''}
                                 <button class="btn btn-icon danger" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
-                                    🗑
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             ` : '<span style="font-size: 0.75rem; color: var(--text-tertiary);">(You)</span>'}
                         </div>
