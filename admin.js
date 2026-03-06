@@ -801,11 +801,7 @@ async function loadAllEquipment() {
                     <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                         <button class="btn btn-secondary btn-sm" onclick="generateQRCode('${item.id}', '${item.equipmentId}', '${item.name}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="9" y1="3" x2="9" y2="21"></line>
-                                <line x1="15" y1="3" x2="15" y2="21"></line>
-                            </svg>
+                            <i class="fa-solid fa-qrcode"></i>
                             QR Code
                         </button>
                         <button class="btn btn-icon danger" onclick="deleteEquipment('${item.id}', '${item.name}')" title="Delete">
@@ -1052,9 +1048,6 @@ async function loadCurrentlyBorrowed() {
                                     <option value="damaged">Damaged – Needs repair</option>
                                 </select>
                                 <button class="btn btn-primary btn-sm" onclick="adminConfirmReturn('${item.id}', '${item.equipmentId}')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
                                     Confirm Return
                                 </button>
                             </div>
