@@ -68,7 +68,9 @@ function initializeDashboard() {
     initializeSidebar();
     initializeProfileDropdown();
     initializeTheme();
+    initializeHistoryExport();
 }
+
 
 function updateUserInfo() {
     const name = currentUserData.name || 'Student';
@@ -709,9 +711,15 @@ async function loadHistory() {
     if (!historyList) return;
 
     try {
+        const startDate = document.getElementById('historyStartDate')?.value;
+        const endDate = document.getElementById('historyEndDate')?.value;
+        const equipmentFilter = document.getElementById('historyEquipmentFilter')?.value.toLowerCase() || '';
+        const statusFilter = document.getElementById('historyStatusFilter')?.value || 'all';
+        const sortValue = document.getElementById('historySort')?.value || 'borrowedAt_desc';
+
         const snapshot = await db.collection('borrowings')
             .where('userId', '==', currentUser.uid)
-            .limit(50)
+            .limit(100)
             .get();
 
         let history = snapshot.docs.map(doc => ({
@@ -719,42 +727,118 @@ async function loadHistory() {
             ...doc.data()
         }));
 
+        if (startDate) {
+            const start = new Date(startDate);
+            history = history.filter(h => h.borrowedAt?.toDate() >= start);
+        }
+
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59);
+            history = history.filter(h => h.borrowedAt?.toDate() <= end);
+        }
+
+        if (equipmentFilter) {
+            history = history.filter(h =>
+                (h.equipmentName || '').toLowerCase().includes(equipmentFilter) ||
+                (h.equipmentCode || '').toLowerCase().includes(equipmentFilter)
+            );
+        }
+
+        if (statusFilter !== 'all') {
+            history = history.filter(h => h.status === statusFilter);
+        }
+
+        const [field, order] = sortValue.split('_');
         history.sort((a, b) => {
-            const aTime = a.borrowedAt?.seconds || 0;
-            const bTime = b.borrowedAt?.seconds || 0;
-            return bTime - aTime;
+            let valA = a[field];
+            let valB = b[field];
+
+            if (field === 'borrowedAt') {
+                valA = valA?.toDate().getTime() || 0;
+                valB = valB?.toDate().getTime() || 0;
+            } else {
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+            }
+
+            if (valA < valB) return order === 'asc' ? -1 : 1;
+            if (valA > valB) return order === 'asc' ? 1 : -1;
+            return 0;
         });
 
         if (history.length === 0) {
             historyList.innerHTML = `
                 <div class="empty-state">
-                    <h3>No history yet</h3>
-                    <p>Your borrowing history will appear here</p>
+                    <h3>No history found</h3>
+                    <p>Try adjusting your filters or borrow some equipment</p>
                 </div>
             `;
         } else {
+            const statusLabels = {
+                'pending_borrow': 'Pending Approval',
+                'pending_return': 'Return Pending',
+                'pending_extension': 'Extension Pending',
+                'borrowed': 'Borrowed',
+                'returned': 'Returned',
+                'rejected': 'Rejected'
+            };
+
             historyList.innerHTML = history.map(item => {
-                const statusLabels = {
-                    'pending_borrow': 'Pending Approval',
-                    'pending_return': 'Return Pending',
-                    'borrowed': 'Borrowed',
-                    'returned': 'Returned',
-                    'rejected': 'Rejected'
-                };
                 const statusLabel = statusLabels[item.status] || capitalize(item.status);
                 return `
-                <div class="history-item">
-                    <div class="history-item-header">
-                        <div class="history-item-title">${item.equipmentName}</div>
+                <div class="log-item">
+                    <div class="log-item-header">
+                        <span class="log-item-title">${item.equipmentName}</span>
                         <span class="history-status ${item.status}">${statusLabel}</span>
                     </div>
-                    <div class="history-item-details">
-                        <span>📅 Borrowed: ${formatDate(item.borrowedAt)}</span>
-                        ${item.expectedReturnTime ? `<span>⏰ Due Time: ${item.expectedReturnTime}</span>` : ''}
-                        ${item.returnedAt ? `<span><i class="fa-solid fa-square-check" style="color: rgb(99, 230, 190);"></i> Returned: ${formatDate(item.returnedAt)}</span>` : ''}
-                        ${item.returnCondition ? `<span>🔧 Condition: ${capitalize(item.returnCondition)}</span>` : ''}
-                        ${item.room ? `<span>🏫 Room: ${item.room}</span>` : ''}
-                        <span>📝 Purpose: ${item.purpose}</span>
+
+                    <div class="log-item-info">
+                        <div class="log-field">
+                            <span class="log-label">Equipment ID:</span>
+                            <span class="log-value">${item.equipmentCode || 'N/A'}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Borrowed:</span>
+                            <span class="log-value">${formatDate(item.borrowedAt)}</span>
+                        </div>
+
+                        ${item.returnedAt ? `
+                            <div class="log-field">
+                                <span class="log-label">Returned:</span>
+                                <span class="log-value">${formatDate(item.returnedAt)}</span>
+                            </div>
+                        ` : `
+                            <div class="log-field">
+                                <span class="log-label">Due Time:</span>
+                                <span class="log-value">${item.expectedReturnTime || 'N/A'}</span>
+                            </div>
+                        `}
+
+                        <div class="log-field">
+                            <span class="log-label">Room:</span>
+                            <span class="log-value">${item.room || 'N/A'}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Purpose:</span>
+                            <span class="log-value">${item.purpose || 'N/A'}</span>
+                        </div>
+
+                        ${item.returnCondition ? `
+                            <div class="log-field">
+                                <span class="log-label">Return Condition:</span>
+                                <span class="log-value">${capitalize(item.returnCondition)}</span>
+                            </div>
+                        ` : ''}
+
+                        <div class="log-field">
+                            <span class="log-label">Status History:</span>
+                            <span class="log-value">
+                                ${item.wasOverdue ? '<span class="badge" style="background:rgba(239,68,68,0.1); color:var(--danger); font-size:0.7rem; padding: 2px 6px;">WAS OVERDUE</span>' : ''}
+                                ${item.hasExtension ? '<span class="badge" style="background:rgba(30,64,175,0.1); color:#1e40af; font-size:0.7rem; padding: 2px 6px;">EXTENDED</span>' : ''}
+                                ${!item.wasOverdue && !item.hasExtension ? '<span style="color:var(--text-tertiary); font-size:0.8rem;">Regular</span>' : ''}
+                            </span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -770,6 +854,61 @@ async function loadHistory() {
         `;
     }
 }
+
+function initializeHistoryExport() {
+    const exportBtn = document.getElementById('exportHistoryBtn');
+    if (!exportBtn) return;
+
+    exportBtn.addEventListener('click', async () => {
+        try {
+            const snapshot = await db.collection('borrowings')
+                .where('userId', '==', currentUser.uid)
+                .orderBy('borrowedAt', 'desc')
+                .get();
+
+            const rows = [['Equipment', 'Equipment ID', 'Status', 'Borrowed At', 'Due Time', 'Returned At', 'Return Condition', 'Room', 'Purpose', 'Was Overdue', 'Had Extension']];
+
+            const fmtDate = (ts) => {
+                if (!ts || !ts.toDate) return '';
+                const d = ts.toDate();
+                const pad = n => String(n).padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            };
+
+            snapshot.docs.forEach(doc => {
+                const d = doc.data();
+                rows.push([
+                    d.equipmentName || '',
+                    d.equipmentCode || '',
+                    d.status || '',
+                    fmtDate(d.borrowedAt),
+                    d.expectedReturnTime || '',
+                    fmtDate(d.returnedAt),
+                    d.returnCondition || '',
+                    d.room || '',
+                    d.purpose || '',
+                    d.wasOverdue ? 'Yes' : 'No',
+                    d.hasExtension ? 'Yes' : 'No'
+                ]);
+            });
+
+            const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `my-borrowing-history-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('History exported successfully!', 'success');
+        } catch (err) {
+            console.error('Export error:', err);
+            showToast('Failed to export history', 'error');
+        }
+    });
+}
+
+
 
 function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
