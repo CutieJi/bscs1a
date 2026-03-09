@@ -51,7 +51,7 @@ graph LR
 
 ### 2. Connect Your App
 1. Register a **Web App** in Firebase.
-2. Open `app.js` and paste your `firebaseConfig`.
+2. Open `assets/js/app.js` and paste your `firebaseConfig`.
 
 ### 3. Initialize Admin Account
 1. Register a new account.
