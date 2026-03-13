@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In — MISLend</title>
+    <link rel="shortcut icon" href="assets/images/13.png" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0b1f3a;
+            --blue: #1e5fa8;
+            --gold: #c8921a;
+            --gold-light: #f0b429;
+            --white: #ffffff;
+            --off-white: #f8fafc;
+            --line: #e8edf4;
+            --text: #0d1f35;
+            --muted: #8a9bb0;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--white);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .page {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(180, 220, 255, .22) 0%, transparent 45%),
+                radial-gradient(ellipse at 100% 0%, rgba(200, 180, 255, .18) 0%, transparent 45%),
+                var(--white);
+        }
+
+        .card {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            width: min(960px, 94vw);
+            height: min(580px, 94vh);
+            background: var(--white);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 32px 80px rgba(11, 31, 58, .14);
+            position: relative;
+        }
+
+        /* ══ LEFT ══ */
+        .form-side {
+            padding: 84px 52px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-wrap {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -.5px;
+            z-index: 10;
+        }
+
+        .logo-wrap img {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .logo-wrap span {
+            color: var(--blue);
+            font-weight: 800;
+        }
+
+        .form-head {
+            margin-bottom: 24px;
+        }
+
+        .form-head h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -.5px;
+            margin-bottom: 2px;
+        }
+
+        .form-head p {
+            font-size: .86rem;
+            color: var(--muted);
+        }
+
+        /* Underline tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--line);
+            margin-bottom: 12px;
+        }
+
+        .tab {
+            padding: 8px 20px 10px;
+            font-size: .87rem;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: color .2s, border-color .2s;
+        }
+
+        .tab.active {
+            color: var(--navy);
+            border-bottom-color: var(--navy);
+        }
+
+        .form-panel {
+            display: none;
+        }
+
+        .form-panel.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── FLOATING LABEL FIELD ── */
+        .field {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--line);
+            border-radius: 8px;
+            font-size: .85rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--white);
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--blue);
+            background: var(--white);
+        }
+
+        /* Label sits in the vertical center — acts as placeholder */
+        .field label {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: .88rem;
+            color: var(--muted);
+            pointer-events: none;
+            transition: top .18s ease, font-size .18s ease, color .18s ease, transform .18s ease, padding .18s ease;
+            background: transparent;
+            padding: 0 4px;
+        }
+
+        /* Float label UP onto the border line */
+        .field input:focus~label,
+        .field input.has-value~label,
+        .field select:focus~label,
+        .field select.has-value~label {
+            top: 0;
+            transform: translateY(-50%);
+            font-size: .68rem;
+            font-weight: 700;
+            color: var(--blue);
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            background: var(--white);
+            padding: 0 6px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .extras {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .forget {
+            font-size: .82rem;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .forget:hover {
+            color: var(--navy);
+        }
+
+        .btn-signin {
+            width: 100%;
+            padding: 11px;
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: .95rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .2s, transform .15s;
+        }
+
+        .btn-signin:hover {
+            background: #0d2848;
+            transform: translateY(-1px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 12px;
+            font-size: .82rem;
+            color: var(--muted);
+        }
+
+        .back-link a {
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        /* Register form sizing */
+        #panelRegister {
+            padding-top: 6px;
+            padding-inline: 4px;
+            margin-top: -6px;
+            position: relative;
+        }
+
+        /* ══ RIGHT ══ */
+        .visual-side {
+            background: var(--navy);
+            border-radius: 24px;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 32px 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-side::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 70% 20%, rgba(30, 95, 168, .35), transparent 50%),
+                radial-gradient(circle at 25% 75%, rgba(200, 146, 26, .18), transparent 50%);
+            pointer-events: none;
+        }
+
+        .hex-bg {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 160px;
+            height: 160px;
+            opacity: .12;
+            background:
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, .4) 0px, rgba(255, 255, 255, .4) 1px, transparent 1px, transparent 32px),
+                repeating-linear-gradient(60deg, rgba(255, 255, 255, .4) 0px, rgba(255, 255, 255, .4) 1px, transparent 1px, transparent 32px),
+                repeating-linear-gradient(120deg, rgba(255, 255, 255, .4) 0px, rgba(255, 255, 255, .4) 1px, transparent 1px, transparent 32px);
+        }
+
+        .illus-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -58%);
+            width: 140px;
+            height: 170px;
+            background: linear-gradient(160deg, #162e50, #1e4a7a);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .4), 0 0 0 1px rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .dot-green {
+            position: absolute;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #22c55e;
+            bottom: 28%;
+            right: 18%;
+            opacity: .75;
+        }
+
+        .dot-gold {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--gold-light);
+            top: 28%;
+            left: 14%;
+            opacity: .7;
+        }
+
+        .tri {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .tri-l {
+            bottom: 30%;
+            left: 18%;
+            border-width: 10px 6px 0 6px;
+            border-color: #22c55e transparent transparent transparent;
+        }
+
+        .tri-r {
+            top: 38%;
+            right: 22%;
+            border-width: 10px 6px 0 6px;
+            border-color: #22c55e transparent transparent transparent;
+        }
+
+        .visual-text {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .visual-text h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .visual-text p {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .55);
+            line-height: 1.6;
+            max-width: 200px;
+            margin: 0 auto 16px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .3);
+        }
+
+        .dot.active {
+            background: #fff;
+            width: 20px;
+            border-radius: 4px;
+        }
+
+        @media(max-width:700px) {
+            .card {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .visual-side {
+                display: none;
+            }
+
+            .form-side {
+                padding: 36px 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page">
+        <div class="card">
+
+            <!-- Logo fixed top-left of card -->
+            <div class="logo-wrap">
+                <img src="assets/images/13.png" alt="Logo" />
+                <div>MIS<span>Lend</span></div>
+            </div>
+
+            <!-- LEFT: FORM -->
+            <div class="form-side">
+                <div class="form-head">
+                    <h1 id="mainTitle">Welcome Back!</h1>
+                    <p id="mainSubtitle">Please enter your sign in details below</p>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" id="tabLogin" onclick="switchTab('login')">Sign In</div>
+                    <div class="tab" id="tabRegister" onclick="switchTab('register')">Register</div>
+                </div>
+
+                <!-- LOGIN -->
+                <div class="form-panel active" id="panelLogin">
+                    <form id="unifiedLoginForm">
+                        <div class="field">
+                            <input type="text" id="loginEmail" autocomplete="username" required />
+                            <label for="loginEmail">Email or Student ID</label>
+                        </div>
+                        <div class="field">
+                            <input type="password" id="loginPassword" minlength="8" autocomplete="current-password"
+                                required />
+                            <label for="loginPassword">Password</label>
+                        </div>
+                        <div class="extras"><span class="forget">Forgot password?</span></div>
+                        <button type="submit" class="btn-signin">Sign In</button>
+                    </form>
+                    <div class="back-link">← <a href="test.html">Back to Home</a></div>
+                </div>
+
+                <!-- REGISTER -->
+                <div class="form-panel" id="panelRegister">
+                    <form id="registerForm">
+                        <div class="field">
+                            <input type="text" id="registerName" required />
+                            <label for="registerName">Full Name</label>
+                        </div>
+                        <div class="field">
+                            <input type="email" id="registerEmail" required />
+                            <label for="registerEmail">Email Address</label>
+                        </div>
+                        <div class="field">
+                            <input type="password" id="registerPassword" minlength="8" required />
+                            <label for="registerPassword">Password (min. 8 chars)</label>
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <input type="text" id="registerStudentId" minlength="10" maxlength="10" required />
+                                <label for="registerStudentId">Student ID</label>
+                            </div>
+                            <div class="field">
+                                <input type="tel" id="registerMobile" minlength="11" maxlength="11" required />
+                                <label for="registerMobile">Mobile No.</label>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <input type="text" id="registerCourse" required />
+                                <label for="registerCourse">Course</label>
+                            </div>
+                            <div class="field">
+                                <select id="registerGender" required>
+                                    <option value=""></option>
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Custom</option>
+                                </select>
+                                <label for="registerGender">Gender</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <input type="text" id="registerYearSection" required />
+                            <label for="registerYearSection">Year &amp; Section (e.g. 1-A)</label>
+                        </div>
+                        <button type="submit" class="btn-signin">Create Account</button>
+                    </form>
+                    <div class="back-link">← <a href="test.html">Back to Home</a></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: DARK VISUAL -->
+            <div class="visual-side">
+                <div class="hex-bg"></div>
+                <div class="illus-card">🖥️</div>
+                <div class="dot-green"></div>
+                <div class="dot-gold"></div>
+                <div class="tri tri-l"></div>
+                <div class="tri tri-r"></div>
+                <div class="visual-text">
+                    <h3>Manage Your Equipment</h3>
+                    <p>Borrow and return classroom devices instantly with QR scanning and real-time tracking.</p>
+                    <div class="dots">
+                        <div class="dot active"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+            document.getElementById('panelLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('panelRegister').classList.toggle('active', tab === 'register');
+
+            // Update title
+            const title = document.getElementById('mainTitle');
+            const subtitle = document.getElementById('mainSubtitle');
+            if (tab === 'register') {
+                title.textContent = "Create Account";
+                subtitle.textContent = "Join MISLend to manage your classroom equipment";
+            } else {
+                title.textContent = "Welcome Back!";
+                subtitle.textContent = "Please enter your sign in details below";
+            }
+        }
+
+        // Floating labels — add 'has-value' when input/select has content
+        function initFloatingLabels() {
+            document.querySelectorAll('.field input, .field select').forEach(el => {
+                const check = () => el.classList.toggle('has-value', el.value.trim() !== '');
+                el.addEventListener('input', check);
+                el.addEventListener('change', check);
+                check(); // handle browser autofill on load
+            });
+        }
+        initFloatingLabels();
+    </script>
+</body>
+
+</html>

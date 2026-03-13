@@ -73,7 +73,7 @@ function initializeDashboard() {
 }
 
 function updateAdminInfo() {
-    const email = currentAdmin.email || '';
+    const email = currentAdmin?.email || '';
     const adminEmailEl = document.getElementById('adminEmail');
     if (adminEmailEl) adminEmailEl.textContent = email;
     const topbarEmailEl = document.getElementById('topbarAdminEmail');
@@ -151,6 +151,7 @@ function initializeSidebar() {
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
     function toggleSidebar() {
+        if (!sidebar || !sidebarOverlay) return;
         if (window.innerWidth <= 768) {
             sidebar.classList.toggle('mobile-open');
             sidebarOverlay.classList.toggle('active');
@@ -170,6 +171,7 @@ function initializeSidebar() {
     }
 
     window.addEventListener('resize', () => {
+        if (!sidebar || !sidebarOverlay) return;
         if (window.innerWidth > 768) {
             sidebar.classList.remove('mobile-open');
             sidebarOverlay.classList.remove('active');
@@ -368,7 +370,7 @@ async function sendAllEmailReminders(overdueItems) {
 async function loadPendingRequests() {
     const pendingGrid = document.getElementById('pendingRequestsGrid');
     const badge = document.getElementById('approvalsBadge');
-
+    const topBadge = document.getElementById('topApprovalsBadge');
 
     const dashPendingCount = document.getElementById('pendingRequestsCount');
 
@@ -395,6 +397,10 @@ async function loadPendingRequests() {
         if (badge) {
             badge.textContent = count;
             badge.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
+        if (topBadge) {
+            topBadge.textContent = count;
+            topBadge.style.display = count > 0 ? 'inline-flex' : 'none';
         }
         if (dashPendingCount) {
             dashPendingCount.textContent = count;
