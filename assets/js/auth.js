@@ -1,9 +1,10 @@
 let isRegistering = false;
+let isLoggingIn = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(async (user) => {
         if (!user) return;
-        if (isRegistering) return;
+        if (isRegistering || isLoggingIn) return;
 
         try {
             const userDoc = await db.collection("users").doc(user.uid).get();
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = unifiedLoginForm.querySelector('button[type="submit"]');
 
             try {
+                isLoggingIn = true;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>Signing in...</span>';
 
@@ -89,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                showToast('Login successful!', 'success');
+                showToast('Login successful! Redirecting...', 'success');
 
                 setTimeout(() => {
                     if (userData.role === 'admin') {
@@ -97,9 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (userData.role === 'student') {
                         window.location.href = 'student.html';
                     }
-                }, 800);
+                }, 1500);
 
             } catch (error) {
+                isLoggingIn = false;
                 console.error('Login error:', error);
                 showToast(getErrorMessage(error), 'error');
 
@@ -111,24 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const registerModal = document.getElementById('registerModal');
-    const studentRegisterLink = document.getElementById('studentRegisterLink');
-    const closeModal = document.getElementById('closeModal');
-
-    if (studentRegisterLink && registerModal) {
-        studentRegisterLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            registerModal.classList.add('active');
-        });
-    }
-
-    if (closeModal && registerModal) {
-        closeModal.addEventListener('click', () => {
-            registerModal.classList.remove('active');
-        });
-    }
-
-    const registerForm = document.getElementById('registerForm');
+    const registerForm = document.getElementById('unifiedRegisterForm');
 
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
@@ -173,7 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRegistering = false;
 
                 registerForm.reset();
-                registerModal.classList.remove('active');
+                
+                // Switch back to login tab after success
+                if (typeof switchTab === 'function') {
+                    switchTab('login');
+                }
 
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<span>Create Account</span>';

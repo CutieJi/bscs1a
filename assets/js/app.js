@@ -46,7 +46,8 @@ function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     if (!toast) return;
 
-    toast.textContent = message;
+    const icon = type === 'success' ? '' : '' ;
+    toast.innerHTML = `${icon} <span>${message}</span>`;
     toast.className = `toast show ${type}`;
 
     setTimeout(() => {
@@ -88,7 +89,7 @@ function checkAuth(requiredRole = null) {
             unsub();
 
             if (!user) {
-                window.location.href = "index.html";
+                window.location.href = "login.html";
                 reject("Not authenticated");
                 return;
             }
@@ -110,7 +111,7 @@ function checkAuth(requiredRole = null) {
                 }
             } catch (err) {
                 console.error("Role check error:", err);
-                window.location.href = "index.html";
+                window.location.href = "login.html";
                 reject(err);
             }
         });

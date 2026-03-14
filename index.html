@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MISLend — | UCC MIS Smart Equipment Management</title>
+    <title>MISLend — UCC MIS</title>
     <meta name="description"
         content="Streamline equipment borrowing at UCC MIS with MISLend. Scan QR codes for instant tracking, automated logs, and real-time availability.">
     <meta property="og:type" content="website">
@@ -14,309 +14,383 @@
         content="Instant QR-based equipment borrowing for UCC MIS students and staff. Fast, paperless, and real-time.">
     <meta property="og:image" content="https://raw.githubusercontent.com/CutieJi/bscs1a/main/wprev.png">
     <link rel="shortcut icon" href="assets/images/13.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/home-ui.css">
 </head>
 
-<body class="page-landing">
-    <div class="loader-wrapper" id="pageLoader">
-        <div class="loader-spinner"></div>
+<body>
+  <div id="preload">
+    <div class="loader">
+      <div class="loader-inner"></div>
     </div>
+  </div>
 
-    <div class="bg-layer"></div>
-    <div class="mesh-grid"></div>
-    <div class="floating-orb orb-a"></div>
-    <div class="floating-orb orb-b"></div>
-    <div class="floating-orb orb-c"></div>
+  <div id="contents">
 
-    <div class="page-wrap page-content-fade" id="pageContent">
-        <nav class="navbar">
-            <a href="#" class="nav-logo">
-                <div class="logo-icon">
-                    <img src="assets/images/13.png" alt="MISLend Logo">
-                </div>
-                <span>MIS<span class="logo-dot">Lend</span></span>
-            </a>
-            <div class="nav-links">
-                <a href="index.html" class="nav-link active">Home</a>
-                <a href="about.html" class="nav-link">About</a>
-                <a href="team.html" class="nav-link">Team</a>
-                <a href="#login" class="nav-link nav-cta">Sign In</a>
-            </div>
-        </nav>
+    <nav class="header">
+      <div class="left-nav">
+        <a href="test.html"><img src="assets/images/13.png" class="logo"> MIS<span
+            style="color:var(--gold);">Lend</span></a>
+      </div>
 
-        <main class="hero" id="login">
-            <div class="hero-left">
-                <div class="hero-badge">
-                    <span class="badge-pulse"></span>
-                    Equipment Borrowing System
-                </div>
+      <div class="mobilenav" id="mobilenav">
+        <i class="fas fa-bars"></i>
+      </div>
 
-                <h1 class="hero-title">
-                    Smart Equipment<br>
-                    <span class="grad">QR Tracking</span><br>
-                    for UCC MIS
-                </h1>
-
-                <p class="hero-description">
-                    A smarter, paperless solution for managing classroom tools. Borrow projectors, cables,
-                    and devices instantly with QR scanning and real-time status tracking.
-                </p>
-
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <div class="stat-num">QR</div>
-                        <div class="stat-label">Instant Scan</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-num">24/7</div>
-                        <div class="stat-label">Real-Time Tracking</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-num">100%</div>
-                        <div class="stat-label">Paperless Logs</div>
-                    </div>
-                </div>
-
-                <div class="hero-features">
-                    <div class="feature-pill">
-                        <i class="fa-solid fa-check"></i>
-                        QR code borrowing & return
-                    </div>
-                    <div class="feature-pill">
-                        <i class="fa-solid fa-check"></i>
-                        Admin approval workflow
-                    </div>
-                    <div class="feature-pill">
-                        <i class="fa-solid fa-check"></i>
-                        Overdue & condition tracking
-                    </div>
-                    <div class="feature-pill">
-                        <i class="fa-solid fa-check"></i>
-                        Exportable borrowing logs (Excel)
-                    </div>
-                </div>
-            </div>
-
-            <div class="hero-right">
-                <div class="login-card">
-                    <div class="card-header">
-                        <div class="card-avatar">
-                            <i class="fa-regular fa-user"></i>
-                        </div>
-                        <div class="card-header-text">
-                            <h2>Welcome back</h2>
-                            <p>Sign in to your account</p>
-                        </div>
-                    </div>
-
-                    <form id="unifiedLoginForm">
-                        <div class="form-group">
-                            <label for="loginEmail">Email or Student ID</label>
-                            <input type="text" id="loginEmail" placeholder="email or student id" required
-                                autocomplete="username">
-                        </div>
-                        <div class="form-group">
-                            <label for="loginPassword">Password</label>
-                            <input type="password" id="loginPassword" placeholder="password" minlength="8" required
-                                autocomplete="current-password">
-                        </div>
-                        <button type="submit" class="btn-signin" id="signinBtn">
-                            <span>Sign In</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </form>
-
-                    <div class="divider">
-                        <div class="divider-line"></div>
-                        <span class="divider-text">New to MISLend?</span>
-                        <div class="divider-line"></div>
-                    </div>
-
-                    <div class="card-register">
-                        <a href="#" id="studentRegisterLink">Request a student account <i
-                                class="fa-solid fa-arrow-right"></i></a>
-                    </div>
-
-                    <div class="security-note">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        Secured with Firebase Authentication
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <section class="features-strip" id="features">
-            <div class="features-inner">
-                <div class="features-label">✦ Everything you need ✦</div>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon-box"><i class="fa-solid fa-qrcode"></i></i></div>
-                        <h3>QR Code Scanning</h3>
-                        <p>Borrow and return equipment instantly by scanning the QR code on any device.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon-box"><i class="fa-solid fa-box"></i></div>
-                        <h3>Real-Time Tracking</h3>
-                        <p>See live status of all equipment — available, borrowed, or under maintenance.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon-box"><i class="fa-solid fa-clipboard"></i></div>
-                        <h3>Borrowing Logs</h3>
-                        <p>Full borrowing history with export to Excel for reporting and auditing.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon-box"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                        <h3>Overdue Alerts</h3>
-                        <p>Automatic flagging of overdue items so admins can act immediately.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon-box"><i class="fa-solid fa-square-check"></i></div>
-                        <h3>Admin Approvals</h3>
-                        <p>Two-step approval flow for borrows and returns with full admin control.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon-box"><i class="fa-solid fa-users"></i></div>
-                        <h3>User Management</h3>
-                        <p>Admin can create, approve, edit, and remove student and admin accounts.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <footer class="footer">
-            <div class="footer-inner">
-                <div class="footer-brand">
-                    <a href="index.html" class="nav-logo" style="margin-bottom:0.6rem; display:inline-flex;">
-                        <div class="logo-icon">
-                            <img src="assets/images/14.png" alt="MISLend Logo">
-                            <img src="assets/images/ucc.png" style="margin-right: 20px; margin-left: 4px;"
-                                alt="MISLend Logo">
-                        </div>
-                        <span>MIS<span class="logo-dot">Lend</span></span>
-                    </a>
-                    <p>Smart equipment management through QR code technology for UCC MIS.</p>
-                </div>
-
-                <div class="footer-col">
-                    <h4>Navigate</h4>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="about.html">About</a></li>
-                        <li><a href="team.html">Management Team</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-col">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="documentation.html">Documentation</a></li>
-                        <li><a href="support.html">Support</a></li>
-                        <li><a href="privacy.html">Privacy Policy</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-col">
-                    <h4>Contact</h4>
-                    <ul>
-                        <li>support@cs1a.mis</li>
-                        <li>+63 (975) 922-4758</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                &copy; 2026 MISLend. All rights reserved. Built for educational purposes.
-            </div>
-        </footer>
-    </div>
-
-    <div class="modal-backdrop" id="registerModal">
-        <div class="modal-box">
-            <div class="modal-top">
-                <h2>Create Student Account</h2>
-                <button class="modal-close-btn" id="closeModal">&times;</button>
-            </div>
-            <form id="registerForm">
-                <div class="form-group">
-                    <label for="registerName">Full Name</label>
-                    <input type="text" id="registerName" placeholder="fullname" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerEmail">Email</label>
-                    <input type="email" id="registerEmail" placeholder="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerPassword">Password</label>
-                    <input type="password" id="registerPassword" placeholder="Min. 8 characters" minlength="8" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerStudentId">Student ID</label>
-                    <input type="text" id="registerStudentId" placeholder="student id" minlength="10" maxlength="10"
-                        required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="registerMobile">Mobile No.</label>
-                        <input type="tel" id="registerMobile" placeholder="09*********" minlength="11" maxlength="11"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label for="registerGender">Select your gender</label>
-                        <select id="registerGender" required>
-                            <option value="">Select</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Custom">Custom</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="registerCourse">Course / Program</label>
-                        <input type="text" id="registerCourse" placeholder="e.g., BSCS" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="registerYearSection">Year Level & Section</label>
-                        <input type="text" id="registerYearSection" placeholder="e.g., 1-A" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn-create">Create Account</button>
-            </form>
+      <div class="right-nav" id="rightNav">
+        <div class="close-menu" id="closeMenu">
+          <i class="fas fa-times"></i>
         </div>
+
+        <ul>
+          <li><a href="test.html" class="active">Home</a></li>
+          <li><a href="about-team.html">About</a></li>
+          <li><a href="login.html"><button type="button" class="button">Sign In</button></a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="contents">
+      <div class="hero" id="home">
+        <div class="hero-inner fade-in-up">
+          <div class="hero-badge"><span class="pulse"></span> Equipment Borrowing System — UCC MIS</div>
+          <h1>Smart Equipment <span class="hl">QR Tracking</span> for UCC MIS</h1>
+          <p class="hero-sub">A smarter, paperless solution for managing classroom tools. Borrow projectors, cables, and
+            devices instantly with QR scanning and real-time status updates.</p>
+          <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
+            <a href="login.html" class="button"
+              style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-size: 1rem;">Sign In to
+              MISLend &rarr;</a>
+            <a href="#HR"
+              style="padding:10px 24px;border:2px solid white;color: white;border-radius:8px;font-size:1rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Learn
+              More &darr;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- HR Content Section (Borrowing features) -->
+      <div class="fade-in-up" id="HR">
+        <div class="HR-content">
+          <div class="content-left">
+            <div class="content-badge">
+              <i class="fas fa-qrcode"></i>
+              <span>Instant QR Borrowing</span>
+            </div>
+            <h1>A Transparent and Accountable Borrowing Experience</h1>
+            <p>We are committed to upholding the highest standards of integrity and accountability throughout the
+              equipment borrowing process. Students scan the QR code on any equipment and the system instantly
+              identifies the item, checks availability, and queues a borrow request — all in seconds without filling out
+              paper forms.</p>
+            <div class="feature-highlights">
+              <div class="feature-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Automated Log Processing</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Fair Item Evaluation</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-check-circle"></i>
+                <span>QR Identity Verification</span>
+              </div>
+            </div>
+          </div>
+          <div class="content-right">
+            <div class="image-wrapper">
+              <img src="assets/images/HRpic.png"
+                onerror="this.src='https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"
+                class="right-image" alt="Tech">
+              <div class="image-decoration"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Section (Tracking features) -->
+      <div class="fade-in-up">
+        <div class="HR-content">
+          <div class="content-left">
+            <div class="image-wrapper">
+              <img src="assets/images/fathersday.png"
+                onerror="this.src='https://images.unsplash.com/photo-1581092160562-40aa08e78837?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"
+                class="right-image" alt="Team">
+              <div class="image-decoration"></div>
+            </div>
+          </div>
+          <div class="content-right">
+            <div class="content-badge">
+              <i class="fas fa-server"></i>
+              <span>Real-Time Tracking</span>
+            </div>
+            <h1>Track Equipment With a System That Moves Forward</h1>
+            <p>MISLend is built to eliminate manual record-keeping and reduce human error. Every borrow transaction is
+              logged automatically — with timestamps, student information, equipment condition, and return status —
+              creating a fully auditable borrowing trail.</p>
+            <p>You'll work in an environment where your requests are processed fast, your records are secure, and your
+              accountability is maintained. Admin workflows include two-step verification to ensure tools are tracked
+              efficiently.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Why Join Us Section -->
+      <div class="fade-in-up" id="WhyJoin">
+        <div class="text-content">
+          <div class="WhyJoin">
+            <div class="section-badge">
+              <i class="fas fa-star"></i>
+              <span>Why Choose MISLend</span>
+            </div>
+            <h1>Why Use Our System?</h1>
+            <div class="title-underline"></div>
+          </div>
+
+          <div class="text-below">
+            <p>
+              Managing classroom equipment at UCC MIS (University of Caloocan City — Management Information Systems)
+              used to mean paper forms, manual logs, and constant miscommunication. MISLend was built to eliminate all
+              of that. With instant QR scanning, real-time tracking, and role-based dashboards, every borrow transaction
+              is transparent, fast, and fully accountable — from request to return. We provide the tools to let you
+              focus on your classes.
+            </p>
+          </div>
+
+          <div class="Join-contents">
+            <div class="content-card">
+              <div class="card-icon">
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <h1>QR Code Scanning</h1>
+              <p>Borrow and return equipment instantly by scanning the QR code — no forms, no waiting, just scan and go.
+              </p>
+            </div>
+            <div class="content-card">
+              <div class="card-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h1>Live Status Tracking</h1>
+              <p>See live status of all equipment — available, borrowed, overdue, or under maintenance at a single
+                glance.</p>
+            </div>
+            <div class="content-card">
+              <div class="card-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h1>Accountability & Logs</h1>
+              <p>Full audit trails ensure transparent borrowing. Every item is checked before release and after return.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intern Section -->
+      <div class="fade-in-up">
+        <div class="Intern-part">
+          <div class="content-left">
+            <div class="image-wrapper">
+              <img src="assets/images/interns2.jpg"
+                onerror="this.src='https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"
+                class="right-image" alt="Students">
+              <div class="image-decoration"></div>
+            </div>
+          </div>
+          <div class="content-right">
+            <div class="content-badge">
+              <i class="fas fa-book-open"></i>
+              <span>Start Your Journey</span>
+            </div>
+            <h1>Start Borrowing Equipment</h1>
+            <p>We welcome UCC MIS students to easily borrow the tools they need for their classes. Here, you're not
+              bogged down by paperwork. You'll gain quick access to projectors, HDMI cables, and networking kits.</p>
+            <p>As a registered student, you'll be given real responsibilities, meaningful tasks, and the chance to apply
+              your skills using exactly what you need. Sign up to the portal to track your borrowing history and limits.
+            </p>
+            <a href="login.html">
+              <button type="button" class="ojt">
+                <span>Proceed to Login</span>
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="toast" id="toast"></div>
+    <!-- FAQ Modal Trigger -->
+    <div class="info-section">
+      <div class="info-logo" onclick="toggleFAQ()">
+        <i class="fas fa-question-circle"></i>
+      </div>
+    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <!-- Modal -->
+    <div class="faq-modal" id="faqModal">
+      <div class="faq-wrapper">
+        <div class="faq-header">
+          <h1>Frequently Asked Questions</h1>
+          <p>Everything you need to know about our borrowing process</p>
+          <span class="faq-close" onclick="toggleFAQ()">&times;</span>
+        </div>
 
-    <script>
-        const registerLink = document.getElementById('studentRegisterLink');
-        const registerModal = document.getElementById('registerModal');
-        const closeModal = document.getElementById('closeModal');
+        <div class="faq-content">
+          <div class="faq-item">
+            <div class="faq-question">
+              <div class="question-text">
+                <span class="question-number">1</span>
+                <h3>Who can borrow equipment?</h3>
+              </div>
+              <i class="fas fa-angle-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Only currently enrolled UCC MIS students and verified faculty members can use MISLend.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              <div class="question-text">
+                <span class="question-number">2</span>
+                <h3>How long can I keep an item?</h3>
+              </div>
+              <i class="fas fa-angle-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Standard items like projectors and cables can be borrowed for the duration of a single class block
+                  (typically 3-4 hours).</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              <div class="question-text">
+                <span class="question-number">3</span>
+                <h3>What happens if I return equipment late?</h3>
+              </div>
+              <i class="fas fa-angle-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Late returns are flagged in the system. Accumulating records of overdue returns may lead to temporary
+                  suspension of your borrowing privileges.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              <div class="question-text">
+                <span class="question-number">4</span>
+                <h3>Do I need an ID?</h3>
+              </div>
+              <i class="fas fa-angle-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes. Presenting your valid UCC Student or Faculty ID to the admin is required upon picking up the
+                  equipment.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        if (registerLink) {
-            registerLink.addEventListener('click', e => {
-                e.preventDefault();
-                registerModal.classList.add('active');
-            });
+    <footer>
+      <div class="footer-container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <img src="assets/images/14.png" alt="Logo" />
+            <h2>MIS<span>Lend</span></h2>
+            <p>Smart equipment management through QR code technology. Built by BSCS 1A students of the University of
+              Caloocan City.</p>
+          </div>
+          <div class="footer-col">
+            <h4>Navigate</h4>
+            <ul>
+              <li><a href="test.html">Home</a></li>
+              <li><a href="about-team.html">About & Team</a></li>
+              <li><a href="login.html">Sign In</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Resources</h4>
+            <ul>
+              <li><a href="documentation.html">Documentation</a></li>
+              <li><a href="support.html">Support</a></li>
+              <li><a href="privacy.html">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>&copy; 2026 MISLend. All rights reserved.</span>
+          <span>Developed by UCC BSCS 1A.</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Remove preloader
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const preload = document.getElementById('preload');
+        if (preload) {
+          preload.style.opacity = '0';
+          setTimeout(() => preload.remove(), 500);
         }
-        if (closeModal) {
-            closeModal.addEventListener('click', () => registerModal.classList.remove('active'));
-        }
-        if (registerModal) {
-            registerModal.addEventListener('click', e => {
-                if (e.target === registerModal) registerModal.classList.remove('active');
-            });
-        }
-    </script>
+      }, 500);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Mobile Nav
+      const mobilenav = document.getElementById("mobilenav");
+      const rightNav = document.getElementById("rightNav");
+      const closeMenu = document.getElementById("closeMenu");
+
+      if (mobilenav && rightNav) {
+        mobilenav.addEventListener("click", () => rightNav.classList.add("active"));
+      }
+
+      if (closeMenu && rightNav) {
+        closeMenu.addEventListener("click", () => rightNav.classList.remove("active"));
+      }
+
+      // Scroll Animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.fade-in-up').forEach((el) => observer.observe(el));
+    });
+
+    // FAQ
+    function toggleFAQ() {
+      const modal = document.getElementById('faqModal');
+      modal.classList.toggle('open');
+    }
+
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        const item = q.parentElement;
+        const isActive = item.classList.contains('active');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+        if (!isActive) item.classList.add('active');
+      });
+    });
+
+  </script>
 </body>
 
 </html>
