@@ -343,7 +343,12 @@ async function sendAllSMSReminders(overdueItems) {
     if (!overdueItems || overdueItems.length === 0) return;
 
     const count = overdueItems.length;
-    if (!confirm(`This will initiate SMS reminders for ${count} users. You will need to click 'Send' in your SMS app for each one. Continue?`)) return;
+    if (!await showConfirm({
+        title: 'Batch SMS Reminders',
+        message: `This will initiate SMS reminders for ${count} users. You will need to click 'Send' in your SMS app for each one. Continue?`,
+        confirmText: 'Continue',
+        type: 'primary'
+    })) return;
 
     for (const item of overdueItems) {
         await sendSMSOverdue(item.userId, item.equipmentName, item.id);
@@ -355,7 +360,12 @@ async function sendAllEmailReminders(overdueItems) {
     if (!overdueItems || overdueItems.length === 0) return;
 
     const count = overdueItems.length;
-    if (!confirm(`This will initiate Email reminders for ${count} users. Your mail app will open for each one. Continue?`)) return;
+    if (!await showConfirm({
+        title: 'Batch Email Reminders',
+        message: `This will initiate Email reminders for ${count} users. Your mail app will open for each one. Continue?`,
+        confirmText: 'Continue',
+        type: 'primary'
+    })) return;
 
     for (const item of overdueItems) {
         await sendEmailOverdue(item.userId, item.equipmentName, item.id);
@@ -498,7 +508,12 @@ async function loadPendingRequests() {
 
 
 async function approveBorrow(borrowingId, equipmentId) {
-    if (!confirm('Approve this borrow request?')) return;
+    if (!await showConfirm({
+        title: 'Approve Borrow',
+        message: 'Approve this borrow request?',
+        confirmText: 'Approve',
+        type: 'success'
+    })) return;
     try {
         const borrowDoc = await db.collection('borrowings').doc(borrowingId).get();
         const borrowData = borrowDoc.data();
@@ -519,7 +534,12 @@ async function approveBorrow(borrowingId, equipmentId) {
 }
 
 async function rejectBorrow(borrowingId, equipmentId) {
-    if (!confirm('Reject this borrow request?')) return;
+    if (!await showConfirm({
+        title: 'Reject Borrow',
+        message: 'Reject this borrow request?',
+        confirmText: 'Reject',
+        type: 'danger'
+    })) return;
     try {
         await db.collection('borrowings').doc(borrowingId).update({ status: 'rejected' });
         await db.collection('equipment').doc(equipmentId).update({
@@ -537,7 +557,12 @@ async function rejectBorrow(borrowingId, equipmentId) {
 }
 
 async function approveReturn(borrowingId, equipmentId, condition) {
-    if (!confirm('Approve this return request?')) return;
+    if (!await showConfirm({
+        title: 'Approve Return',
+        message: 'Approve this return request?',
+        confirmText: 'Approve',
+        type: 'success'
+    })) return;
     try {
 
         const doc = await db.collection('borrowings').doc(borrowingId).get();
@@ -565,7 +590,12 @@ async function approveReturn(borrowingId, equipmentId, condition) {
 }
 
 async function rejectReturn(borrowingId, equipmentId) {
-    if (!confirm('Reject this return request? The item will remain marked as Borrowed.')) return;
+    if (!await showConfirm({
+        title: 'Reject Return',
+        message: 'Reject this return request? The item will remain marked as Borrowed.',
+        confirmText: 'Reject',
+        type: 'danger'
+    })) return;
     try {
         await db.collection('borrowings').doc(borrowingId).update({
             status: 'borrowed',
@@ -583,7 +613,12 @@ async function rejectReturn(borrowingId, equipmentId) {
 }
 
 async function approveExtension(borrowingId) {
-    if (!confirm('Approve this time extension request?')) return;
+    if (!await showConfirm({
+        title: 'Approve Extension',
+        message: 'Approve this time extension request?',
+        confirmText: 'Approve',
+        type: 'success'
+    })) return;
     try {
         const doc = await db.collection('borrowings').doc(borrowingId).get();
         const data = doc.data();
@@ -613,7 +648,12 @@ async function approveExtension(borrowingId) {
 }
 
 async function rejectExtension(borrowingId) {
-    if (!confirm('Reject this time extension request?')) return;
+    if (!await showConfirm({
+        title: 'Reject Extension',
+        message: 'Reject this time extension request?',
+        confirmText: 'Reject',
+        type: 'danger'
+    })) return;
     try {
         await db.collection('borrowings').doc(borrowingId).update({
             status: 'borrowed',
@@ -635,7 +675,12 @@ async function adminConfirmReturn(borrowingId, equipmentId) {
     const conditionSelect = document.getElementById(`returnCondition_${borrowingId}`);
     const condition = conditionSelect ? conditionSelect.value : 'good';
 
-    if (!confirm(`Confirm return of this item? Condition: ${condition}`)) return;
+    if (!await showConfirm({
+        title: 'Confirm Return',
+        message: `Confirm return of this item? Condition: ${condition}`,
+        confirmText: 'Confirm',
+        type: 'primary'
+    })) return;
 
     try {
         const doc = await db.collection('borrowings').doc(borrowingId).get();
@@ -823,7 +868,12 @@ async function loadAllEquipment() {
 }
 
 async function deleteEquipment(equipmentId, equipmentName) {
-    if (!confirm(`Are you sure you want to delete "${equipmentName}"?\n\nThis action cannot be undone.`)) {
+    if (!await showConfirm({
+        title: 'Delete Equipment',
+        message: `Are you sure you want to delete "${equipmentName}"?\n\nThis action cannot be undone.`,
+        confirmText: 'Delete',
+        type: 'danger'
+    })) {
         return;
     }
 
@@ -1631,7 +1681,12 @@ async function loadUsers() {
 }
 
 async function deleteUser(userId, userEmail) {
-    if (!confirm(`Are you sure you want to delete the user: ${userEmail}?\n\nIMPORTANT: Deleting here only removes their dashboard access. You MUST also manually delete this email (${userEmail}) from the Firebase Console > Authentication to fully remove the account.`)) {
+    if (!await showConfirm({
+        title: 'Delete User',
+        message: `Are you sure you want to delete the user: ${userEmail}?\n\nIMPORTANT: Deleting here only removes their dashboard access. You MUST also manually delete this email from the Firebase Console > Authentication to fully remove the account.`,
+        confirmText: 'Delete',
+        type: 'danger'
+    })) {
         return;
     }
 
@@ -1663,6 +1718,13 @@ function initializeLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
+            if (!await showConfirm({
+                title: 'Logout',
+                message: 'Are you sure you want to logout of your account?',
+                confirmText: 'Logout',
+                type: 'danger'
+            })) return;
+
             try {
                 await auth.signOut();
                 showToast('Logged out successfully', 'success');
@@ -1828,7 +1890,12 @@ async function rejectUser(uid) {
     const userDoc = await db.collection("users").doc(uid).get();
     const email = userDoc.data()?.email || "this user";
 
-    if (!confirm(`Reject and delete account for ${email}?\n\nREMINDER: You must also manually delete this email from the Firebase Console > Authentication.`)) return;
+    if (!await showConfirm({
+        title: 'Reject User',
+        message: `Reject and delete account for ${email}?\n\nREMINDER: You must also manually delete this email from the Firebase Console > Authentication.`,
+        confirmText: 'Reject',
+        type: 'danger'
+    })) return;
 
     await db.collection("users").doc(uid).delete();
     showToast("User rejected. Please clean up their account in Auth Console.", "error");

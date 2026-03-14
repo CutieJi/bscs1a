@@ -55,6 +55,75 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+/**
+ * Reusable confirmation modal
+ * @param {Object} options - { title, message, confirmText, cancelText, type }
+ * @returns {Promise<boolean>}
+ */
+function showConfirm(options = {}) {
+    const {
+        title = 'Are you sure?',
+        message = 'Do you want to proceed with this action?',
+        confirmText = 'Confirm',
+        cancelText = 'Cancel',
+        type = 'danger' // 'primary', 'danger', 'success'
+    } = options;
+
+    return new Promise((resolve) => {
+        let modal = document.getElementById('confirmModal');
+        
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'confirmModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px; text-align: center;">
+                    <div class="modal-header" style="justify-content: center; margin-bottom: 20px;">
+                        <h2 id="confirmTitle" style="font-size: 1.3rem;"></h2>
+                    </div>
+                    <p id="confirmMessage" style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;"></p>
+                    <div class="modal-actions" style="justify-content: center; gap: 12px;">
+                        <button id="confirmCancel" class="btn btn-secondary" style="flex: 1;"></button>
+                        <button id="confirmBtn" class="btn" style="flex: 1;"></button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        const titleEl = modal.querySelector('#confirmTitle');
+        const messageEl = modal.querySelector('#confirmMessage');
+        const cancelBtn = modal.querySelector('#confirmCancel');
+        const confirmBtn = modal.querySelector('#confirmBtn');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        cancelBtn.textContent = cancelText;
+        confirmBtn.textContent = confirmText;
+        
+        // Set button color based on type
+        confirmBtn.className = `btn btn-${type}`;
+
+        const cleanup = (result) => {
+            modal.classList.remove('active');
+            // Remove listeners to prevent memory leaks/double triggers
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+            modal.onclick = null;
+            resolve(result);
+        };
+
+        confirmBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
+        modal.onclick = (e) => {
+            if (e.target === modal) cleanup(false);
+        };
+
+        // Trigger active class
+        setTimeout(() => modal.classList.add('active'), 10);
+    });
+}
+
 function formatDate(timestamp) {
     if (!timestamp) return 'N/A';
 

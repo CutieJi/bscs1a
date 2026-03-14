@@ -990,6 +990,13 @@ function initializeProfileDropdown() {
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
+            if (!await showConfirm({
+                title: 'Logout',
+                message: 'Are you sure you want to logout of your account?',
+                confirmText: 'Logout',
+                type: 'danger'
+            })) return;
+
             profileDropdown.classList.remove('open');
             try {
                 if (html5QrCode) { try { await html5QrCode.stop(); } catch (e) { } }
@@ -1240,7 +1247,12 @@ async function requestExtension() {
 }
 
 async function cancelBorrowRequest(borrowingId) {
-    if (!confirm("Are you sure you want to cancel this borrow request?")) return;
+    if (!await showConfirm({
+        title: 'Cancel Request',
+        message: 'Are you sure you want to cancel this borrow request?',
+        confirmText: 'Cancel Request',
+        type: 'danger'
+    })) return;
     try {
         console.log("Cancelling Request ID:", borrowingId);
         await db.collection("borrowings").doc(borrowingId).delete();
@@ -1253,7 +1265,12 @@ async function cancelBorrowRequest(borrowingId) {
 }
 
 async function cancelExtensionRequest(borrowingId) {
-    if (!confirm("Are you sure you want to cancel this extension request?")) return;
+    if (!await showConfirm({
+        title: 'Cancel Extension',
+        message: 'Are you sure you want to cancel this extension request?',
+        confirmText: 'Cancel Extension',
+        type: 'danger'
+    })) return;
     try {
         await db.collection("borrowings").doc(borrowingId).update({
             status: "borrowed",
