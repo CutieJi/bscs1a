@@ -9,8 +9,9 @@
     <link rel="stylesheet" href="assets/css/modal.css">
     <link rel="shortcut icon" href="assets/images/13.png" type="image/x-icon">
     <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>(function () {
             try {
                 var labels = { dashboard: 'Dashboard', equipment: 'Manage Equipment', approvals: 'Pending Approvals', borrowed: 'Currently Borrowed', logs: 'Borrowing Logs', users: 'User Management' };
@@ -298,6 +299,23 @@
                             </div>
                         </div>
 
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <h3>Borrowing Trends</h3>
+                                <p>Activities over the last 7 days</p>
+                            </div>
+                            <div id="borrowingTrendsChart"></div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <h3>Equipment Distribution</h3>
+                                <p>Allocation by category</p>
+                            </div>
+                            <div id="categoryDistChart"></div>
+                        </div>
                     </div>
 
                     <div class="dashboard-grid">
@@ -780,6 +798,7 @@
 
     <script src="assets/js/app.js"></script>
     <script src="assets/js/admin.js"></script>
+    <script src="assets/js/charts-config.js"></script>
 </body>
 
 </html>

@@ -214,6 +214,11 @@ async function loadDashboardData() {
 
         await loadOverdueItems();
 
+        if (window.syncDashboardCharts) {
+            window.syncDashboardCharts();
+        }
+
+
     } catch (error) {
         console.error('Error loading dashboard data:', error);
     }
@@ -2110,6 +2115,10 @@ window.sendEmailOverdue = sendEmailOverdue;
 window.approveBorrow = approveBorrow;
 window.rejectBorrow = rejectBorrow;
 window.approveReturn = approveReturn;
+window.rejectReturn = rejectReturn;
+window.approveExtension = approveExtension;
+window.rejectExtension = rejectExtension;
+window.adminConfirmReturn = adminConfirmReturn;
 window.rejectReturn = rejectReturn;
 window.approveExtension = approveExtension;
 window.rejectExtension = rejectExtension;
