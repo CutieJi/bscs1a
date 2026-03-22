@@ -112,7 +112,7 @@
 
             <div class="sidebar-footer">
                 <div class="sidebar-user">
-                    <div class="sidebar-user-avatar admin-avatar">
+                    <div class="sidebar-user-avatar admin-avatar" id="sidebarAvatarContainer">
                         <span>A</span>
                     </div>
                     <div class="sidebar-user-info">
@@ -182,7 +182,7 @@
                     <div class="topbar-divider"></div>
                     <div class="profile-dropdown" id="profileDropdown">
                         <button class="profile-trigger" id="profileTrigger" aria-expanded="false">
-                            <div class="topbar-user-avatar admin-avatar">
+                            <div class="topbar-user-avatar admin-avatar" id="topbarAvatarContainer">
                                 <span>A</span>
                             </div>
                             <div class="topbar-user-info">
@@ -193,7 +193,7 @@
                         </button>
                         <div class="profile-menu" id="profileMenu">
                             <div class="profile-menu-header">
-                                <div class="profile-menu-avatar admin-avatar">
+                                <div class="profile-menu-avatar admin-avatar" id="menuAvatarContainer">
                                     <span>A</span>
                                 </div>
                                 <div>
@@ -237,7 +237,7 @@
                                 <i class="fa-solid fa-globe"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-labels">Total Equipment</div>
+                                <div class="stat-label">Total Equipment</div>
                                 <div class="stat-value" id="totalEquipment">0</div>
                             </div>
                         </div>
@@ -247,7 +247,7 @@
                                 <i class="fa-solid fa-check"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-labels">Total of Item Availability</div>
+                                <div class="stat-label">Total of Item Availability</div>
                                 <div class="stat-value" id="availableEquipment">0</div>
                             </div>
                         </div>
@@ -261,7 +261,7 @@
                                 </svg>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-labels">Currently Borrowed</div>
+                                <div class="stat-label">Currently Borrowed</div>
                                 <div class="stat-value" id="borrowedEquipment">0</div>
                             </div>
                         </div>
@@ -274,7 +274,7 @@
                                 </svg>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-labels">Total Borrows Today</div>
+                                <div class="stat-label">Total Borrows Today</div>
                                 <div class="stat-value" id="todayBorrows">0</div>
                             </div>
                         </div>
@@ -284,7 +284,7 @@
                                 <i class="fa-solid fa-hand"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-labels">Total Borrowed Items</div>
+                                <div class="stat-label">Total Borrowed Items</div>
                                 <div class="stat-value" id="totalHistoricalBorrows">0</div>
                             </div>
                         </div>
@@ -294,7 +294,7 @@
                                 <i class="fa-solid fa-users"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-labels">Total Users</div>
+                                <div class="stat-label">Total Users</div>
                                 <div class="stat-value" id="totalUsers">0</div>
                             </div>
                         </div>
@@ -696,6 +696,16 @@
 
             <form id="editUserForm">
                 <input type="hidden" id="editUserId">
+                
+                <div class="edit-user-avatar-section" style="text-align: center; margin-bottom: 1.5rem;">
+                    <div class="profile-edit-avatar" id="editUserAvatarContainer" style="width: 70px; height: 70px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem; font-weight: 600; overflow: hidden; border: 2px solid var(--primary-light);">
+                        <span>U</span>
+                    </div>
+                    <label class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-block; padding: 4px 8px; font-size: 0.75rem;">
+                        <i class="fa-solid fa-camera"></i> Update Photo
+                        <input type="file" id="editUserPhotoInput" accept="image/*" style="display: none;" onchange="previewUserPhoto(this)">
+                    </label>
+                </div>
 
                 <label>Name</label>
                 <input id="editUserName">
@@ -773,8 +783,14 @@
                 <button class="modal-close" id="closeProfileModal">&times;</button>
             </div>
             <div class="profile-view">
-                <div class="profile-view-avatar admin-avatar">
+                <div class="profile-view-avatar admin-avatar" id="profileViewAvatarContainer">
                     <span>A</span>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <label class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-block;">
+                        <i class="fa-solid fa-camera"></i> Change Photo
+                        <input type="file" id="adminPhotoInput" accept="image/*" style="display: none;" onchange="uploadAdminPhoto(this)">
+                    </label>
                 </div>
                 <div class="profile-view-info">
                     <div class="profile-view-name">Administrator</div>
@@ -792,6 +808,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>

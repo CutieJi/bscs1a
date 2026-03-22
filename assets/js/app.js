@@ -9,8 +9,57 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+var auth, db;
+try {
+    auth = firebase.auth();
+    db = firebase.firestore();
+} catch (e) {
+    console.error("Critical Firebase Init Error:", e);
+}
+var storage = null; // We are keeping this for compatibility, but it won't be used for photo uploads anymore.
+
+/**
+ * Resize image and return as Base64 Data URL
+ * @param {File} file - The file from input
+ * @param {number} maxWidth - Max width (default 200)
+ * @param {number} maxHeight - Max height (default 200)
+ * @returns {Promise<string>}
+ */
+function resizeImage(file, maxWidth = 200, maxHeight = 200) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8)); // 0.8 quality to save space
+            };
+            img.onerror = reject;
+        };
+        reader.onerror = reject;
+    });
+}
 
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => console.log("Persistence: LOCAL"))

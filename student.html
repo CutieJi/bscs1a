@@ -101,7 +101,7 @@
 
             <div class="sidebar-footer">
                 <div class="sidebar-user">
-                    <div class="sidebar-user-avatar user-avatar">
+                    <div class="sidebar-user-avatar user-avatar" id="sidebarAvatarContainer">
                         <span id="userInitial">S</span>
                     </div>
                     <div class="sidebar-user-info">
@@ -169,7 +169,7 @@
                     <div class="topbar-divider"></div>
                     <div class="profile-dropdown" id="profileDropdown">
                         <button class="profile-trigger" id="profileTrigger" aria-expanded="false">
-                            <div class="topbar-user-avatar-s" id="topbarAvatar">
+                            <div class="topbar-user-avatar-s" id="topbarAvatarContainer">
                                 <span id="topbarInitial">S</span>
                             </div>
                             <div class="topbar-user-info">
@@ -180,7 +180,7 @@
                         </button>
                         <div class="profile-menu" id="profileMenu">
                             <div class="profile-menu-header">
-                                <div class="profile-menu-avatar-s">
+                                <div class="profile-menu-avatar-s" id="menuAvatarContainer">
                                     <span id="menuInitial">S</span>
                                 </div>
                                 <div>
@@ -420,6 +420,16 @@
                 <button class="modal-close" onclick="closeProfileModal()">&times;</button>
             </div>
             <div class="login-form">
+                <div class="profile-edit-avatar-section" style="text-align: center; margin-bottom: 1.5rem;">
+                    <div class="profile-edit-avatar" id="profileEditAvatarContainer" style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; font-weight: 600; overflow: hidden; border: 2px solid var(--primary-light);">
+                        <span id="profileEditInitial">S</span>
+                    </div>
+                    <label class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-block;">
+                        <i class="fa-solid fa-camera" style="margin-right: 5px;"></i> Choose Photo
+                        <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="previewProfilePhoto(this)">
+                    </label>
+                    <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">Recommended: Square image, max 2MB</p>
+                </div>
                 <div class="form-group">
                     <label>Name</label>
                     <input type="text" id="profileName">
@@ -490,6 +500,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="assets/js/app.js"></script>

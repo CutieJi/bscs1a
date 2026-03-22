@@ -74,12 +74,68 @@ function initializeDashboard() {
 
 function updateAdminInfo() {
     const email = currentAdmin.email || '';
-    const adminEmailEl = document.getElementById('adminEmail');
-    if (adminEmailEl) adminEmailEl.textContent = email;
-    const topbarEmailEl = document.getElementById('topbarAdminEmail');
-    if (topbarEmailEl) topbarEmailEl.textContent = email;
-    const profileViewEmailEl = document.getElementById('profileViewEmail');
-    if (profileViewEmailEl) profileViewEmailEl.textContent = email;
+    const name = currentAdminData?.name || 'Administrator';
+    const photoURL = currentAdminData?.photoURL || null;
+    const initials = getUserInitials(name);
+
+    // Update emails
+    ['adminEmail', 'topbarAdminEmail', 'profileViewEmail'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = email;
+    });
+
+    // Update avatars
+    const containers = ['sidebarAvatarContainer', 'topbarAvatarContainer', 'menuAvatarContainer', 'profileViewAvatarContainer'];
+    containers.forEach(id => {
+        const container = document.getElementById(id);
+        if (!container) return;
+
+        if (photoURL) {
+            container.innerHTML = `<img src="${photoURL}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+            container.innerHTML = `<span>${initials}</span>`;
+        }
+    });
+
+    // Update names
+    const nameEls = document.querySelectorAll('.profile-menu-name, .topbar-user-name, .profile-view-name');
+    nameEls.forEach(el => {
+        el.textContent = name;
+    });
+}
+
+async function uploadAdminPhoto(input) {
+    console.log("uploadAdminPhoto triggered");
+    alert("Uploading admin photo...");
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            showToast("Image too large. Max 2MB allowed.", "error");
+            return;
+        }
+
+        try {
+            if (!window.storage) {
+                throw new Error("Firebase Storage is not initialized.");
+            }
+            console.log("Starting admin photo upload...");
+            showToast("Uploading photo...", "info");
+            const storageRef = window.storage.ref(`profile_photos/${currentAdmin.uid}`);
+            console.log("Storage ref created:", `profile_photos/${currentAdmin.uid}`);
+            const uploadTask = await storageRef.put(file);
+            console.log("Upload task completed", uploadTask);
+            const downloadURL = await uploadTask.ref.getDownloadURL();
+            console.log("Download URL obtained:", downloadURL);
+
+            await db.collection("users").doc(currentAdmin.uid).update({ photoURL: downloadURL });
+            currentAdminData.photoURL = downloadURL;
+            updateAdminInfo();
+            showToast("Profile photo updated!", "success");
+        } catch (err) {
+            console.error("Upload error:", err);
+            showToast("Failed to upload photo", "error");
+        }
+    }
 }
 
 function initializeNavigation() {
@@ -464,8 +520,8 @@ async function loadPendingRequests() {
                             ${actionLabel} by:
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                            <div class="topbar-user-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; background: var(--bg-secondary); color: var(--text-primary);">
-                                <span>${req.userName.charAt(0).toUpperCase()}</span>
+                            <div class="topbar-user-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; background: var(--bg-secondary); color: var(--text-primary); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                ${req.userPhotoURL ? `<img src="${req.userPhotoURL}" alt="" style="width: 100%; height: 100%; object-fit: cover;">` : `<span>${req.userName.charAt(0).toUpperCase()}</span>`}
                             </div>
                             <div>
                                 <div style="font-size: 0.875rem; font-weight: 500;">${req.userName}</div>
@@ -1643,10 +1699,16 @@ async function loadUsers() {
                 </div>
             `;
         } else {
-            usersGrid.innerHTML = users.map(user => `
+            usersGrid.innerHTML = users.map(user => {
+                const initials = getUserInitials(user.name);
+                const avatarHTML = user.photoURL
+                    ? `<img src="${user.photoURL}" alt="${user.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
+                    : initials;
+
+                return `
                 <div class="user-card">
                     <div class="user-card-avatar ${user.role === 'admin' ? 'admin-role' : ''}">
-                        ${getUserInitials(user.name)}
+                        ${avatarHTML}
                     </div>
                     <div class="user-card-info">
                         <div class="user-card-name">${user.name}</div>
@@ -1657,7 +1719,7 @@ async function loadUsers() {
                         </div>
                         <div class="user-card-actions">
                             ${user.id !== currentAdmin.uid ? `
-                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}')" title="Edit">
+                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}')" title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 ${user.role === 'student' && user.mobile ? `
@@ -1672,7 +1734,8 @@ async function loadUsers() {
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
     } catch (error) {
         console.error('Error loading users:', error);
@@ -1759,39 +1822,41 @@ function closeEditEquipment() {
     document.getElementById("editEquipmentModal").classList.remove("active");
 }
 
-document.getElementById("editEquipmentForm").addEventListener("submit", async e => {
-    e.preventDefault();
+const editEquipmentForm = document.getElementById("editEquipmentForm");
+if (editEquipmentForm) {
+    editEquipmentForm.addEventListener("submit", async e => {
+        e.preventDefault();
 
-    const id = document.getElementById("editDocId").value;
-    const newStatus = document.getElementById("editEquipmentStatus").value;
+        const id = document.getElementById("editDocId").value;
+        const newStatus = document.getElementById("editEquipmentStatus").value;
 
-    const updateData = {
-        equipmentId: document.getElementById("editEquipmentId").value,
-        name: document.getElementById("editEquipmentName").value,
-        category: document.getElementById("editEquipmentCategory").value,
-        description: document.getElementById("editEquipmentDescription").value,
-        status: newStatus
-    };
+        const updateData = {
+            equipmentId: document.getElementById("editEquipmentId").value,
+            name: document.getElementById("editEquipmentName").value,
+            category: document.getElementById("editEquipmentCategory").value,
+            description: document.getElementById("editEquipmentDescription").value,
+            status: newStatus
+        };
 
-    if (newStatus === "available") {
-        updateData.borrowedBy = null;
-        updateData.borrowedAt = null;
-    }
+        if (newStatus === "available") {
+            updateData.borrowedBy = null;
+            updateData.borrowedAt = null;
+        }
 
-    if (newStatus === "maintenance") {
-        updateData.borrowedBy = null;
-        updateData.borrowedAt = null;
-    }
+        if (newStatus === "maintenance") {
+            updateData.borrowedBy = null;
+            updateData.borrowedAt = null;
+        }
 
-    await db.collection("equipment").doc(id).update(updateData);
+        await db.collection("equipment").doc(id).update(updateData);
+        showToast("Equipment updated", "success");
+        closeEditEquipment();
+        loadAllEquipment();
+        loadDashboardData();
+    });
+}
 
-    showToast("Equipment updated", "success");
-    closeEditEquipment();
-    loadAllEquipment();
-    loadDashboardData();
-});
-
-function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection) {
+function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL) {
     document.getElementById("editUserId").value = id;
     document.getElementById("editUserName").value = name;
     document.getElementById("editUserEmail").value = email;
@@ -1802,6 +1867,20 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
     document.getElementById("editUserCourse").value = course || "";
     document.getElementById("editUserYearSection").value = yearSection || "";
 
+    // Reset file input
+    const photoInput = document.getElementById("editUserPhotoInput");
+    if (photoInput) photoInput.value = "";
+
+    // Set avatar preview
+    const avatarContainer = document.getElementById("editUserAvatarContainer");
+    if (avatarContainer) {
+        if (photoURL && photoURL !== 'undefined' && photoURL !== '') {
+            avatarContainer.innerHTML = `<img src="${photoURL}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+            avatarContainer.innerHTML = `<span>${getUserInitials(name)}</span>`;
+        }
+    }
+
     const studentContainer = document.getElementById("editStudentFieldsContainers");
     if (studentContainer) {
         studentContainer.style.display = role === 'student' ? 'block' : 'none';
@@ -1810,36 +1889,104 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
     document.getElementById("editUserModal").classList.add("active");
 }
 
+function previewUserPhoto(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            showToast("Image too large. Max 2MB allowed.", "error");
+            input.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const avatarContainer = document.getElementById("editUserAvatarContainer");
+            if (avatarContainer) {
+                avatarContainer.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
 function closeEditUser() {
     document.getElementById("editUserModal").classList.remove("active");
 }
 
-document.getElementById("editUserForm").addEventListener("submit", async e => {
-    e.preventDefault();
+const editUserForm = document.getElementById("editUserForm");
+if (editUserForm) {
+    editUserForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        console.log("editUserForm submitted");
+        alert("Saving user data...");
 
-    const id = document.getElementById("editUserId").value;
-    const role = document.getElementById("editUserRole").value;
+        const id = document.getElementById("editUserId").value;
+        const role = document.getElementById("editUserRole").value;
+        const photoInput = document.getElementById("editUserPhotoInput");
 
-    const updateData = {
-        name: document.getElementById("editUserName").value,
-        email: document.getElementById("editUserEmail").value,
-        role: role,
-        studentId: document.getElementById("editUserStudentId").value
-    };
+        const submitBtn = e.target.querySelector('button[type="submit"]') || e.target.querySelector('button.btn-primary');
+        if (!submitBtn) {
+            console.error("Submit button not found in form!");
+            return;
+        }
+        const originalContent = submitBtn.innerHTML;
 
-    if (role === 'student') {
-        updateData.mobile = document.getElementById("editUserMobile").value;
-        updateData.gender = document.getElementById("editUserGender").value;
-        updateData.course = document.getElementById("editUserCourse").value;
-        updateData.yearSection = document.getElementById("editUserYearSection").value;
-    }
+        try {
+            console.log(">>> [STEP 1] Starting editUserForm submit...");
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "<span>Saving...</span>";
 
-    await db.collection("users").doc(id).update(updateData);
+            const updateData = {
+                name: document.getElementById("editUserName").value,
+                email: document.getElementById("editUserEmail").value,
+                role: role,
+                studentId: document.getElementById("editUserStudentId").value
+            };
 
-    showToast("User updated", "success");
-    document.getElementById("editUserModal").classList.remove("active");
-    loadUsers();
-});
+            if (role === 'student') {
+                updateData.mobile = document.getElementById("editUserMobile").value;
+                updateData.gender = document.getElementById("editUserGender").value;
+                updateData.course = document.getElementById("editUserCourse").value;
+                updateData.yearSection = document.getElementById("editUserYearSection").value;
+            }
+
+            // Handle photo upload if a new file is selected
+            if (photoInput && photoInput.files && photoInput.files[0]) {
+                console.log(">>> [STEP 2] Photo selected, resizing to Base64...");
+                const file = photoInput.files[0];
+
+                try {
+                    // Resize and convert to Base64 string directly
+                    const base64Data = await resizeImage(file, 200, 200);
+                    console.log(">>> [STEP 5] Image resized successfully (Base64)");
+                    updateData.photoURL = base64Data;
+                } catch (resizeErr) {
+                    console.error("Resize error:", resizeErr);
+                    throw new Error("Failed to process image. Please try a different photo.");
+                }
+            }
+
+            console.log(">>> [STEP 8] Updating Firestore document...");
+            const dbPromise = db.collection("users").doc(id).update(updateData);
+            const dbTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Database update timed out (15s)")), 15000)
+            );
+
+            await Promise.race([dbPromise, dbTimeout]);
+            console.log(">>> [STEP 9] Firestore update successful.");
+
+            showToast("User updated", "success");
+            document.getElementById("editUserModal").classList.remove("active");
+            loadUsers();
+        } catch (err) {
+            console.error("!!! [ERROR] Edit user failed:", err);
+            showToast("Failed to update user: " + err.message, "error");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+        }
+    });
+}
 
 async function loadPending() {
     const grid = document.getElementById("pendingGrid");
@@ -1864,8 +2011,8 @@ async function loadPending() {
         return `
 <div class="pending-card">
 
-    <div class="pending-avatar">
-        ${u.name ? u.name.charAt(0) : "U"}
+    <div class="pending-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        ${u.photoURL ? `<img src="${u.photoURL}" alt="" style="width: 100%; height: 100%; object-fit: cover;">` : (u.name ? u.name.charAt(0) : "U")}
     </div>
 
     <div class="pending-name">${u.name}</div>
@@ -2118,7 +2265,56 @@ window.approveReturn = approveReturn;
 window.rejectReturn = rejectReturn;
 window.approveExtension = approveExtension;
 window.rejectExtension = rejectExtension;
+async function uploadAdminPhoto(input) {
+    if (input.files && input.files[0]) {
+        try {
+            showToast("Processing photo...", "info");
+            const base64Data = await resizeImage(input.files[0]);
+
+            if (!currentAdmin) {
+                throw new Error("You must be logged in to change your photo.");
+            }
+
+            await db.collection('users').doc(currentAdmin.uid).update({
+                photoURL: base64Data,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            if (currentAdminData) {
+                currentAdminData.photoURL = base64Data;
+            }
+
+            updateAdminInfo();
+            showToast("Profile photo updated!", "success");
+        } catch (err) {
+            console.error("Admin photo upload error:", err);
+            showToast("Failed to update photo: " + err.message, "error");
+        }
+    }
+}
+
+async function previewUserPhoto(input) {
+    if (input.files && input.files[0]) {
+        const container = document.getElementById('editUserAvatarContainer');
+        if (container) {
+            try {
+                // We use a simple FileReader for instant preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    container.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            } catch (err) {
+                console.error("Preview error:", err);
+            }
+        }
+    }
+}
+
 window.adminConfirmReturn = adminConfirmReturn;
+window.uploadAdminPhoto = uploadAdminPhoto;
+window.previewUserPhoto = previewUserPhoto;
+window.openEditUser = openEditUser;
 window.rejectReturn = rejectReturn;
 window.approveExtension = approveExtension;
 window.rejectExtension = rejectExtension;

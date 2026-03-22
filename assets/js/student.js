@@ -76,15 +76,33 @@ function updateUserInfo() {
     const name = currentUserData.name || 'Student';
     const email = currentUser.email || '';
     const initials = getUserInitials(name);
+    const photoURL = currentUserData.photoURL || null;
 
-    const els = {
-        userName: name, userEmail: email, userInitial: initials,
-        topbarUserName: name, topbarInitial: initials,
-        menuUserName: name, menuUserEmail: email, menuInitial: initials
-    };
-    Object.entries(els).forEach(([id, val]) => {
+    const ids = ['userInitial', 'topbarInitial', 'menuInitial'];
+    const containers = ['sidebarAvatarContainer', 'topbarAvatarContainer', 'menuAvatarContainer'];
+
+    containers.forEach((containerId, index) => {
+        const container = document.getElementById(containerId);
+        const initialEl = document.getElementById(ids[index]);
+        if (!container) return;
+
+        if (photoURL) {
+            container.innerHTML = `<img src="${photoURL}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        } else {
+            container.innerHTML = `<span id="${ids[index]}" style="border-radius: 50%;">${initials}</span>`;
+        }
+    });
+
+    const nameEls = ['userName', 'topbarUserName', 'menuUserName'];
+    nameEls.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.textContent = val;
+        if (el) el.textContent = name;
+    });
+
+    const emailEls = ['userEmail', 'menuUserEmail'];
+    emailEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = email;
     });
 }
 
@@ -504,6 +522,7 @@ async function borrowEquipment() {
             userEmail: currentUser.email,
             userMobile: currentUserData.mobile || 'N/A',
             studentId: currentUserData.studentId,
+            userPhotoURL: currentUserData.photoURL || null,
             borrowedAt: firebase.firestore.FieldValue.serverTimestamp(),
             expectedReturnTime: returnTime,
 
@@ -1041,6 +1060,21 @@ function openProfileModal() {
     document.getElementById("profileGender").value = currentUserData.gender || "";
     document.getElementById("profileCourse").value = currentUserData.course || "";
     document.getElementById("profileYearSection").value = currentUserData.yearSection || "";
+
+    // Reset file input
+    const photoInput = document.getElementById("profilePhotoInput");
+    if (photoInput) photoInput.value = "";
+
+    // Set initial preview
+    const previewContainer = document.getElementById("profileEditAvatarContainer");
+    if (previewContainer) {
+        if (currentUserData.photoURL) {
+            previewContainer.innerHTML = `<img src="${currentUserData.photoURL}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+            const initials = getUserInitials(currentUserData.name || "S");
+            previewContainer.innerHTML = `<span id="profileEditInitial">${initials}</span>`;
+        }
+    }
 }
 
 function closeProfileModal() {
@@ -1048,26 +1082,106 @@ function closeProfileModal() {
 }
 
 async function saveProfile() {
-    const name = document.getElementById("profileName").value;
-    const email = document.getElementById("profileEmail").value;
-    const studentId = document.getElementById("profileStudentId").value;
-    const mobile = document.getElementById("profileMobile").value;
-    const gender = document.getElementById("profileGender").value;
-    const course = document.getElementById("profileCourse").value;
-    const yearSection = document.getElementById("profileYearSection").value;
+    console.log("saveProfile button clicked");
+    alert("Saving profile..."); // Highly visible debug
 
-    const updateData = {
-        name, email, studentId, mobile, gender, course, yearSection
-    };
-
-    await db.collection("users").doc(currentUser.uid).update(updateData);
-
-    if (email !== currentUser.email) {
-        await currentUser.updateEmail(email);
+    if (!currentUser) {
+        showToast("Error: Current user not identified. Please refresh.", "error");
+        return;
     }
 
-    showToast("Profile updated", "success");
-    closeProfileModal();
+    const name = document.getElementById("profileName")?.value;
+    const email = document.getElementById("profileEmail")?.value;
+    const studentId = document.getElementById("profileStudentId")?.value;
+    const mobile = document.getElementById("profileMobile")?.value;
+    const gender = document.getElementById("profileGender")?.value;
+    const course = document.getElementById("profileCourse")?.value;
+    const yearSection = document.getElementById("profileYearSection")?.value;
+    const photoInput = document.getElementById("profilePhotoInput");
+
+    const saveBtn = document.querySelector("#profileModal .btn-primary") || document.querySelector("button[onclick='saveProfile()']");
+    
+    if (!saveBtn) {
+        console.error("Save button not found!");
+        return;
+    }
+
+    const originalContent = saveBtn.innerHTML;
+
+    try {
+        console.log(">>> [STEP 1] Starting saveProfile...");
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = "<span>Saving...</span>";
+
+        const updateData = {
+            name, email, studentId, mobile, gender, course, yearSection
+        };
+
+        // Handle photo upload if a new file is selected
+        if (photoInput && photoInput.files && photoInput.files[0]) {
+            console.log(">>> [STEP 2] Photo selected, resizing to Base64...");
+            const file = photoInput.files[0];
+            
+            try {
+                // Resize and convert to Base64 string directly
+                const base64Data = await resizeImage(file, 200, 200);
+                console.log(">>> [STEP 5] Image resized successfully (Base64)");
+                updateData.photoURL = base64Data;
+            } catch (resizeErr) {
+                console.error("Resize error:", resizeErr);
+                throw new Error("Failed to process image. Please try a different photo.");
+            }
+        }
+
+        console.log(">>> [STEP 8] Updating Firestore document...");
+        const dbPromise = db.collection("users").doc(currentUser.uid).update(updateData);
+        const dbTimeout = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Database update timed out (15s)")), 15000)
+        );
+        
+        await Promise.race([dbPromise, dbTimeout]);
+        console.log(">>> [STEP 9] Firestore update successful.");
+
+        // Update local data
+        currentUserData = { ...currentUserData, ...updateData };
+
+        if (email !== currentUser.email) {
+            console.log(">>> [STEP 10] Updating Auth email...");
+            await currentUser.updateEmail(email);
+        }
+
+        updateUserInfo();
+        showToast("Profile updated", "success");
+        closeProfileModal();
+    } catch (err) {
+        console.error("!!! [ERROR] Save profile failed:", err);
+        showToast("Failed to update profile: " + err.message, "error");
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalContent;
+    }
+}
+
+function previewProfilePhoto(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+
+        // Validate size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            showToast("Image too large. Max 2MB allowed.", "error");
+            input.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewContainer = document.getElementById("profileEditAvatarContainer");
+            if (previewContainer) {
+                previewContainer.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
 function openPasswordModal() {
@@ -1285,6 +1399,23 @@ async function cancelExtensionRequest(borrowingId) {
     }
 }
 
+async function previewProfilePhoto(input) {
+    if (input.files && input.files[0]) {
+        const container = document.getElementById('profileEditAvatarContainer');
+        if (container) {
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    container.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            } catch (err) {
+                console.error("Preview error:", err);
+            }
+        }
+    }
+}
+
 window.openBorrowModal = openBorrowModal;
 window.openReturnModal = openReturnModal;
 window.openExtendModal = openExtendModal;
@@ -1293,3 +1424,7 @@ window.cancelExtensionRequest = cancelExtensionRequest;
 window.openPasswordModal = openPasswordModal;
 window.closePasswordModal = closePasswordModal;
 window.changePassword = changePassword;
+window.previewProfilePhoto = previewProfilePhoto;
+window.saveProfile = saveProfile;
+window.openProfileModal = openProfileModal;
+window.closeProfileModal = closeProfileModal;
