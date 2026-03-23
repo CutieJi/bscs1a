@@ -346,7 +346,7 @@ body {
     position: relative;
 }
 
-.theme-switch input:checked + .theme-switch-track {
+.theme-switch input:checked+.theme-switch-track {
     background: var(--primary);
 }
 
@@ -364,7 +364,7 @@ body {
     justify-content: center;
 }
 
-.theme-switch input:checked + .theme-switch-track .theme-switch-thumb {
+.theme-switch input:checked+.theme-switch-track .theme-switch-thumb {
     transform: translateX(20px);
 }
 
@@ -378,11 +378,11 @@ body {
     display: none;
 }
 
-.theme-switch input:checked + .theme-switch-track .theme-switch-thumb .sun-icon {
+.theme-switch input:checked+.theme-switch-track .theme-switch-thumb .sun-icon {
     display: none;
 }
 
-.theme-switch input:checked + .theme-switch-track .theme-switch-thumb .moon-icon {
+.theme-switch input:checked+.theme-switch-track .theme-switch-thumb .moon-icon {
     display: block;
 }
 
@@ -396,7 +396,7 @@ body {
     transition: var(--transition);
 }
 
-.sidebar.collapsed ~ .main-content {
+.sidebar.collapsed~.main-content {
     margin-left: 0;
 }
 
@@ -566,8 +566,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* PROFILE MENU */
@@ -1200,6 +1205,7 @@ textarea {
         opacity: 0;
         transform: translateY(18px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

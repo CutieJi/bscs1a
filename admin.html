@@ -696,14 +696,17 @@
 
             <form id="editUserForm">
                 <input type="hidden" id="editUserId">
-                
+
                 <div class="edit-user-avatar-section" style="text-align: center; margin-bottom: 1.5rem;">
-                    <div class="profile-edit-avatar" id="editUserAvatarContainer" style="width: 70px; height: 70px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem; font-weight: 600; overflow: hidden; border: 2px solid var(--primary-light);">
+                    <div class="profile-edit-avatar" id="editUserAvatarContainer"
+                        style="width: 70px; height: 70px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem; font-weight: 600; overflow: hidden; border: 2px solid var(--primary-light);">
                         <span>U</span>
                     </div>
-                    <label class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-block; padding: 4px 8px; font-size: 0.75rem;">
+                    <label class="btn btn-secondary btn-sm"
+                        style="cursor: pointer; display: inline-block; padding: 4px 8px; font-size: 0.75rem;">
                         <i class="fa-solid fa-camera"></i> Update Photo
-                        <input type="file" id="editUserPhotoInput" accept="image/*" style="display: none;" onchange="previewUserPhoto(this)">
+                        <input type="file" id="editUserPhotoInput" accept="image/*" style="display: none;"
+                            onchange="previewUserPhoto(this)">
                     </label>
                 </div>
 
@@ -789,7 +792,8 @@
                 <div style="margin-top: 1rem; text-align: center;">
                     <label class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-block;">
                         <i class="fa-solid fa-camera"></i> Change Photo
-                        <input type="file" id="adminPhotoInput" accept="image/*" style="display: none;" onchange="uploadAdminPhoto(this)">
+                        <input type="file" id="adminPhotoInput" accept="image/*" style="display: none;"
+                            onchange="uploadAdminPhoto(this)">
                     </label>
                 </div>
                 <div class="profile-view-info">
