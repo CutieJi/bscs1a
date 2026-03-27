@@ -2,173 +2,105 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MISLend — UCC MIS</title>
-    <meta name="description"
-        content="Streamline equipment borrowing at UCC MIS with MISLend. Scan QR codes for instant tracking, automated logs, and real-time availability.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://uccmis.netlify.app/">
-    <meta property="og:title" content="MISLend — | UCC MIS Smart Equipment Management">
-    <meta property="og:description"
-        content="Instant QR-based equipment borrowing for UCC MIS students and staff. Fast, paperless, and real-time.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/CutieJi/bscs1a/main/wprev.png">
-    <link rel="shortcut icon" href="assets/images/13.png" type="image/x-icon">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/login-ui.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - MISLend</title>
+    <link rel="stylesheet" href="assets/css/login-ui.css" />
 </head>
 
 <body>
-    <div class="page">
-        <div class="card">
-
-            <!-- Logo fixed top-left of card -->
-            <div class="logo-wrap">
-                <img src="assets/images/13.png" alt="Logo" />
-                <div>MIS<span>Lend</span></div>
+    <main class="auth-shell">
+        <section class="auth-left">
+            <div class="brand">
+                <img src="assets/images/13.png" alt="MISLend" class="brand-logo">
+                <span>MIS<span style="color: #c8921a;">Lend</span></span>
             </div>
 
-            <!-- LEFT: FORM -->
-            <div class="form-side">
-                <div class="form-head">
-                    <h1 id="mainTitle">Welcome Back!</h1>
-                    <p id="mainSubtitle">Please enter your sign in details below</p>
-                </div>
-
-                <div class="tabs">
-                    <div class="tab active" id="tabLogin" onclick="switchTab('login')">Sign In</div>
-                    <div class="tab" id="tabRegister" onclick="switchTab('register')">Register</div>
-                </div>
-
-                <!-- LOGIN -->
-                <div class="form-panel active" id="panelLogin">
-                    <form id="unifiedLoginForm">
-                        <div class="field">
-                            <input type="text" id="loginEmail" autocomplete="username" required />
-                            <label for="loginEmail">Email or Student ID</label>
-                        </div>
-                        <div class="field">
-                            <input type="password" id="loginPassword" minlength="8" autocomplete="current-password"
-                                required />
-                            <label for="loginPassword">Password</label>
-                        </div>
-                        <div class="extras"><span class="forget">Forgot password?</span></div>
-                        <button type="submit" class="btn-signin">Sign In</button>
-                    </form>
-                    <div class="back-link">← <a href="index.html">Back to Home</a></div>
-                </div>
-
-                <!-- REGISTER -->
-                <div class="form-panel" id="panelRegister">
-                    <form id="unifiedRegisterForm">
-                        <div class="field">
-                            <input type="text" id="registerName" required />
-                            <label for="registerName">Full Name</label>
-                        </div>
-                        <div class="field">
-                            <input type="email" id="registerEmail" required />
-                            <label for="registerEmail">Email Address</label>
-                        </div>
-                        <div class="field">
-                            <input type="password" id="registerPassword" minlength="8" required />
-                            <label for="registerPassword">Password (min. 8 chars)</label>
-                        </div>
-                        <div class="field-row">
-                            <div class="field">
-                                <input type="text" id="registerStudentId" minlength="10" maxlength="10" required />
-                                <label for="registerStudentId">Student ID</label>
-                            </div>
-                            <div class="field">
-                                <input type="tel" id="registerMobile" minlength="11" maxlength="11" required />
-                                <label for="registerMobile">Mobile No.</label>
-                            </div>
-                        </div>
-                        <div class="field-row">
-                            <div class="field">
-                                <input type="text" id="registerCourse" required />
-                                <label for="registerCourse">Course</label>
-                            </div>
-                            <div class="field">
-                                <select id="registerGender" required>
-                                    <option value=""></option>
-                                    <option>Male</option>
-                                    <option>Female</option>
-                                    <option>Custom</option>
-                                </select>
-                                <label for="registerGender">Gender</label>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <input type="text" id="registerYearSection" required />
-                            <label for="registerYearSection">Year &amp; Section (e.g. 1-A)</label>
-                        </div>
-                        <button type="submit" class="btn-signin">Create Account</button>
-                    </form>
-                    <div class="back-link">← <a href="index.html">Back to Home</a></div>
-                </div>
-            </div>
-
-            <!-- RIGHT: DARK VISUAL -->
-            <div class="visual-side">
-                <div class="hex-bg"></div>
-                <div class="illus-card">🖥️</div>
-                <div class="dot-green"></div>
-                <div class="dot-gold"></div>
-                <div class="tri tri-l"></div>
-                <div class="tri tri-r"></div>
-                <div class="visual-text">
-                    <h3>Manage Your Equipment</h3>
-                    <p>Borrow and return classroom devices instantly with QR scanning and real-time tracking.</p>
-                    <div class="dots">
-                        <div class="dot active"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
+            <div class="slide-show">
+                <div class="slide-track">
+                    <div class="slide active" style="background-image: url('assets/images/login-img.png');">
+                    </div>
+                    <div class="slide" style="background-image: url('assets/images/login-img2.png');">
+                    </div>
+                    <div class="slide" style="background-image: url('assets/images/login-img3.png');">
                     </div>
                 </div>
+                <div class="slide-overlay"></div>
             </div>
-        </div>
-    </div>
 
-    <div class="toast" id="toast"></div>
+            <div class="slide-content">
+                <h1>Borrow Smarter with MIS<span style="color: #c8921a;">Lend</span></h1>
+                <p>
+                    Manage projectors, laptops, HDMI cables, TV displays, and other MIS office equipment
+                    in a faster and more organized way.
+                </p>
+
+                <div class="slide-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="auth-right">
+            <div class="auth-card login-card">
+                <h2>UCC - MIS | <span style="color: #c8921a;">Sign in</span></h2>
+                <p class="auth-desc">Sign in to your account</p>
+
+                <form id="unifiedLoginForm" class="auth-form">
+                    <div id="loginAlert" class="form-alert d-none"></div>
+
+                    <div class="field">
+                        <label for="loginEmail">Your Email / Student ID</label>
+                        <input type="text" id="loginEmail" placeholder="Enter your email/student id" required />
+                    </div>
+
+                    <div class="field">
+                        <label for="loginPassword">Password</label>
+                        <div class="password-field">
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required />
+                            <button type="button" class="toggle-password" id="togglePassword">Show</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="remember-wrap">
+                            <input type="checkbox" />
+                            <span>Remember Me</span>
+                        </label>
+
+                        <a href="#" class="text-link">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="main-btn"><span>Sign In</span></button>
+
+                    <p class="bottom-text">
+                        Don't have an account?
+                        <a href="register.html">Register</a>
+                    </p>
+                </form>
+            </div>
+        </section>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>
     <script src="assets/js/app.js"></script>
+    <script src="assets/js/auth-slider.js"></script>
     <script src="assets/js/auth.js"></script>
     <script>
-        // Tab switching
-        function switchTab(tab) {
-            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-            document.getElementById('panelLogin').classList.toggle('active', tab === 'login');
-            document.getElementById('panelRegister').classList.toggle('active', tab === 'register');
-
-            // Update title
-            const title = document.getElementById('mainTitle');
-            const subtitle = document.getElementById('mainSubtitle');
-            if (tab === 'register') {
-                title.textContent = "Create Account";
-                subtitle.textContent = "Join MISLend to manage your classroom equipment";
-            } else {
-                title.textContent = "Welcome Back!";
-                subtitle.textContent = "Please enter your sign in details below";
-            }
-        }
-
-        // Floating labels — add 'has-value' when input/select has content
-        function initFloatingLabels() {
-            document.querySelectorAll('.field input, .field select').forEach(el => {
-                const check = () => el.classList.toggle('has-value', el.value.trim() !== '');
-                el.addEventListener('input', check);
-                el.addEventListener('change', check);
-                check(); // handle browser autofill on load
+        // Toggle password visibility
+        const toggleBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('loginPassword');
+        if (toggleBtn && passwordInput) {
+            toggleBtn.addEventListener('click', () => {
+                const isHidden = passwordInput.type === 'password';
+                passwordInput.type = isHidden ? 'text' : 'password';
+                toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
             });
         }
-        initFloatingLabels();
     </script>
 </body>
 

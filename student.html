@@ -431,8 +431,18 @@
                     <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">Recommended: Square image, max 2MB</p>
                 </div>
                 <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="profileName">
+                    <label>First Name</label>
+                    <input type="text" id="profileFirstName" required>
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Middle Initial</label>
+                        <input type="text" id="profileMiddleInitial" maxlength="2" placeholder="e.g., A">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="profileLastName" required>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Email</label>
@@ -461,9 +471,21 @@
                     <label>Course / Program</label>
                     <input type="text" id="profileCourse">
                 </div>
-                <div class="form-group">
-                    <label>Year Level & Section</label>
-                    <input type="text" id="profileYearSection">
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Year Level</label>
+                        <select id="profileYearLevel" required>
+                            <option value="">Select Year</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Section</label>
+                        <input type="text" id="profileSection" placeholder="e.g., A, B, C" required>
+                    </div>
                 </div>
                 <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
             </div>

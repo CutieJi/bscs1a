@@ -1053,13 +1053,16 @@ function initializeTheme() {
 function openProfileModal() {
     document.getElementById("profileModal").classList.add("active");
 
-    document.getElementById("profileName").value = currentUserData.name || "";
+    document.getElementById("profileFirstName").value = currentUserData.firstName || (!currentUserData.lastName ? currentUserData.name : "");
+    document.getElementById("profileMiddleInitial").value = currentUserData.middleInitial || "";
+    document.getElementById("profileLastName").value = currentUserData.lastName || "";
     document.getElementById("profileEmail").value = currentUser.email || "";
     document.getElementById("profileStudentId").value = currentUserData.studentId || "";
     document.getElementById("profileMobile").value = currentUserData.mobile || "";
     document.getElementById("profileGender").value = currentUserData.gender || "";
     document.getElementById("profileCourse").value = currentUserData.course || "";
-    document.getElementById("profileYearSection").value = currentUserData.yearSection || "";
+    document.getElementById("profileYearLevel").value = currentUserData.yearLevel || "";
+    document.getElementById("profileSection").value = currentUserData.section || "";
 
     // Reset file input
     const photoInput = document.getElementById("profilePhotoInput");
@@ -1090,13 +1093,22 @@ async function saveProfile() {
         return;
     }
 
-    const name = document.getElementById("profileName")?.value;
+    const firstName = document.getElementById("profileFirstName")?.value.trim();
+    const middleInitial = document.getElementById("profileMiddleInitial")?.value.trim() || "";
+    const lastName = document.getElementById("profileLastName")?.value.trim();
+    
+    const mInitial = middleInitial ? `${middleInitial}. ` : '';
+    const name = `${firstName} ${mInitial}${lastName}`;
+
     const email = document.getElementById("profileEmail")?.value;
     const studentId = document.getElementById("profileStudentId")?.value;
     const mobile = document.getElementById("profileMobile")?.value;
     const gender = document.getElementById("profileGender")?.value;
     const course = document.getElementById("profileCourse")?.value;
-    const yearSection = document.getElementById("profileYearSection")?.value;
+    
+    const yearLevel = document.getElementById("profileYearLevel")?.value;
+    const section = document.getElementById("profileSection")?.value;
+    const yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
     const photoInput = document.getElementById("profilePhotoInput");
 
     const saveBtn = document.querySelector("#profileModal .btn-primary") || document.querySelector("button[onclick='saveProfile()']");
@@ -1114,7 +1126,7 @@ async function saveProfile() {
         saveBtn.innerHTML = "<span>Saving...</span>";
 
         const updateData = {
-            name, email, studentId, mobile, gender, course, yearSection
+            name, firstName, middleInitial, lastName, email, studentId, mobile, gender, course, yearSection, yearLevel, section
         };
 
         // Handle photo upload if a new file is selected

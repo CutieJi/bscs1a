@@ -572,57 +572,99 @@
                 <button class="modal-close" id="closeAddUserModal">&times;</button>
             </div>
             <form class="login-form" id="addUserForm">
-                <div class="form-group">
-                    <label for="newUserName">Full Name</label>
-                    <input type="text" id="newUserName" placeholder="Full Name" required>
+                <div class="add-user-avatar-section" style="text-align: center; margin-bottom: 1.5rem;">
+                    <div class="profile-add-avatar" id="addUserAvatarContainer"
+                        style="width: 70px; height: 70px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem; font-weight: 600; overflow: hidden; border: 2px solid var(--primary-light);">
+                        <span><i class="fa-solid fa-user"></i></span>
+                    </div>
+                    <label class="btn btn-secondary btn-sm"
+                        style="cursor: pointer; display: inline-block; padding: 4px 8px; font-size: 0.75rem;">
+                        <i class="fa-solid fa-camera"></i> Add Photo
+                        <input type="file" id="newUserPhotoInput" accept="image/*" style="display: none;"
+                            onchange="previewNewUserPhoto(this)">
+                    </label>
                 </div>
-                <div class="form-group">
-                    <label for="newUserEmail">Email</label>
-                    <input type="email" id="newUserEmail" placeholder="email" required>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label>First Name</label>
+                        <input id="newUserFirstName" class="form-control" style="width: 100%;" placeholder="First Name" required>
+                    </div>
+                    <div style="width: 70px;">
+                        <label>M.I.</label>
+                        <input id="newUserMiddleInitial" class="form-control" style="width: 100%;" placeholder="M.I." maxlength="2">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Last Name</label>
+                        <input id="newUserLastName" class="form-control" style="width: 100%;" placeholder="Last Name" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="newUserPassword">Password</label>
-                    <input type="password" id="newUserPassword" placeholder="password" minlength="8" required>
+
+                <div style="margin-bottom: 10px;">
+                    <label>Email</label>
+                    <input type="email" id="newUserEmail" class="form-control" style="width: 100%;" placeholder="email" required>
                 </div>
-                <div class="form-group">
-                    <label for="newUserRole">User Role</label>
-                    <select id="newUserRole" required>
+
+                <div style="margin-bottom: 10px;">
+                    <label>Password</label>
+                    <input type="password" id="newUserPassword" class="form-control" style="width: 100%;" placeholder="password" minlength="8" required>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label>User Role</label>
+                    <select id="newUserRole" class="form-control" style="width: 100%;" required>
                         <option value="">Select role</option>
                         <option value="student">Student</option>
                         <option value="admin">Admin</option>
                     </select>
                 </div>
                 <div id="additionalStudentFields" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newUserStudentId">Student ID</label>
-                            <input type="text" id="newUserStudentId" placeholder="20250000-S" minlength="10"
-                                maxlength="10">
-                        </div>
-                        <div class="form-group">
-                            <label for="newUserMobile">Mobile No.</label>
-                            <input type="tel" id="newUserMobile" placeholder="09*********" minlength="11"
-                                maxlength="11">
-                        </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>Student ID</label>
+                        <input type="text" id="newUserStudentId" class="form-control" style="width: 100%;" placeholder="20250000-S" minlength="10" maxlength="10">
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newUserGender">Gender</label>
-                            <select id="newUserGender">
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
+
+                    <div style="margin-bottom: 10px;">
+                        <label>Mobile No.</label>
+                        <input type="tel" id="newUserMobile" class="form-control" style="width: 100%;" placeholder="09*********" minlength="11" maxlength="11">
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label>Gender</label>
+                        <select id="newUserGender" class="form-control" style="width: 100%;">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label>Course / Program</label>
+                        <input type="text" id="newUserCourse" class="form-control" style="width: 100%;" placeholder="e.g., BSCS">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <label>Year Level</label>
+                            <select id="newUserYearLevel" class="form-control" style="width: 100%; height: 38px;">
+                                <option value="">Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="newUserCourse">Course / Program</label>
-                            <input type="text" id="newUserCourse" placeholder="e.g., BSCS">
+                        <div style="flex: 1;">
+                            <label>Section</label>
+                            <select id="newUserSection" class="form-control" style="width: 100%; height: 38px;">
+                                <option value="">Select Section</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="newUserYearSection">Year Level & Section</label>
-                        <input type="text" id="newUserYearSection" placeholder="e.g., 1-A">
                     </div>
                 </div>
                 <div class="form-actions">
@@ -710,8 +752,20 @@
                     </label>
                 </div>
 
-                <label>Name</label>
-                <input id="editUserName">
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label>First Name</label>
+                        <input id="editUserFirstName" class="form-control" style="width: 100%;" required>
+                    </div>
+                    <div style="width: 70px;">
+                        <label>M.I.</label>
+                        <input id="editUserMiddleInitial" class="form-control" style="width: 100%;" maxlength="2">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Last Name</label>
+                        <input id="editUserLastName" class="form-control" style="width: 100%;" required>
+                    </div>
+                </div>
 
                 <label>Email</label>
                 <input id="editUserEmail">
@@ -740,8 +794,28 @@
                     <label>Course / Program</label>
                     <input id="editUserCourse">
 
-                    <label>Year & Section</label>
-                    <input id="editUserYearSection">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label>Year Level</label>
+                            <select id="editUserYearLevel" class="form-control" style="width: 100%; height: 38px;">
+                                <option value="">Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Section</label>
+                            <select id="editUserSection" class="form-control" style="width: 100%; height: 38px;">
+                                <option value="">Select Section</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <button class="btn btn-primary">Save</button>

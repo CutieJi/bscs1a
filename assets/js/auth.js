@@ -1,6 +1,39 @@
 let isRegistering = false;
 let isLoggingIn = false;
 
+/**
+ * Show an inline alert inside the form (above the email field).
+ * @param {string} alertId   - 'loginAlert' or 'registerAlert'
+ * @param {string} message   - The message to display
+ * @param {'error'|'success'|'warning'} type
+ */
+function showFormAlert(alertId, message, type = 'error') {
+    const el = document.getElementById(alertId);
+    if (!el) return;
+
+    const icons = {
+        error:   '&#10005;',
+        success: '&#10003;',
+        warning: '&#9888;'
+    };
+
+    el.innerHTML = `<span style="margin-right:7px;">${icons[type] || ''}</span>${message}`;
+    el.className = `form-alert alert-${type}`;
+
+    // Auto-clear success after 4s
+    if (type === 'success') {
+        setTimeout(() => clearFormAlert(alertId), 4000);
+    }
+}
+
+function clearFormAlert(alertId) {
+    const el = document.getElementById(alertId);
+    if (el) {
+        el.className = 'form-alert d-none';
+        el.innerHTML = '';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(async (user) => {
         if (!user) return;
@@ -17,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (userData.role === "student" && userData.status === "pending") {
                 await auth.signOut();
-                showToast("Your account is pending admin approval.", "error");
+                showFormAlert('loginAlert', "Your account is pending admin approval.", "warning");
                 return;
             }
 
@@ -31,11 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ── LOGIN ────────────────────────────────────────────────────────────────
     const unifiedLoginForm = document.getElementById('unifiedLoginForm');
 
     if (unifiedLoginForm) {
         unifiedLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            clearFormAlert('loginAlert');
 
             const loginInput = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -62,10 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     } catch (err) {
                         console.error("Student ID lookup error:", err);
                         if (err.code === 'permission-denied') {
-                            showToast("Student ID login is disabled. Please update Firestore Rules or use Email.", "error");
+                            showFormAlert('loginAlert', "Student ID login is disabled. Please use your email.", "error");
                         } else {
-                            showToast(err.message, "error");
+                            showFormAlert('loginAlert', err.message, "error");
                         }
+                        isLoggingIn = false;
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = "<span>Sign In</span>";
                         return;
@@ -85,13 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (userData.role === "student" && userData.status !== "approved") {
                     await auth.signOut();
-                    showToast("Account waiting for admin approval.", "error");
+                    showFormAlert('loginAlert', "Your account is waiting for admin approval.", "warning");
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = "<span>Sign In</span>";
+                    isLoggingIn = false;
                     return;
                 }
 
-                showToast('Login successful! Redirecting...', 'success');
+                showFormAlert('loginAlert', 'Login successful! Redirecting...', 'success');
 
                 setTimeout(() => {
                     if (userData.role === 'admin') {
@@ -104,31 +141,45 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 isLoggingIn = false;
                 console.error('Login error:', error);
-                showToast(getErrorMessage(error), 'error');
+                showFormAlert('loginAlert', getErrorMessage(error), 'error');
 
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = `
-                    <span>Sign In</span>
-                `;
+                submitBtn.innerHTML = `<span>Sign In</span>`;
             }
         });
     }
 
+    // ── REGISTER ─────────────────────────────────────────────────────────────
     const registerForm = document.getElementById('unifiedRegisterForm');
 
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            clearFormAlert('registerAlert');
 
-            const name = document.getElementById('registerName').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const studentId = document.getElementById('registerStudentId').value.trim();
-            const mobile = document.getElementById('registerMobile').value.trim();
-            const gender = document.getElementById('registerGender').value;
-            const course = document.getElementById('registerCourse').value.trim();
-            const yearSection = document.getElementById('registerYearSection').value.trim();
-            const submitBtn = registerForm.querySelector('button[type="submit"]');
+            const firstName     = document.getElementById('registerFirstName').value.trim();
+            const middleInitial = document.getElementById('registerMiddleInitial').value.trim();
+            const lastName      = document.getElementById('registerLastName').value.trim();
+            const email         = document.getElementById('registerEmail').value.trim();
+            const password      = document.getElementById('registerPassword').value;
+            const studentId     = document.getElementById('registerStudentId').value.trim();
+            const mobile        = document.getElementById('registerMobile').value.trim();
+            const course        = document.getElementById('registerCourse').value.trim();
+            const yearLevel     = document.getElementById('registerYearLevel').value;
+            const section       = document.getElementById('registerSection').value;
+            const submitBtn     = registerForm.querySelector('button[type="submit"]');
+
+            // Compose full name and yearSection
+            const name        = middleInitial
+                ? `${firstName} ${middleInitial}. ${lastName}`
+                : `${firstName} ${lastName}`;
+            const yearSection = `${yearLevel}-${section}`;
+
+            // Basic client-side validation
+            if (password.length < 6) {
+                showFormAlert('registerAlert', 'Password must be at least 6 characters.', 'error');
+                return;
+            }
 
             try {
                 isRegistering = true;
@@ -138,18 +189,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
 
-                await user.updateProfile({
-                    displayName: name
-                });
+                await user.updateProfile({ displayName: name });
 
                 await db.collection('users').doc(user.uid).set({
-                    name: name,
-                    email: email,
-                    studentId: studentId,
-                    mobile: mobile,
-                    gender: gender,
-                    course: course,
-                    yearSection: yearSection,
+                    name,
+                    firstName,
+                    middleInitial,
+                    lastName,
+                    email,
+                    studentId,
+                    mobile,
+                    course,
+                    yearLevel,
+                    section,
+                    yearSection,
                     role: 'student',
                     status: 'pending',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -159,21 +212,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRegistering = false;
 
                 registerForm.reset();
-                
-                // Switch back to login tab after success
-                if (typeof switchTab === 'function') {
-                    switchTab('login');
-                }
+                showFormAlert('registerAlert', 'Account created! Wait for admin approval before logging in.', 'success');
 
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<span>Create Account</span>';
 
-                showToast("Account created. Wait for admin approval.", "success");
-
             } catch (error) {
                 isRegistering = false;
                 console.error('Registration error:', error);
-                showToast(getErrorMessage(error), 'error');
+                showFormAlert('registerAlert', getErrorMessage(error), 'error');
 
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<span>Create Account</span>';
@@ -185,10 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function getErrorMessage(error) {
     const errorMessages = {
         'auth/email-already-in-use': 'This email is already registered.',
-        'auth/invalid-email': 'Invalid email address.',
-        'auth/weak-password': 'Password must be at least 6 characters.',
-        'auth/user-not-found': 'Invalid Email/Student ID or password.',
-        'auth/wrong-password': 'Invalid Email/Student ID or password.'
+        'auth/invalid-email':        'Invalid email address.',
+        'auth/weak-password':        'Password must be at least 6 characters.',
+        'auth/user-not-found':       'Invalid email/Student ID or password.',
+        'auth/wrong-password':       'Invalid email/Student ID or password.',
+        'auth/invalid-credential':   'Invalid email/Student ID or password.',
+        'auth/too-many-requests':    'Too many failed attempts. Please try again later.'
     };
 
     return errorMessages[error.code] || error.message;

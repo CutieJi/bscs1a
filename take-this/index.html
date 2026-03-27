@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YetiLab Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="sky-layer"></div>
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+
+  <main class="login-shell">
+    <section class="visual-panel" id="visualPanel">
+      <div class="visual-inner">
+        <div class="panel-shine"></div>
+        <div class="grass"></div>
+
+        <div class="mascot" id="mascot">
+          <div class="hair"></div>
+          <div class="ear ear-left"></div>
+          <div class="ear ear-right"></div>
+
+          <div class="arm arm-left"></div>
+          <div class="arm arm-right"></div>
+
+          <div class="body-fur"></div>
+          <div class="face" id="face">
+            <div class="eyes">
+              <div class="eye"><span class="pupil"></span></div>
+              <div class="eye"><span class="pupil"></span></div>
+            </div>
+            <div class="nose"></div>
+            <div class="smile"></div>
+          </div>
+
+          <div class="leg leg-left"></div>
+          <div class="leg leg-right"></div>
+        </div>
+
+        <div class="visual-copy">
+          <p>BORROW.</p>
+          <p style="color: #0b1f3a;">TRACK.</p>
+          <p>RETURN.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="brand-wrap">
+        <div class="brand-mark">❄</div>
+        <div class="brand-name">YETILAB</div>
+      </div>
+
+      <h1>WELCOME BACK</h1>
+      <p class="subtitle">Enter your email and password to access your account</p>
+
+      <form class="login-form" id="loginForm">
+        <label>Email
+          <input type="email" id="email" placeholder="Enter your email" required />
+        </label>
+
+        <label>Password
+          <div class="password-wrap">
+            <input type="password" id="password" placeholder="Enter your password" required />
+            <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">Show</button>
+          </div>
+        </label>
+
+        <div class="row options-row">
+          <label class="remember">
+            <input type="checkbox" id="remember" />
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="text-link">Forgot Password</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Sign In</button>
+        <button type="button" class="btn btn-secondary" id="googleBtn">
+          <span class="google-g">G</span>
+          <span>Sign in with Google</span>
+        </button>
+      </form>
+
+      <p class="signup-copy">Don’t have an account? <a href="#">Sign up</a></p>
+      <p class="message" id="message"></p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

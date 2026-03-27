@@ -1057,6 +1057,18 @@ async function loadCurrentlyBorrowed() {
 
         let borrowed = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+        // Fetch user data for extra fields
+        const userIds = [...new Set(borrowed.map(b => b.userId).filter(id => id))];
+        const usersMap = {};
+        if (userIds.length > 0) {
+            const chunks = [];
+            for (let i = 0; i < userIds.length; i += 10) chunks.push(userIds.slice(i, i + 10));
+            for (const chunk of chunks) {
+                const uSnap = await db.collection("users").where(firebase.firestore.FieldPath.documentId(), "in", chunk).get();
+                uSnap.docs.forEach(d => { usersMap[d.id] = d.data(); });
+            }
+        }
+
         const sortVal = document.getElementById('borrowedSort')?.value || 'borrowedAt_desc';
         const [field, direction] = sortVal.split('_');
 
@@ -1107,13 +1119,19 @@ async function loadCurrentlyBorrowed() {
                     }
                 }
 
+                const userDoc = usersMap[item.userId] || {};
+                const displayName = (userDoc.firstName && userDoc.lastName) ? `${userDoc.firstName} ${userDoc.lastName}` : item.userName;
+                const courseInfo = userDoc.course ? userDoc.course : 'N/A';
+                const yearSecInfo = userDoc.yearSection ? userDoc.yearSection : ((userDoc.yearLevel && userDoc.section) ? `${userDoc.yearLevel}-${userDoc.section}` : 'N/A');
+
                 return `
                     <div class="borrowed-list-item" ${isPendingExtend ? 'style="border-left: 4px solid #1e40af; background: rgba(30, 64, 175, 0.02);"' : ''}>
                         <div class="borrowed-list-header">
                             <div>
-                                <div class="borrowed-student">${item.userName}</div>
+                                <div class="borrowed-student">${displayName}</div>
                                 <div class="borrowed-list-details">
-                                    ${item.userEmail} • ${item.studentId}
+                                    ${item.userEmail} • ${item.studentId} <br>
+                                    ${courseInfo} • ${yearSecInfo}
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -1195,6 +1213,17 @@ async function loadBorrowingLogs() {
 
         let logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+        const userIds = [...new Set(logs.map(l => l.userId).filter(id => id))];
+        const usersMap = {};
+        if (userIds.length > 0) {
+            const chunks = [];
+            for (let i = 0; i < userIds.length; i += 10) chunks.push(userIds.slice(i, i + 10));
+            for (const chunk of chunks) {
+                const uSnap = await db.collection("users").where(firebase.firestore.FieldPath.documentId(), "in", chunk).get();
+                uSnap.docs.forEach(d => { usersMap[d.id] = d.data(); });
+            }
+        }
+
         if (startDate) {
             const start = new Date(startDate);
             logs = logs.filter(log => log.borrowedAt?.toDate() >= start);
@@ -1257,6 +1286,11 @@ async function loadBorrowingLogs() {
                     'rejected': 'Rejected'
                 };
                 const statusLabel = statusLabels[log.status] || capitalize(log.status);
+                const userDoc = usersMap[log.userId] || {};
+                const displayName = (userDoc.firstName && userDoc.lastName) ? `${userDoc.firstName} ${userDoc.lastName}` : log.userName;
+                const courseInfo = userDoc.course ? userDoc.course : 'N/A';
+                const yearSecInfo = userDoc.yearSection ? userDoc.yearSection : ((userDoc.yearLevel && userDoc.section) ? `${userDoc.yearLevel}-${userDoc.section}` : 'N/A');
+
                 return `
                 <div class="log-item">
                     <div class="log-item-header">
@@ -1273,8 +1307,16 @@ async function loadBorrowingLogs() {
 
                     <div class="log-item-info">
                         <div class="log-field">
-                            <span class="log-label">Student:</span>
-                            <span class="log-value">${log.userName}</span>
+                            <span class="log-label">Student Name:</span>
+                            <span class="log-value">${displayName}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Course:</span>
+                            <span class="log-value">${courseInfo}</span>
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Year & Section:</span>
+                            <span class="log-value">${yearSecInfo}</span>
                         </div>
                         <div class="log-field">
                             <span class="log-label">Email:</span>
@@ -1581,6 +1623,11 @@ function initializeUserManagement() {
         addUserModal?.classList.remove('active');
         addUserForm?.reset();
         if (additionalFields) additionalFields.style.display = 'none';
+        
+        const avatarContainer = document.getElementById("addUserAvatarContainer");
+        if (avatarContainer) {
+            avatarContainer.innerHTML = `<span><i class="fa-solid fa-user"></i></span>`;
+        }
     };
 
     if (closeAddUserModal) closeAddUserModal.addEventListener('click', closeAddUser);
@@ -1608,7 +1655,14 @@ function initializeUserManagement() {
 }
 
 async function createNewUser() {
-    const name = document.getElementById('newUserName').value.trim();
+    const firstName = document.getElementById('newUserFirstName').value.trim();
+    const middleInitial = document.getElementById('newUserMiddleInitial').value.trim();
+    const lastName = document.getElementById('newUserLastName').value.trim();
+    
+    // Auto-compose full name
+    const mInitial = middleInitial ? `${middleInitial}. ` : '';
+    const name = `${firstName} ${mInitial}${lastName}`;
+
     const email = document.getElementById('newUserEmail').value.trim();
     const password = document.getElementById('newUserPassword').value;
     const role = document.getElementById('newUserRole').value;
@@ -1616,7 +1670,11 @@ async function createNewUser() {
     const mobile = document.getElementById('newUserMobile')?.value.trim();
     const gender = document.getElementById('newUserGender')?.value;
     const course = document.getElementById('newUserCourse')?.value.trim();
-    const yearSection = document.getElementById('newUserYearSection')?.value.trim();
+    
+    const yearLevel = document.getElementById('newUserYearLevel')?.value;
+    const section = document.getElementById('newUserSection')?.value;
+    const yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
+    const photoInput = document.getElementById('newUserPhotoInput');
 
     const submitBtn = document.querySelector('#addUserForm button[type="submit"]');
     const originalBtnContent = submitBtn.innerHTML;
@@ -1645,8 +1703,22 @@ async function createNewUser() {
             userData.gender = gender || "";
             userData.course = course || "";
             userData.yearSection = yearSection || "";
+            userData.firstName = firstName;
+            userData.middleInitial = middleInitial;
+            userData.lastName = lastName;
+            userData.yearLevel = yearLevel;
+            userData.section = section;
         }
 
+        if (photoInput && photoInput.files && photoInput.files[0]) {
+            try {
+                const base64Data = await resizeImage(photoInput.files[0], 200, 200);
+                userData.photoURL = base64Data;
+            } catch (resizeErr) {
+                console.error("Resize error:", resizeErr);
+                throw new Error("Failed to process image. Please try a different photo.");
+            }
+        }
 
         await db.collection('users').doc(newUser.uid).set(userData);
 
@@ -1656,6 +1728,11 @@ async function createNewUser() {
 
         document.getElementById('addUserModal').classList.remove('active');
         document.getElementById('addUserForm').reset();
+        
+        const avatarContainer = document.getElementById("addUserAvatarContainer");
+        if (avatarContainer) {
+            avatarContainer.innerHTML = `<span><i class="fa-solid fa-user"></i></span>`;
+        }
 
         loadUsers();
         if (typeof loadPending === "function") loadPending();
@@ -1719,7 +1796,7 @@ async function loadUsers() {
                         </div>
                         <div class="user-card-actions">
                             ${user.id !== currentAdmin.uid ? `
-                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}')" title="Edit">
+                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}')" title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 ${user.role === 'student' && user.mobile ? `
@@ -1856,16 +1933,26 @@ if (editEquipmentForm) {
     });
 }
 
-function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL) {
+function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL, firstName, middleInitial, lastName, yearLevel, section) {
     document.getElementById("editUserId").value = id;
-    document.getElementById("editUserName").value = name;
     document.getElementById("editUserEmail").value = email;
     document.getElementById("editUserRole").value = role;
     document.getElementById("editUserStudentId").value = studentId || "";
     document.getElementById("editUserMobile").value = mobile || "";
     document.getElementById("editUserGender").value = gender || "";
     document.getElementById("editUserCourse").value = course || "";
-    document.getElementById("editUserYearSection").value = yearSection || "";
+    
+    // Set split fields
+    document.getElementById("editUserFirstName").value = firstName || "";
+    document.getElementById("editUserMiddleInitial").value = middleInitial || "";
+    document.getElementById("editUserLastName").value = lastName || "";
+    document.getElementById("editUserYearLevel").value = yearLevel || "";
+    document.getElementById("editUserSection").value = section || "";
+
+    // Fallback if split name wasn't stored (e.g. older users)
+    if (!firstName && !lastName && name) {
+        document.getElementById("editUserFirstName").value = name;
+    }
 
     // Reset file input
     const photoInput = document.getElementById("editUserPhotoInput");
@@ -1936,18 +2023,33 @@ if (editUserForm) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = "<span>Saving...</span>";
 
+            const firstName = document.getElementById("editUserFirstName").value.trim();
+            const middleInitial = document.getElementById("editUserMiddleInitial").value.trim();
+            const lastName = document.getElementById("editUserLastName").value.trim();
+            
+            const mInitial = middleInitial ? `${middleInitial}. ` : '';
+            const name = `${firstName} ${mInitial}${lastName}`;
+
             const updateData = {
-                name: document.getElementById("editUserName").value,
+                name: name,
                 email: document.getElementById("editUserEmail").value,
                 role: role,
                 studentId: document.getElementById("editUserStudentId").value
             };
 
             if (role === 'student') {
+                const yearLevel = document.getElementById("editUserYearLevel").value;
+                const section = document.getElementById("editUserSection").value;
+                
                 updateData.mobile = document.getElementById("editUserMobile").value;
                 updateData.gender = document.getElementById("editUserGender").value;
                 updateData.course = document.getElementById("editUserCourse").value;
-                updateData.yearSection = document.getElementById("editUserYearSection").value;
+                updateData.yearLevel = yearLevel;
+                updateData.section = section;
+                updateData.yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
+                updateData.firstName = firstName;
+                updateData.middleInitial = middleInitial;
+                updateData.lastName = lastName;
             }
 
             // Handle photo upload if a new file is selected
@@ -2191,7 +2293,7 @@ async function sendSMSOverdue(userId, equipmentName, borrowingId) {
         const userData = userDoc.data();
 
         if (userData && userData.mobile) {
-            const message = `Hello ${userData.name}, this is UCC MIS Office. Reminder: your borrowed equipment (${equipmentName}) is now overdue. Please return it as soon as possible. Thank you!`;
+            const message = `Hello ${userData.gender === 'Female' ? 'Ma\'am' : 'Sir'} ${userData.name}, this is UCC MIS Office.\nReminder: your borrowed equipment (${equipmentName}) is now overdue. Please return it as soon as possible. Thank you!`;
 
             const smsUrl = `sms:${userData.mobile}?body=${encodeURIComponent(message)}`;
 
@@ -2227,7 +2329,7 @@ async function sendEmailOverdue(userId, equipmentName, borrowingId) {
 
         if (userData && userData.email) {
             const subject = encodeURIComponent(`Overdue Equipment Reminder: ${equipmentName}`);
-            const body = encodeURIComponent(`Hello ${userData.name},\n\nOur records show that the equipment (${equipmentName}) you borrowed from the UCC MIS Office is now overdue.\n\nPlease return it to the office as soon as possible to avoid any further issues.\n\nThank you,\nUCC MIS Office`);
+            const body = encodeURIComponent(`Hello ${userData.gender === 'Female' ? 'Ma\'am' : 'Sir'} ${userData.name},\n\nOur records show that the equipment (${equipmentName}) you borrowed from the UCC MIS Office is now overdue.\n\nPlease return it to the office as soon as possible to avoid any further issues.\n\nThank you,\nUCC MIS Office`);
 
             const mailtoUrl = `mailto:${userData.email}?subject=${subject}&body=${body}`;
 
@@ -2311,9 +2413,27 @@ async function previewUserPhoto(input) {
     }
 }
 
+async function previewNewUserPhoto(input) {
+    if (input.files && input.files[0]) {
+        const container = document.getElementById('addUserAvatarContainer');
+        if (container) {
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    container.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            } catch (err) {
+                console.error("Preview error:", err);
+            }
+        }
+    }
+}
+
 window.adminConfirmReturn = adminConfirmReturn;
 window.uploadAdminPhoto = uploadAdminPhoto;
 window.previewUserPhoto = previewUserPhoto;
+window.previewNewUserPhoto = previewNewUserPhoto;
 window.openEditUser = openEditUser;
 window.rejectReturn = rejectReturn;
 window.approveExtension = approveExtension;
