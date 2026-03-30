@@ -40,6 +40,16 @@
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="about-team.html" class="active">About</a></li>
+          <li class="careers-menu" id="resourcesDropdown">
+            <a href="javascript:void(0)" class="dropdown-trigger">
+              Resources <i class="fas fa-chevron-down arrow-icon"></i>
+            </a>
+            <ul class="dropdown" id="dropdownMenu">
+              <li><a href="documentation.html">Documentation</a></li>
+              <li><a href="support.html">Support</a></li>
+              <li><a href="privacy.html">Privacy Policy</a></li>
+            </ul>
+          </li>
           <li><a href="login.html"><button type="button" class="button">Sign In</button></a></li>
         </ul>
       </div>
@@ -389,6 +399,43 @@
       });
     });
 
+    document.addEventListener("DOMContentLoaded", () => {
+      // Existing Mobile Nav Logic
+      const mobilenav = document.getElementById("mobilenav");
+      const rightNav = document.getElementById("rightNav");
+      const closeMenu = document.getElementById("closeMenu");
+
+      if (mobilenav) mobilenav.addEventListener("click", () => rightNav.classList.add("active"));
+      if (closeMenu) closeMenu.addEventListener("click", () => rightNav.classList.remove("active"));
+
+      // --- NEW: Resources Dropdown Toggle ---
+      const resDropdown = document.getElementById('resourcesDropdown');
+
+      if (resDropdown) {
+        resDropdown.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevents immediate closing
+          resDropdown.classList.toggle('active');
+        });
+      }
+
+      // Close dropdown when clicking anywhere else
+      window.addEventListener('click', () => {
+        if (resDropdown) resDropdown.classList.remove('active');
+      });
+      // -------------------------------------
+
+      // Existing Scroll Animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+    });
   </script>
 </body>
 

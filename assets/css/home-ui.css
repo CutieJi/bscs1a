@@ -1,10 +1,3 @@
-html {
-    scroll-behavior: smooth;
-}
-
-/* CSS specifically reverse-engineered for the OneHire layout, using MISLend colors */
-
-
 :root {
     --navy: #0b1f3a;
     --blue: #1e5fa8;
@@ -26,6 +19,7 @@ body {
     background: var(--bg);
     color: var(--text);
     overflow-x: hidden;
+    scroll-behavior: smooth;
 }
 
 a {
@@ -926,4 +920,80 @@ footer {
 
 .toast.error {
     background: var(--danger);
+}
+
+/* Arrow Rotation Logic */
+.arrow-icon {
+    font-size: 0.7rem;
+    margin-left: 8px;
+    transition: transform 0.3s ease; /* Smooth rotation */
+}
+
+/* When the menu is active, rotate the arrow */
+.careers-menu.active .arrow-icon {
+    transform: rotate(180deg);
+    color: var(--gold);
+}
+
+/* Dropdown visibility controlled by class */
+.right-nav .dropdown {
+    display: none; 
+    position: absolute;
+    top: 110%; /* Slight gap from header */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    min-width: 200px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    border-top: 3px solid var(--gold);
+    padding: 10px 0;
+    z-index: 1100;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+/* Toggle state */
+.careers-menu.active .dropdown {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    top: 180%; /* Slides up into position */
+}
+
+/* Dropdown Item Styles */
+.right-nav .dropdown li {
+    width: 100%;
+}
+
+.right-nav .dropdown li a {
+    display: block !important;
+    padding: 10px 15px !important;
+    color: var(--navy) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+}
+
+.right-nav .dropdown li a:hover {
+    background: var(--surface);
+    color: var(--blue) !important;
+    padding-left: 25px !important;
+}
+
+/* Mobile: Ensure it looks good in the side menu */
+@media (max-width: 900px) {
+    .right-nav .dropdown {
+        position: static;
+        transform: none;
+        box-shadow: none;
+        opacity: 1;
+        pointer-events: auto;
+        display: none; /* Controlled by JS */
+        padding-left: 20px;
+    }
+    .careers-menu.active .dropdown {
+        display: block;
+    }
 }

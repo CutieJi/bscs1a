@@ -415,74 +415,6 @@ body {
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
 }
 
-/* — Sidebar Footer — */
-.sidebar-footer {
-    padding: 1rem 0.75rem 1.1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.sidebar-user {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.9rem;
-    padding: 0.65rem 0.75rem;
-    border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    overflow: hidden;
-}
-
-.sidebar-user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--gold), #a36e12);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(200, 146, 26, 0.35);
-}
-
-.sidebar-user-info {
-    overflow: hidden;
-}
-
-.sidebar-user-name {
-    font-weight: 600;
-    font-size: 0.82rem;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-user-email {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.38);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.topbar-user-avatar img,
-.sidebar-user-avatar img,
-.user-avatar img,
-.admin-avatar img,
-.profile-menu-avatar img,
-.profile-view-avatar img,
-.edit-user-avatar-section .profile-edit-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: inherit;
-}
-
 .main-content {
     flex: 1;
     margin-left: 260px;
@@ -771,6 +703,36 @@ body {
 
 .btn-secondary:hover {
     background: var(--bg-secondary);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: #fff;
+}
+.btn-warning:hover {
+    background: #d97706; /* Tailwind Amber-600 */
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover {
+    background: #dc2626; /* Tailwind Red-600 */
+}
+
+.btn-success {
+    background: #10b981; /* Tailwind Emerald-500 */
+    color: #fff;
+}
+.btn-success:hover {
+    background: #059669; /* Tailwind Emerald-600 */
 }
 
 .stats-grid {

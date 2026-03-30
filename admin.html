@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,6 +7,7 @@
     <title>Admin - UCC MIS | MISLend</title>
     <link rel="stylesheet" href="assets/css/admin-ui.css">
     <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
     <link rel="shortcut icon" href="assets/images/13.png" type="image/x-icon">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
@@ -121,7 +122,7 @@
                     </div>
                 </div>
                 <div class="theme-toggle-row">
-                    <svg class="theme-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    <svg class="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -485,13 +486,36 @@
                             <div class="pending-count" id="pendingCount">0</div>
                         </div>
 
-                        <div class="pending-grid" id="pendingGrid">
+                        <div class="pending-table-container">
+                            <table id="pendingTable" class="display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>ID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
 
                     <h2 class="section-title" style="margin-top:25px;">All Users</h2>
 
-                    <div class="users-grid" id="usersGrid">
+                    <div class="users-table-container">
+                        <table id="usersTable" class="display" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role/ID</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -667,6 +691,10 @@
                         </div>
                     </div>
                 </div>
+                <div id="additionalAdminFields" style="display: none; margin-bottom: 10px;">
+                    <label>Admin ID (Private Login ID)</label>
+                    <input type="text" id="newUserAdminId" class="form-control" style="width: 100%;" placeholder="e.g., ADMIN-01">
+                </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>
                     <button type="submit" class="btn btn-primary">
@@ -776,10 +804,10 @@
                     <option value="admin">Admin</option>
                 </select>
 
-                <label>Student ID</label>
-                <input id="editUserStudentId">
-
                 <div id="editStudentFieldsContainers">
+                    <label>Student ID</label>
+                    <input id="editUserStudentId">
+
                     <label>Mobile No.</label>
                     <input type="tel" id="editUserMobile" minlength="11" maxlength="11">
 
@@ -816,6 +844,11 @@
                             </select>
                         </div>
                     </div>
+                </div>
+
+                <div id="editAdminFieldsContainers" style="display: none; margin-bottom: 10px;">
+                    <label>Admin ID (Private Login ID)</label>
+                    <input type="text" id="editUserAdminId" class="form-control" style="width: 100%;">
                 </div>
 
                 <button class="btn btn-primary">Save</button>
@@ -890,6 +923,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
 
     <script src="assets/js/app.js"></script>
     <script src="assets/js/admin.js"></script>
