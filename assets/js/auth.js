@@ -85,19 +85,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!loginInput.includes('@')) {
                     try {
-                        const userSnap = await db.collection('users')
+                        let userSnap = await db.collection('users')
                             .where('studentId', '==', loginInput)
                             .limit(1)
                             .get();
 
                         if (userSnap.empty) {
-                            throw new Error('No user found with this Student ID.');
+                            userSnap = await db.collection('users')
+                                .where('adminId', '==', loginInput)
+                                .limit(1)
+                                .get();
+                        }
+
+                        if (userSnap.empty) {
+                            throw new Error('No user found with this ID.');
                         }
                         email = userSnap.docs[0].data().email;
                     } catch (err) {
-                        console.error("Student ID lookup error:", err);
+                        console.error("ID lookup error:", err);
                         if (err.code === 'permission-denied') {
-                            showFormAlert('loginAlert', "Student ID login is disabled. Please use your email.", "error");
+                            showFormAlert('loginAlert', "ID login is disabled. Please use your email.", "error");
                         } else {
                             showFormAlert('loginAlert', err.message, "error");
                         }

@@ -320,6 +320,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     font-weight: 500;
+    transition: var(--transition);
 }
 
 .theme-switch {

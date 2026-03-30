@@ -866,3 +866,89 @@ footer {
         text-align: center;
     }
 }
+
+/* --- DROP-DOWN SYSTEM (MATCHED TO INDEX LOGIC) --- */
+
+.careers-menu {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Arrow Rotation Logic */
+.arrow-icon {
+    font-size: 0.7rem;
+    margin-left: 8px;
+    transition: transform 0.3s ease; /* Smooth rotation */
+}
+
+/* When the menu is active, rotate the arrow */
+.careers-menu.active .arrow-icon {
+    transform: rotate(180deg);
+    color: var(--gold);
+}
+
+/* Dropdown visibility controlled by class */
+.right-nav .dropdown {
+    display: none; 
+    position: absolute;
+    top: 110%; /* Starting position for animation */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    min-width: 200px;
+    box-shadow: var(--shadow-md); /* Using your index shadow variable */
+    border-radius: 12px;
+    border-top: 3px solid var(--gold);
+    padding: 10px 0;
+    z-index: 1100; /* Higher than hero content */
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+/* Toggle state */
+.careers-menu.active .dropdown {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    /* This aligns it perfectly under your 70px header */
+    top: 180%; 
+}
+
+/* Dropdown Item Styles */
+.right-nav .dropdown li {
+    width: 100%;
+}
+
+.right-nav .dropdown li a {
+    display: block !important;
+    padding: 10px 15px !important;
+    color: var(--navy) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+}
+
+.right-nav .dropdown li a:hover {
+    background: var(--surface);
+    color: var(--blue) !important;
+    padding-left: 25px !important;
+}
+
+/* Mobile: Ensure it looks good in the side menu */
+@media (max-width: 860px) {
+    .right-nav .dropdown {
+        position: static;
+        transform: none;
+        box-shadow: none;
+        opacity: 1;
+        pointer-events: auto;
+        display: none; /* Controlled by toggle class */
+        padding-left: 20px;
+        background: transparent;
+        border: none;
+    }
+    .careers-menu.active .dropdown {
+        display: block;
+    }
+}

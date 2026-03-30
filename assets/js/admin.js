@@ -1167,8 +1167,8 @@ async function loadCurrentlyBorrowed() {
                         ${!isPendingExtend ? `
                             <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                                 ${item.userId ? `
-                                    <button class="btn btn-icon" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
-                                        <i class="fa-solid fa-message"></i>
+                                    <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
+                                        <i class="fa-solid fa-message"></i> SMS
                                     </button>
                                 ` : ''}
                                 <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
@@ -1297,8 +1297,8 @@ async function loadBorrowingLogs() {
                         <span class="log-item-title">${log.equipmentName}</span>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${(log.status === 'borrowed' || log.status === 'pending_return') && log.userId ? `
-                                <button class="btn btn-icon btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
-                                    <i class="fa-solid fa-message"></i>
+                                <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
+                                    <i class="fa-solid fa-message"></i> SMS
                                 </button>
                             ` : ''}
                             <span class="history-status ${log.status}">${statusLabel}</span>
@@ -1603,6 +1603,8 @@ function initializeUserManagement() {
     const newUserRole = document.getElementById('newUserRole');
     const additionalFields = document.getElementById('additionalStudentFields');
 
+    const additionalAdminFields = document.getElementById('additionalAdminFields');
+
     if (addUserBtn) {
         addUserBtn.addEventListener('click', () => {
             addUserModal?.classList.add('active');
@@ -1612,7 +1614,10 @@ function initializeUserManagement() {
     if (newUserRole) {
         newUserRole.addEventListener('change', (e) => {
             const isStudent = e.target.value === 'student';
+            const isAdmin = e.target.value === 'admin';
+            
             if (additionalFields) additionalFields.style.display = isStudent ? 'block' : 'none';
+            if (additionalAdminFields) additionalAdminFields.style.display = isAdmin ? 'block' : 'none';
 
             const studentIdInput = document.getElementById('newUserStudentId');
             if (studentIdInput) studentIdInput.required = isStudent;
@@ -1623,6 +1628,7 @@ function initializeUserManagement() {
         addUserModal?.classList.remove('active');
         addUserForm?.reset();
         if (additionalFields) additionalFields.style.display = 'none';
+        if (additionalAdminFields) additionalAdminFields.style.display = 'none';
         
         const avatarContainer = document.getElementById("addUserAvatarContainer");
         if (avatarContainer) {
@@ -1640,9 +1646,11 @@ function initializeUserManagement() {
 
     const editRoleSelect = document.getElementById('editUserRole');
     const editStudentContainer = document.getElementById('editStudentFieldsContainers');
-    if (editRoleSelect && editStudentContainer) {
+    const editAdminContainer = document.getElementById('editAdminFieldsContainers');
+    if (editRoleSelect) {
         editRoleSelect.addEventListener('change', (e) => {
-            editStudentContainer.style.display = e.target.value === 'student' ? 'block' : 'none';
+            if (editStudentContainer) editStudentContainer.style.display = e.target.value === 'student' ? 'block' : 'none';
+            if (editAdminContainer) editAdminContainer.style.display = e.target.value === 'admin' ? 'block' : 'none';
         });
     }
 
@@ -1675,6 +1683,7 @@ async function createNewUser() {
     const section = document.getElementById('newUserSection')?.value;
     const yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
     const photoInput = document.getElementById('newUserPhotoInput');
+    const adminId = document.getElementById('newUserAdminId')?.value.trim();
 
     const submitBtn = document.querySelector('#addUserForm button[type="submit"]');
     const originalBtnContent = submitBtn.innerHTML;
@@ -1708,6 +1717,8 @@ async function createNewUser() {
             userData.lastName = lastName;
             userData.yearLevel = yearLevel;
             userData.section = section;
+        } else if (role === 'admin') {
+            userData.adminId = adminId || "";
         }
 
         if (photoInput && photoInput.files && photoInput.files[0]) {
@@ -1756,8 +1767,8 @@ async function createNewUser() {
 
 
 async function loadUsers() {
-    const usersGrid = document.getElementById('usersGrid');
-    if (!usersGrid) return;
+    const usersTable = $('#usersTable');
+    if (usersTable.length === 0) return;
 
     try {
         const snapshot = await db.collection('users')
@@ -1768,60 +1779,72 @@ async function loadUsers() {
             .map(doc => ({ id: doc.id, ...doc.data() }))
             .filter(user => user.status === 'approved');
 
+        if ($.fn.DataTable.isDataTable('#usersTable')) {
+            usersTable.DataTable().clear().destroy();
+        }
+
+        const tbody = usersTable.find('tbody');
         if (users.length === 0) {
-            usersGrid.innerHTML = `
-                <div class="empty-state">
-                    <h3>No users found</h3>
-                    <p>Start by adding a new user</p>
-                </div>
-            `;
+            tbody.html('');
         } else {
-            usersGrid.innerHTML = users.map(user => {
+            tbody.html(users.map(user => {
                 const initials = getUserInitials(user.name);
                 const avatarHTML = user.photoURL
-                    ? `<img src="${user.photoURL}" alt="${user.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
-                    : initials;
+                    ? `<img src="${user.photoURL}" alt="${user.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">`
+                    : `<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold;">${initials}</div>`;
+
+                const roleBadge = `<span class="badge badge-category ${user.role}">${capitalize(user.role)}</span>`;
+                const idNum = user.studentId ? `<br><small class="text-muted">ID: ${user.studentId}</small>` : '';
+
+                let actionHtml = '';
+                if (user.id !== currentAdmin.uid) {
+                    actionHtml = `
+                        <div class="user-table-actions">
+                            <button class="btn btn-warning btn-sm" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}', '${user.adminId || ''}')" title="Edit user details">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>
+
+                            ${(user.role === 'student' && user.mobile) ? `
+                                <button class="btn btn-secondary btn-sm sms-btn" onclick="sendSMSOverdue('${user.id}', 'Equipment', '')" title="Send SMS message">
+                                    <i class="fa-solid fa-message"></i> SMS
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    actionHtml = '<span style="font-size: 0.75rem; color: var(--text-tertiary);">(You)</span>';
+                }
 
                 return `
-                <div class="user-card">
-                    <div class="user-card-avatar ${user.role === 'admin' ? 'admin-role' : ''}">
-                        ${avatarHTML}
-                    </div>
-                    <div class="user-card-info">
-                        <div class="user-card-name">${user.name}</div>
-                        <div class="user-card-email">${user.email}</div>
-                        <div class="user-card-meta">
-                            <span class="user-role-badge ${user.role}">${capitalize(user.role)}</span>
-                            ${user.studentId ? `<span class="badge badge-category">ID: ${user.studentId}</span>` : ''}
-                        </div>
-                        <div class="user-card-actions">
-                            ${user.id !== currentAdmin.uid ? `
-                                <button class="btn btn-icon" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}')" title="Edit">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                ${user.role === 'student' && user.mobile ? `
-                                    <button class="btn btn-icon" href="sms:${user.mobile}?body=Hello ${user.name}, this is UCC MIS Office. Just a reminder regarding your equipment borrowing." title="Send Message">
-                                        <i class="fa-solid fa-message"></i>
-                                    </button>
-                                ` : ''}
-                                <button class="btn btn-icon danger" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            ` : '<span style="font-size: 0.75rem; color: var(--text-tertiary);">(You)</span>'}
-                        </div>
-                    </div>
-                </div>
-            `;
-            }).join('');
+                    <tr>
+                        <td style="text-align: center; vertical-align: middle;">${avatarHTML}</td>
+                        <td style="vertical-align: middle;"><strong>${user.name}</strong></td>
+                        <td style="vertical-align: middle;">${user.email}</td>
+                        <td class="user-role-cell" style="vertical-align: middle;">${roleBadge}${idNum}</td>
+                        <td class="user-actions-cell" style="vertical-align: middle;">${actionHtml}</td>
+                    </tr>
+                `;
+            }).join(''));
         }
+
+        usersTable.DataTable({
+            responsive: true,
+            pageLength: 10,
+            autoWidth: false,
+            language: {
+                search: "Search Users:",
+                lengthMenu: "Display _MENU_ users per page",
+                emptyTable: "No approved users found",
+                zeroRecords: "No matching users found"
+            }
+        });
     } catch (error) {
         console.error('Error loading users:', error);
-        usersGrid.innerHTML = `
-            <div class="empty-state">
-                <h3>Error loading users</h3>
-                <p>Please try again later</p>
-            </div>
-        `;
+        showToast('Failed to load users', 'error');
     }
 }
 
@@ -1933,7 +1956,7 @@ if (editEquipmentForm) {
     });
 }
 
-function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL, firstName, middleInitial, lastName, yearLevel, section) {
+function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL, firstName, middleInitial, lastName, yearLevel, section, adminId) {
     document.getElementById("editUserId").value = id;
     document.getElementById("editUserEmail").value = email;
     document.getElementById("editUserRole").value = role;
@@ -1941,6 +1964,7 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
     document.getElementById("editUserMobile").value = mobile || "";
     document.getElementById("editUserGender").value = gender || "";
     document.getElementById("editUserCourse").value = course || "";
+    document.getElementById("editUserAdminId").value = adminId || "";
     
     // Set split fields
     document.getElementById("editUserFirstName").value = firstName || "";
@@ -1969,8 +1993,12 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
     }
 
     const studentContainer = document.getElementById("editStudentFieldsContainers");
+    const adminContainer = document.getElementById("editAdminFieldsContainers");
     if (studentContainer) {
         studentContainer.style.display = role === 'student' ? 'block' : 'none';
+    }
+    if (adminContainer) {
+        adminContainer.style.display = role === 'admin' ? 'block' : 'none';
     }
 
     document.getElementById("editUserModal").classList.add("active");
@@ -2050,6 +2078,8 @@ if (editUserForm) {
                 updateData.firstName = firstName;
                 updateData.middleInitial = middleInitial;
                 updateData.lastName = lastName;
+            } else if (role === 'admin') {
+                updateData.adminId = document.getElementById("editUserAdminId").value.trim();
             }
 
             // Handle photo upload if a new file is selected
@@ -2091,44 +2121,70 @@ if (editUserForm) {
 }
 
 async function loadPending() {
-    const grid = document.getElementById("pendingGrid");
+    const pendingTable = $('#pendingTable');
     const count = document.getElementById("pendingCount");
 
-    if (!grid) return;
+    if (pendingTable.length === 0) return;
 
-    const snap = await db.collection("users")
-        .where("status", "==", "pending")
-        .get();
+    try {
+        const snap = await db.collection("users")
+            .where("status", "==", "pending")
+            .get();
 
-    count.textContent = snap.size;
+        if (count) count.textContent = snap.size;
 
-    if (snap.empty) {
-        grid.innerHTML = `<p style="color:#777;">No pending accounts</p>`;
-        return;
+        if ($.fn.DataTable.isDataTable('#pendingTable')) {
+            pendingTable.DataTable().clear().destroy();
+        }
+
+        const tbody = pendingTable.find('tbody');
+
+        if (snap.empty) {
+            tbody.html('');
+            
+            // Still initialize an empty DataTable so the structure exists
+            pendingTable.DataTable({
+                responsive: true,
+                pageLength: 5,
+                autoWidth: false,
+                language: { emptyTable: "No pending accounts" }
+            });
+            return;
+        }
+
+        tbody.html(snap.docs.map(doc => {
+            const u = doc.data();
+            return `
+                <tr>
+                    <td style="vertical-align: middle;"><strong>${u.name}</strong></td>
+                    <td style="vertical-align: middle;">${u.email}</td>
+                    <td style="vertical-align: middle;">ID: ${u.studentId || "N/A"}</td>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <div style="display:flex; gap:0.5rem; justify-content:center;">
+                            <button class="btn btn-success btn-sm" onclick="approveUser('${doc.id}')">Approve</button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectUser('${doc.id}')">Reject</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join(""));
+
+        pendingTable.DataTable({
+            responsive: true,
+            pageLength: 5,
+            autoWidth: false,
+            language: {
+                search: "Search Pending:",
+                lengthMenu: "Show _MENU_",
+            },
+            columnDefs: [
+                { orderable: false, targets: [0, 3] }
+            ],
+            order: [[1, 'asc']]
+        });
+    } catch (err) {
+        console.error("Error loading pending users:", err);
     }
-
-    grid.innerHTML = snap.docs.map(doc => {
-        const u = doc.data();
-
-        return `
-<div class="pending-card">
-
-    <div class="pending-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
-        ${u.photoURL ? `<img src="${u.photoURL}" alt="" style="width: 100%; height: 100%; object-fit: cover;">` : (u.name ? u.name.charAt(0) : "U")}
-    </div>
-
-    <div class="pending-name">${u.name}</div>
-    <div class="pending-email">${u.email}</div>
-    <div class="pending-id">ID: ${u.studentId || "N/A"}</div>
-
-    <div class="pending-actions">
-        <button class="btn-approve" onclick="approveUser('${doc.id}')">Approve</button>
-        <button class="btn-reject" onclick="rejectUser('${doc.id}')">Reject</button>
-    </div>
-
-</div>
-`;
-    }).join("");
 }
 
 async function approveUser(uid) {
