@@ -208,3 +208,116 @@
         gap: 8px;
     }
 }
+
+.student-id-modal-content {
+    max-width: 760px;
+}
+
+.student-id-capture-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.student-id-helper {
+    color: #4b5563;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.student-id-camera-stage {
+    position: relative;
+    width: 100%;
+    min-height: 280px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.student-id-camera-stage video,
+.student-id-camera-stage img {
+    width: 100%;
+    max-height: 440px;
+    object-fit: contain;
+    display: block;
+}
+
+.student-id-status {
+    font-size: 0.88rem;
+    color: #6b7280;
+}
+
+.student-id-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.student-id-upload-btn {
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .student-id-modal-content {
+        max-width: calc(100vw - 1.5rem);
+        padding: 18px;
+    }
+
+    .student-id-camera-stage {
+        min-height: 220px;
+    }
+
+    .student-id-actions-row {
+        flex-direction: column;
+    }
+
+    .student-id-actions-row .btn,
+    .student-id-upload-btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+
+.image-zoom-modal-content {
+    max-width: min(92vw, 900px);
+    width: 100%;
+}
+
+.image-zoom-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    padding-top: 0.5rem;
+}
+
+.image-zoom-body img {
+    width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.zoomable-id-photo:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 640px) {
+    .image-zoom-modal-content {
+        max-width: calc(100vw - 1rem);
+        padding: 16px;
+    }
+
+    .image-zoom-body {
+        min-height: 200px;
+    }
+}

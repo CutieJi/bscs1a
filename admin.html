@@ -886,6 +886,61 @@
         </div>
     </div>
 
+
+    <div class="modal" id="studentIdCaptureModal" style="display: none;">
+        <div class="modal-content student-id-modal-content">
+            <div class="modal-header">
+                <h2>Capture Student ID</h2>
+                <button class="modal-close" id="closeStudentIdCaptureModal">&times;</button>
+            </div>
+            <div class="student-id-capture-wrap">
+                <p class="student-id-helper">Take a clear photo of the student's ID before releasing the borrowed item. This record will be deleted automatically once the item is returned.</p>
+
+                <div class="student-id-camera-stage" id="studentIdCameraStage">
+                    <video id="studentIdVideo" autoplay playsinline muted></video>
+                    <img id="studentIdPreview" alt="Student ID Preview" style="display:none;">
+                    <canvas id="studentIdCanvas" style="display:none;"></canvas>
+                </div>
+
+                <div class="student-id-status" id="studentIdCaptureStatus">Camera is ready. You can also upload a photo if camera access is blocked.</div>
+
+                <div class="student-id-actions-row">
+                    <button class="btn btn-secondary btn-sm" type="button" id="openStudentIdCameraBtn">
+                        <i class="fa-solid fa-camera"></i> Open Camera
+                    </button>
+                    <button class="btn btn-secondary btn-sm" type="button" id="captureStudentIdBtn">
+                        <i class="fa-solid fa-camera-retro"></i> Capture
+                    </button>
+                    <button class="btn btn-secondary btn-sm" type="button" id="retakeStudentIdBtn" style="display:none;">
+                        <i class="fa-solid fa-rotate-left"></i> Retake
+                    </button>
+                    <label class="btn btn-secondary btn-sm student-id-upload-btn" for="studentIdFileInput">
+                        <i class="fa-solid fa-upload"></i> Upload Photo
+                    </label>
+                    <input type="file" id="studentIdFileInput" accept="image/*" capture="environment" style="display:none;">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" type="button" id="cancelStudentIdCaptureBtn">Cancel</button>
+                    <button class="btn btn-primary" type="button" id="saveStudentIdCaptureBtn">Save ID & Approve Borrow</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" id="imageZoomModal" style="display: none;">
+        <div class="modal-content image-zoom-modal-content">
+            <div class="modal-header">
+                <h2>Student ID Preview</h2>
+                <button class="modal-close" id="closeImageZoomModal">&times;</button>
+            </div>
+            <div class="image-zoom-body">
+                <img id="zoomedImagePreview" src="" alt="Zoomed Student ID Preview">
+            </div>
+        </div>
+    </div>
+
     <div class="modal" id="profileModal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">

@@ -1,6 +1,10 @@
 let currentAdmin = null;
 let currentAdminData = null;
 
+let pendingBorrowApproval = null;
+let studentIdCaptureImage = '';
+let studentIdCameraStream = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const { user, userData } = await checkAuth('admin');
@@ -70,6 +74,8 @@ function initializeDashboard() {
     initializeSidebar();
     initializeProfileDropdown();
     initializeTheme();
+    initializeStudentIdCaptureModal();
+    initializeImageZoomModal();
 }
 
 function updateAdminInfo() {
@@ -568,25 +574,267 @@ async function loadPendingRequests() {
 }
 
 
-async function approveBorrow(borrowingId, equipmentId) {
+function initializeImageZoomModal() {
+    const modal = document.getElementById('imageZoomModal');
+    const zoomedImage = document.getElementById('zoomedImagePreview');
+    const closeBtn = document.getElementById('closeImageZoomModal');
+
+    if (!modal || !zoomedImage || modal.dataset.zoomInitialized === 'true') return;
+    modal.dataset.zoomInitialized = 'true';
+
+    closeBtn?.addEventListener('click', closeImageZoomModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeImageZoomModal();
+    });
+
+    document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('[data-zoom-src]');
+        if (!trigger) return;
+        const src = trigger.getAttribute('data-zoom-src');
+        if (!src) return;
+        openImageZoomModal(src);
+    });
+}
+
+function openImageZoomModal(src) {
+    const modal = document.getElementById('imageZoomModal');
+    const zoomedImage = document.getElementById('zoomedImagePreview');
+    if (!modal || !zoomedImage || !src) return;
+
+    zoomedImage.src = src;
+    modal.classList.add('active');
+}
+
+function closeImageZoomModal() {
+    const modal = document.getElementById('imageZoomModal');
+    const zoomedImage = document.getElementById('zoomedImagePreview');
+    if (modal) modal.classList.remove('active');
+    if (zoomedImage) zoomedImage.src = '';
+}
+
+function initializeStudentIdCaptureModal() {
+    const modal = document.getElementById('studentIdCaptureModal');
+    if (!modal || modal.dataset.initialized === 'true') return;
+    modal.dataset.initialized = 'true';
+
+    document.getElementById('closeStudentIdCaptureModal')?.addEventListener('click', closeStudentIdCaptureModal);
+    document.getElementById('cancelStudentIdCaptureBtn')?.addEventListener('click', closeStudentIdCaptureModal);
+    document.getElementById('openStudentIdCameraBtn')?.addEventListener('click', startStudentIdCamera);
+    document.getElementById('captureStudentIdBtn')?.addEventListener('click', captureStudentIdPhoto);
+    document.getElementById('retakeStudentIdBtn')?.addEventListener('click', retakeStudentIdPhoto);
+    document.getElementById('saveStudentIdCaptureBtn')?.addEventListener('click', saveStudentIdCapture);
+    document.getElementById('studentIdFileInput')?.addEventListener('change', handleStudentIdUpload);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeStudentIdCaptureModal();
+    });
+}
+
+function setStudentIdCaptureStatus(message, type = 'info') {
+    const statusEl = document.getElementById('studentIdCaptureStatus');
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.style.color = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--text-secondary)';
+}
+
+function resetStudentIdCaptureUI() {
+    studentIdCaptureImage = '';
+
+    const video = document.getElementById('studentIdVideo');
+    const preview = document.getElementById('studentIdPreview');
+    const fileInput = document.getElementById('studentIdFileInput');
+    const captureBtn = document.getElementById('captureStudentIdBtn');
+    const retakeBtn = document.getElementById('retakeStudentIdBtn');
+
+    if (video) {
+        video.style.display = '';
+        video.srcObject = null;
+    }
+    if (preview) {
+        preview.style.display = 'none';
+        preview.removeAttribute('src');
+    }
+    if (fileInput) fileInput.value = '';
+    if (captureBtn) captureBtn.style.display = '';
+    if (retakeBtn) retakeBtn.style.display = 'none';
+
+    setStudentIdCaptureStatus('Camera is ready. You can also upload a photo if camera access is blocked.');
+}
+
+async function startStudentIdCamera() {
+    const video = document.getElementById('studentIdVideo');
+    if (!video) return;
+
+    try {
+        stopStudentIdCamera();
+        studentIdCameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+        video.srcObject = studentIdCameraStream;
+        await video.play().catch(() => { });
+        setStudentIdCaptureStatus('Camera opened. Hold the ID steady, then press Capture.', 'success');
+    } catch (error) {
+        console.error('Camera error:', error);
+        setStudentIdCaptureStatus('Camera access failed. You can still upload a student ID photo.', 'error');
+    }
+}
+
+function stopStudentIdCamera() {
+    if (studentIdCameraStream) {
+        studentIdCameraStream.getTracks().forEach(track => track.stop());
+        studentIdCameraStream = null;
+    }
+}
+
+function compressStudentIdCanvas(canvas, maxWidth = 900, maxHeight = 600, quality = 0.72) {
+    let { width, height } = canvas;
+    let targetWidth = width;
+    let targetHeight = height;
+
+    if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        targetWidth = Math.round(width * ratio);
+        targetHeight = Math.round(height * ratio);
+    }
+
+    const output = document.createElement('canvas');
+    output.width = targetWidth;
+    output.height = targetHeight;
+    const ctx = output.getContext('2d');
+    ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
+    return output.toDataURL('image/jpeg', quality);
+}
+
+function showStudentIdPreview(dataUrl, message = 'Student ID photo captured.') {
+    const video = document.getElementById('studentIdVideo');
+    const preview = document.getElementById('studentIdPreview');
+    const captureBtn = document.getElementById('captureStudentIdBtn');
+    const retakeBtn = document.getElementById('retakeStudentIdBtn');
+
+    studentIdCaptureImage = dataUrl;
+    if (preview) {
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+    }
+    if (video) video.style.display = 'none';
+    if (captureBtn) captureBtn.style.display = 'none';
+    if (retakeBtn) retakeBtn.style.display = '';
+    setStudentIdCaptureStatus(message, 'success');
+}
+
+function captureStudentIdPhoto() {
+    const video = document.getElementById('studentIdVideo');
+    const canvas = document.getElementById('studentIdCanvas');
+
+    if (!video || !canvas || !video.videoWidth || !video.videoHeight) {
+        setStudentIdCaptureStatus('Open the camera first or upload a photo.', 'error');
+        return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = compressStudentIdCanvas(canvas);
+    showStudentIdPreview(dataUrl, 'Student ID photo captured from camera.');
+    stopStudentIdCamera();
+}
+
+async function handleStudentIdUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await resizeImage(file, 900, 600);
+        showStudentIdPreview(dataUrl, 'Student ID photo uploaded successfully.');
+        stopStudentIdCamera();
+    } catch (error) {
+        console.error('Upload preview error:', error);
+        setStudentIdCaptureStatus('Failed to read the selected image.', 'error');
+    }
+}
+
+async function openStudentIdCaptureModal(borrowingId, equipmentId) {
+    pendingBorrowApproval = { borrowingId, equipmentId };
+    resetStudentIdCaptureUI();
+
+    const modal = document.getElementById('studentIdCaptureModal');
+    if (modal) modal.classList.add('active');
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+        setStudentIdCaptureStatus('This browser cannot open the camera. Please upload a student ID photo.', 'error');
+        return;
+    }
+
+    await startStudentIdCamera();
+}
+
+function retakeStudentIdPhoto() {
+    resetStudentIdCaptureUI();
+    startStudentIdCamera();
+}
+
+function closeStudentIdCaptureModal() {
+    stopStudentIdCamera();
+    resetStudentIdCaptureUI();
+    pendingBorrowApproval = null;
+    const modal = document.getElementById('studentIdCaptureModal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function saveStudentIdCapture() {
+    if (!pendingBorrowApproval?.borrowingId || !pendingBorrowApproval?.equipmentId) {
+        showToast('Borrow request details are missing.', 'error');
+        return;
+    }
+
+    if (!studentIdCaptureImage) {
+        setStudentIdCaptureStatus('Please capture or upload the student ID first.', 'error');
+        return;
+    }
+
+    await approveBorrow(pendingBorrowApproval.borrowingId, pendingBorrowApproval.equipmentId, studentIdCaptureImage);
+}
+
+
+async function approveBorrow(borrowingId, equipmentId, capturedStudentIdPhoto = null) {
+    if (!capturedStudentIdPhoto) {
+        await openStudentIdCaptureModal(borrowingId, equipmentId);
+        return;
+    }
+
     if (!await showConfirm({
         title: 'Approve Borrow',
-        message: 'Approve this borrow request?',
+        message: 'Save this student ID photo and approve the borrow request?',
         confirmText: 'Approve',
         type: 'success'
     })) return;
+
     try {
         const borrowDoc = await db.collection('borrowings').doc(borrowingId).get();
         const borrowData = borrowDoc.data();
 
-        await db.collection('borrowings').doc(borrowingId).update({ status: 'borrowed' });
+        await db.collection('borrowings').doc(borrowingId).update({
+            status: 'borrowed',
+            studentIdPhoto: capturedStudentIdPhoto,
+            studentIdPhotoCapturedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            studentIdPhotoCapturedBy: currentAdmin?.uid || null,
+            studentIdPhotoCapturedByName: currentAdminData?.name || currentAdmin?.email || 'Administrator'
+        });
         await db.collection('equipment').doc(equipmentId).update({
             status: 'borrowed',
             borrowedBy: borrowData.userId || null,
             borrowedAt: borrowData.borrowedAt || firebase.firestore.FieldValue.serverTimestamp()
         });
-        showToast('Borrow request approved', 'success');
+        closeStudentIdCaptureModal();
+        showToast('Borrow request approved and student ID saved', 'success');
         loadPendingRequests();
+        loadCurrentlyBorrowed();
         loadDashboardData();
     } catch (err) {
         console.error(err);
@@ -633,7 +881,11 @@ async function approveReturn(borrowingId, equipmentId, condition) {
             status: 'returned',
             returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
             returnCondition: data.pendingReturnCondition || condition,
-            returnNotes: data.pendingReturnNotes || ''
+            returnNotes: data.pendingReturnNotes || '',
+            studentIdPhoto: firebase.firestore.FieldValue.delete(),
+            studentIdPhotoCapturedAt: firebase.firestore.FieldValue.delete(),
+            studentIdPhotoCapturedBy: firebase.firestore.FieldValue.delete(),
+            studentIdPhotoCapturedByName: firebase.firestore.FieldValue.delete()
         });
 
         await db.collection('equipment').doc(equipmentId).update({
@@ -762,7 +1014,11 @@ async function adminConfirmReturn(borrowingId, equipmentId) {
             returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
             returnCondition: condition,
             returnNotes: '',
-            wasOverdue: wasOverdue
+            wasOverdue: wasOverdue,
+            studentIdPhoto: firebase.firestore.FieldValue.delete(),
+            studentIdPhotoCapturedAt: firebase.firestore.FieldValue.delete(),
+            studentIdPhotoCapturedBy: firebase.firestore.FieldValue.delete(),
+            studentIdPhotoCapturedByName: firebase.firestore.FieldValue.delete()
         });
 
         await db.collection('equipment').doc(equipmentId).update({
@@ -1149,6 +1405,18 @@ async function loadCurrentlyBorrowed() {
                             <strong>Equipment:</strong> ${item.equipmentName}<br>
                             <strong>Borrowed:</strong> ${formatDate(item.borrowedAt)}<br>
                             <strong>Current Due:</strong> ${item.expectedReturnTime || 'N/A'}<br>
+                            ${item.studentIdPhoto ? `
+                                <div style="margin-top: 0.9rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: rgba(11, 31, 58, 0.02); display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap;">
+                                    <img src="${item.studentIdPhoto}" alt="Student ID" class="zoomable-id-photo" data-zoom-src="${item.studentIdPhoto}" title="Click to zoom" style="width: 120px; max-width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 0.75rem; border: 1px solid var(--border); background: #fff; cursor: zoom-in; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                                    <div style="flex: 1; min-width: 180px;">
+                                        <strong style="display:block; margin-bottom: 0.2rem;">Stored Student ID</strong>
+                                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Click the photo to zoom. This captured ID will be removed automatically after the item is returned.</div>
+                                        ${item.studentIdPhotoCapturedAt ? `<div style="margin-top: 0.35rem; font-size: 0.8rem; color: var(--text-secondary);">Captured: ${formatDate(item.studentIdPhotoCapturedAt)}</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="margin-top: 0.9rem; padding: 0.75rem 0.9rem; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.08); color: #9a6700; font-size: 0.85rem;">No student ID photo stored for this borrowing yet.</div>
+                            `}
                             ${isPendingExtend ? `
                                 <div style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(30, 64, 175, 0.05); border-radius: var(--radius-md); border: 1px dashed #1e40af;">
                                     <strong style="color: #1e40af;">New Requested Time:</strong> <span style="font-weight:700; color: #1e40af;">${item.requestedReturnTime}</span><br>
@@ -2417,6 +2685,8 @@ window.deleteEquipment = deleteEquipment;
 window.deleteUser = deleteUser;
 window.sendSMSOverdue = sendSMSOverdue;
 window.sendEmailOverdue = sendEmailOverdue;
+window.openStudentIdCaptureModal = openStudentIdCaptureModal;
+window.closeStudentIdCaptureModal = closeStudentIdCaptureModal;
 window.approveBorrow = approveBorrow;
 window.rejectBorrow = rejectBorrow;
 window.approveReturn = approveReturn;
@@ -2495,3 +2765,5 @@ window.rejectReturn = rejectReturn;
 window.approveExtension = approveExtension;
 window.rejectExtension = rejectExtension;
 window.adminConfirmReturn = adminConfirmReturn;
+window.openImageZoomModal = openImageZoomModal;
+window.closeImageZoomModal = closeImageZoomModal;
