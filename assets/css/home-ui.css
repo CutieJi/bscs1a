@@ -656,8 +656,18 @@ ul {
     line-height: 1.6;
 }
 
+@media(max-width:640px) {
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-/* FOOTER (from about-team.html) */
+    .footer-bottom {
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+/* FOOTER (MATCHED TO index.html) */
 footer {
     background: var(--navy);
     padding: 60px 0 40px;
@@ -923,12 +933,14 @@ footer {
 /* --- MEDIA QUERIES (Overrides) --- */
 
 @media (max-width: 860px) {
-
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
     .info-content,
     .info-content.reverse,
     .Intern-part,
-    .employees,
-    .footer-container {
+    .employees {
         flex-direction: column;
         text-align: center;
         gap: 40px;
@@ -1050,6 +1062,14 @@ footer {
         position: absolute;
         top: 20px;
         right: 20px;
+
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
     }
 }
 

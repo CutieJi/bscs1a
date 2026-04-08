@@ -62,6 +62,46 @@ function initializeUserManagement() {
     if (cancelAddUser) cancelAddUser.addEventListener('click', closeAddUser);
 }
 
+function initializeRealtimeListeners() {
+    db.collection('borrowings')
+        .where('status', 'in', ['pending_borrow', 'pending_return', 'pending_extension'])
+        .onSnapshot((snapshot) => {
+            const count = snapshot.size;
+            const badge = document.getElementById('approvalsBadge');
+            const badgeMobile = document.getElementById('approvalsBadgeMobile');
+            const dashPendingCount = document.getElementById('pendingRequestsCount');
+
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-flex' : 'none';
+            }
+            if (badgeMobile) {
+                badgeMobile.textContent = count;
+                badgeMobile.style.display = count > 0 ? 'flex' : 'none';
+            }
+            if (dashPendingCount) {
+                dashPendingCount.textContent = count;
+            }
+
+            const activeView = document.querySelector('.view-container.active')?.id;
+            if (activeView === 'approvalsView') {
+                loadPendingRequests();
+            }
+        });
+
+    db.collection('users')
+        .where('status', '==', 'pending')
+        .onSnapshot((snapshot) => {
+            const count = document.getElementById("pendingCount");
+            if (count) count.textContent = snapshot.size;
+
+            const activeView = document.querySelector('.view-container.active')?.id;
+            if (activeView === 'usersView') {
+                loadPending();
+            }
+        });
+}
+
 function initializeDashboard() {
     updateAdminInfo();
     initializeNavigation();
@@ -76,6 +116,7 @@ function initializeDashboard() {
     initializeTheme();
     initializeStudentIdCaptureModal();
     initializeImageZoomModal();
+    initializeRealtimeListeners();
 }
 
 function updateAdminInfo() {
@@ -412,7 +453,6 @@ async function loadOverdueItems() {
                 const typeLabel = item.notificationType ? ` (${item.notificationType.toUpperCase()})` : '';
                 return `
                 <div class="alert-item warning">
-                    <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation" style="color: rgb(255, 212, 59);"></i></div>
                     <div class="alert-content">
                         <div class="alert-title">${item.equipmentName}</div>
                         <div class="alert-message">
@@ -1204,14 +1244,13 @@ async function loadAllEquipment() {
                     </div>
                     <div class="equipment-list-actions">
                     <button class="btn btn-icon" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.description || ''}', '${item.status}')" title="Edit">
-                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit
                     </button>
                         <button class="btn btn-secondary btn-sm" onclick="generateQRCode('${item.id}', '${item.equipmentId}', '${item.name}')">
-                            <i class="fa-solid fa-qrcode"></i>
                             QR Code
                         </button>
                         <button class="btn btn-icon danger" onclick="deleteEquipment('${item.id}', '${item.name}')" title="Delete">
-                        <i class="fa-solid fa-trash"></i>    
+                        Delete
                         </button>
                     </div>
                 </div>
@@ -1480,7 +1519,7 @@ async function loadCurrentlyBorrowed() {
                             <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                                 ${item.userId ? `
                                     <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
-                                        <i class="fa-solid fa-message"></i> SMS
+                                        SMS
                                     </button>
                                 ` : ''}
                                 <select id="returnCondition_${item.id}" style="flex: 1; min-width: 160px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 0.875rem;">
@@ -1610,7 +1649,7 @@ async function loadBorrowingLogs() {
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${(log.status === 'borrowed' || log.status === 'pending_return') && log.userId ? `
                                 <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
-                                    <i class="fa-solid fa-message"></i> SMS
+                                    SMS
                                 </button>
                             ` : ''}
                             <span class="history-status ${log.status}">${statusLabel}</span>
@@ -2113,16 +2152,16 @@ async function loadUsers() {
                     actionHtml = `
                         <div class="user-table-actions">
                             <button class="btn btn-warning btn-sm" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}', '${user.adminId || ''}')" title="Edit user details">
-                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                                Edit
                             </button>
 
                             <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
-                                <i class="fa-solid fa-trash"></i> Delete
+                                Delete
                             </button>
 
                             ${(user.role === 'student' && user.mobile) ? `
-                                <button class="btn btn-secondary btn-sm sms-btn" onclick="sendSMSOverdue('${user.id}', 'Equipment', '')" title="Send SMS message">
-                                    <i class="fa-solid fa-message"></i> SMS
+                                <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${user.id}', 'Equipment', '')" title="Send SMS message">
+                                    SMS
                                 </button>
                             ` : ''}
                         </div>
