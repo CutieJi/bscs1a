@@ -360,6 +360,36 @@
                 </div>
             </div>
         </main>
+
+        <nav class="bottom-nav">
+            <a href="#" class="bottom-nav-item active" data-view="browse">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Explore</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-view="scan">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>Scan</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-view="myborrowed">
+                <div class="nav-icon-wrap">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                    <span class="nav-badge" id="bottomBorrowedCount" style="display: none;">0</span>
+                </div>
+                <span>Borr</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-view="history">
+                <i class="fa-regular fa-clock"></i>
+                <span>History</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-view="settings">
+                <i class="fa-solid fa-gear"></i>
+                <span>Set</span>
+            </a>
+            <a href="#" class="bottom-nav-item" id="bottomNavProfile">
+                <i class="fa-solid fa-circle-user"></i>
+                <span>Me</span>
+            </a>
+        </nav>
     </div>
 
     <div class="modal" id="borrowModal">
@@ -516,6 +546,32 @@
             </div>
         </div>
     </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="bottom-nav-item active" data-view="browse" onclick="switchView('browse')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <span>Browse</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="scan" onclick="switchView('scan')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-qrcode"></i></div>
+            <span>Scan</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="myborrowed" onclick="switchView('myborrowed')">
+            <div class="nav-icon-wrap">
+                <i class="fa-solid fa-hourglass-half"></i>
+                <span class="nav-badge" id="borrowedCountMobile">0</span>
+            </div>
+            <span>Borrowed</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="history" onclick="switchView('history')">
+            <div class="nav-icon-wrap"><i class="fa-regular fa-clock"></i></div>
+            <span>History</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="settings" onclick="switchView('settings')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-gear"></i></div>
+            <span>Settings</span>
+        </a>
+    </nav>
 
     <div class="toast" id="toast"></div>
 

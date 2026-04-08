@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 
 <head>
@@ -21,6 +21,7 @@
   </div>
 
   <div id="contents" style="display:none;">
+    <div class="nav-overlay" id="navOverlay"></div>
 
     <!-- HEADER: Reused from index.html -->
     <nav class="header" id="mainNav">
@@ -358,73 +359,42 @@
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Mobile Nav
+      // Elements
       const mobilenav = document.getElementById("mobilenav");
       const rightNav = document.getElementById("rightNav");
       const closeMenu = document.getElementById("closeMenu");
-
-      if (mobilenav && rightNav) {
-        mobilenav.addEventListener("click", () => rightNav.classList.add("active"));
-      }
-
-      if (closeMenu && rightNav) {
-        closeMenu.addEventListener("click", () => rightNav.classList.remove("active"));
-      }
-
-      // Scroll Animations
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1 });
-
-      document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
-    });
-
-    // FAQ
-    function toggleFAQ() {
-      const modal = document.getElementById('faqModal');
-      modal.classList.toggle('open');
-    }
-
-    document.querySelectorAll('.faq-question').forEach(q => {
-      q.addEventListener('click', () => {
-        const item = q.parentElement;
-        const isActive = item.classList.contains('active');
-        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-        if (!isActive) item.classList.add('active');
-      });
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-      // Existing Mobile Nav Logic
-      const mobilenav = document.getElementById("mobilenav");
-      const rightNav = document.getElementById("rightNav");
-      const closeMenu = document.getElementById("closeMenu");
-
-      if (mobilenav) mobilenav.addEventListener("click", () => rightNav.classList.add("active"));
-      if (closeMenu) closeMenu.addEventListener("click", () => rightNav.classList.remove("active"));
-
-      // --- NEW: Resources Dropdown Toggle ---
+      const navOverlay = document.getElementById("navOverlay");
       const resDropdown = document.getElementById('resourcesDropdown');
 
+      // --- Mobile Menu Toggle ---
+      const toggleMenu = (open) => {
+        if (open) {
+          rightNav.classList.add("active");
+          if (navOverlay) navOverlay.classList.add("active");
+          document.body.style.overflow = 'hidden';
+        } else {
+          rightNav.classList.remove("active");
+          if (navOverlay) navOverlay.classList.remove("active");
+          document.body.style.overflow = '';
+        }
+      };
+
+      if (mobilenav) mobilenav.addEventListener("click", () => toggleMenu(true));
+      if (closeMenu) closeMenu.addEventListener("click", () => toggleMenu(false));
+      if (navOverlay) navOverlay.addEventListener("click", () => toggleMenu(false));
+
+      // --- Resources Dropdown ---
       if (resDropdown) {
         resDropdown.addEventListener('click', (e) => {
-          e.stopPropagation(); // Prevents immediate closing
+          e.stopPropagation();
           resDropdown.classList.toggle('active');
         });
       }
-
-      // Close dropdown when clicking anywhere else
       window.addEventListener('click', () => {
         if (resDropdown) resDropdown.classList.remove('active');
       });
-      // -------------------------------------
 
-      // Existing Scroll Animations
+      // --- Scroll Animations ---
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -435,7 +405,23 @@
       }, { threshold: 0.1 });
 
       document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+
+      // --- FAQ Interaction ---
+      document.querySelectorAll('.faq-question').forEach(q => {
+        q.addEventListener('click', () => {
+          const item = q.parentElement;
+          const isActive = item.classList.contains('active');
+          document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
     });
+
+    // Global FAQ Toggle (for inline onclick)
+    function toggleFAQ() {
+      const modal = document.getElementById('faqModal');
+      if (modal) modal.classList.toggle('open');
+    }
   </script>
 </body>
 

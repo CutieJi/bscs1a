@@ -182,9 +182,26 @@ function formatDate(timestamp) {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: true
     };
-    return date.toLocaleDateString('en-US', options);
+    return date.toLocaleString('en-US', options).replace(',', '');
+}
+
+/**
+ * Converts "HH:mm" (24h) to "hh:mm AM/PM" (12h)
+ * @param {string} timeStr - Time string in 24h format
+ * @returns {string}
+ */
+function formatTimeTo12h(timeStr) {
+    if (!timeStr || !timeStr.includes(':')) return timeStr || 'N/A';
+
+    const [hh, mm] = timeStr.split(':').map(Number);
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    const h12 = hh % 12 || 12;
+    const mPad = String(mm).padStart(2, '0');
+
+    return `${h12}:${mPad} ${ampm}`;
 }
 
 function capitalize(str) {

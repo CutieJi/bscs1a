@@ -462,3 +462,24 @@ a {
         padding: 18px;
     }
 }
+
+/* Extra Small Screens (300px+) */
+@media (max-width: 350px) {
+    .info-title h1 {
+        font-size: 1.5rem;
+    }
+
+    .info-card h2 {
+        font-size: 1.2rem;
+    }
+
+    .info-card p, 
+    .faq-answer {
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+    }
+}

@@ -53,6 +53,24 @@ img {
     margin: 0 auto;
 }
 
+/* --- NEW: Navigation Overlay --- */
+.nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 31, 58, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+.nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* PRELOADER */
 #preload {
     position: fixed;
@@ -96,6 +114,7 @@ img {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     z-index: 1000;
     border-bottom: 2px solid var(--gold);
+    transition: all 0.3s ease;
 }
 
 .left-nav a {
@@ -827,13 +846,20 @@ footer {
     .right-nav {
         position: fixed;
         top: 0;
-        right: -100%;
+        right: -110%;
         width: 300px;
         height: 100vh;
-        background: #fff;
+        background: rgba(255, 255, 255, 0.98);
+        @supports (backdrop-filter: blur(20px)) {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+        }
         flex-direction: column;
-        justify-content: center;
-        transition: right 0.3s;
+        justify-content: flex-start;
+        padding: 80px 30px;
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
     }
 
     .right-nav.active {
@@ -842,6 +868,41 @@ footer {
 
     .right-nav ul {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        width: 100%;
+    }
+
+    .right-nav ul li {
+        width: 100%;
+        opacity: 0;
+        transform: translateX(30px);
+        transition: all 0.4s ease;
+    }
+
+    .right-nav.active ul li {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Staggered animation for menu items */
+    .right-nav.active ul li:nth-child(1) { transition-delay: 0.1s; }
+    .right-nav.active ul li:nth-child(2) { transition-delay: 0.15s; }
+    .right-nav.active ul li:nth-child(3) { transition-delay: 0.2s; }
+    .right-nav.active ul li:nth-child(4) { transition-delay: 0.25s; }
+
+    .right-nav a {
+        display: block;
+        padding: 15px 0;
+        font-size: 1.2rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        width: 100%;
+    }
+
+    .right-nav .button {
+        margin-top: 20px;
+        width: 100%;
+        text-align: center;
     }
 
     .mobilenav,
@@ -937,18 +998,81 @@ footer {
 
 /* Mobile: Ensure it looks good in the side menu */
 @media (max-width: 860px) {
+    /* Mobile Dropdown Refinements */
     .right-nav .dropdown {
         position: static;
+        width: 100%;
         transform: none;
         box-shadow: none;
         opacity: 1;
         pointer-events: auto;
-        display: none; /* Controlled by toggle class */
-        padding-left: 20px;
+        display: none;
+        padding: 0 0 10px 20px;
         background: transparent;
         border: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
     }
+
     .careers-menu.active .dropdown {
         display: block;
+        max-height: 300px;
+    }
+
+    .careers-menu.active .arrow-icon {
+        transform: rotate(180deg);
+    }
+}
+
+/* Extra Small Screens (300px+) */
+@media (max-width: 350px) {
+    .header {
+        height: 60px;
+        padding: 0 12px;
+    }
+
+    .logo {
+        width: 34px;
+        height: 34px;
+    }
+
+    .left-nav a {
+        font-size: 1.1rem;
+        gap: 8px;
+    }
+
+    .mobilenav {
+        font-size: 1.35rem;
+    }
+
+    .right-nav {
+        width: 100vw;
+    }
+
+    .right-nav ul {
+        gap: 25px;
+    }
+
+    .right-nav a {
+        font-size: 1.15rem;
+    }
+
+    .hero h1,
+    .page-hero h1 {
+        font-size: 1.85rem;
+        letter-spacing: -1px;
+    }
+
+    .section-title {
+        font-size: 1.55rem;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .about-stats {
+        grid-template-columns: 1fr !important;
     }
 }

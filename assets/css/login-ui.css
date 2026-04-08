@@ -550,3 +550,41 @@ a {
     color: #b45309;
     border-color: #fde68a;
 }
+
+/* Extra Small Screens (300px+) */
+@media (max-width: 350px) {
+    .auth-card h2,
+    .compact-register h2 {
+        font-size: 1.4rem;
+    }
+
+    .slide-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .slide-content p {
+        font-size: 0.85rem;
+    }
+
+    .field label {
+        font-size: 0.8rem;
+    }
+
+    .field input {
+        height: 44px;
+        font-size: 0.875rem;
+    }
+
+    .main-btn {
+        height: 44px;
+        font-size: 0.95rem;
+    }
+
+    .auth-right {
+        padding: 20px 12px;
+    }
+
+    .auth-desc {
+        font-size: 0.82rem;
+    }
+}

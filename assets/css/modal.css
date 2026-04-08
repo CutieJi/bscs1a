@@ -18,8 +18,7 @@
 }
 
 .modal-content {
-    width: 100%;
-    max-width: 500px;
+    width: min(500px, 92vw);
     background: #ffffff;
     border-radius: 16px;
     padding: 24px;
@@ -206,6 +205,34 @@
 
     .modal-actions {
         gap: 8px;
+    }
+}
+
+/* Extra Small Screens (300px+) */
+@media (max-width: 350px) {
+    .modal-content {
+        padding: 12px;
+        margin: 8px;
+        width: calc(100vw - 16px);
+    }
+
+    .modal-header h2 {
+        font-size: 0.95rem;
+    }
+
+    .modal input, 
+    .modal select, 
+    .modal textarea {
+        font-size: 14px;
+        padding: 10px 10px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
     }
 }
 

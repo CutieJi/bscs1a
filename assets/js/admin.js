@@ -156,7 +156,8 @@ function initializeNavigation() {
         approvals: 'Pending Approvals',
         borrowed: 'Currently Borrowed',
         logs: 'Borrowing Logs',
-        users: 'User Management'
+        users: 'User Management',
+        history: 'Audit History'
     };
 
     function activateView(viewId) {
@@ -164,12 +165,19 @@ function initializeNavigation() {
         sidebarItems.forEach(si => si.classList.remove('active'));
         views.forEach(view => view.classList.remove('active'));
 
+        // Bottom nav support
+        const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+        bottomNavItems.forEach(bi => bi.classList.remove('active'));
+
         const matchingNav = document.querySelector(`.nav-item[data-view="${viewId}"]`);
         if (matchingNav) {
             matchingNav.classList.add('active');
             const parentLi = matchingNav.closest('.sidebar-item');
             if (parentLi) parentLi.classList.add('active');
         }
+
+        const matchingBottom = document.querySelector(`.bottom-nav-item[data-view="${viewId}"]`);
+        if (matchingBottom) matchingBottom.classList.add('active');
 
         const targetView = document.getElementById(`${viewId}View`);
         if (!targetView) return;
@@ -196,6 +204,35 @@ function initializeNavigation() {
             activateView(item.getAttribute('data-view'));
         });
     });
+
+    const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+    bottomNavItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            const view = item.getAttribute('data-view');
+            if (!view) return;
+            e.preventDefault();
+            activateView(view);
+        });
+    });
+
+    const bottomNavProfile = document.getElementById('bottomNavProfile');
+    if (bottomNavProfile) {
+        bottomNavProfile.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar && overlay) {
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('active');
+                // Ensure sidebar is visible for this "Drawer" interaction
+                sidebar.style.display = 'flex';
+                sidebar.style.setProperty('display', 'flex', 'important');
+            }
+        });
+    }
+
+    // Export globally for onclick handlers
+    window.switchView = activateView;
 
 
     const saved = (() => { try { return localStorage.getItem('admin-active-view'); } catch (e) { return null; } })();
@@ -270,6 +307,11 @@ async function loadDashboardData() {
         document.getElementById('todayBorrows').textContent = todayBorrows;
         document.getElementById('totalHistoricalBorrows').textContent = totalHistoricalBorrows;
         document.getElementById('borrowedBadge').textContent = borrowedEquipment;
+        const borrowedBadgeMobile = document.getElementById('borrowedBadgeMobile');
+        if (borrowedBadgeMobile) {
+            borrowedBadgeMobile.textContent = borrowedEquipment;
+            borrowedBadgeMobile.style.display = borrowedEquipment > 0 ? 'flex' : 'none';
+        }
         document.getElementById('totalUsers').textContent = totalUsers;
 
         await loadRecentActivities();
@@ -302,8 +344,7 @@ async function loadRecentActivities() {
             activitiesList.innerHTML = '<p style="color: var(--text-secondary);">No recent activities</p>';
         } else {
             activitiesList.innerHTML = activities.map(activity => `
-                <div class="transaction-item">
-                    <div class="transaction-icon">${activity.status === 'returned' ? '<i class="fa-solid fa-square-check" style="color: rgb(99, 230, 190);"></i>' : '<i class="fa-solid fa-box" style="color: rgb(255, 212, 59);"></i>'}</div>
+                <div class="transaction-item ${activity.status === 'returned' ? 'success' : 'warning'}">
                     <div class="transaction-details">
                         <div class="transaction-title">${activity.status === 'returned' ? 'Returned' : 'Borrowed'}: ${activity.equipmentName}</div>
                         <div class="transaction-meta">${activity.userName}</div>
@@ -359,7 +400,6 @@ async function loadOverdueItems() {
         if (overdue.length === 0) {
             overdueList.innerHTML = `
                 <div class="alert-item success">
-                    <div class="alert-icon"><i class="fa-solid fa-square-check" style="color: rgb(99, 230, 190);"></i></div>
                     <div class="alert-content">
                         <div class="alert-title">All Clear</div>
                         <div class="alert-message">No overdue items</div>
@@ -376,7 +416,7 @@ async function loadOverdueItems() {
                     <div class="alert-content">
                         <div class="alert-title">${item.equipmentName}</div>
                         <div class="alert-message">
-                            Borrowed by ${item.userName} - Due: ${item.expectedReturnTime || 'N/A'}<br>
+                            Borrowed by ${item.userName} - Due: ${formatTimeTo12h(item.expectedReturnTime)}<br>
                             <small style="opacity: 0.7; font-size: 0.7rem;">Notified: ${lastNotified}${typeLabel}</small>
                         </div>
                     </div>
@@ -445,7 +485,7 @@ async function sendAllEmailReminders(overdueItems) {
 async function loadPendingRequests() {
     const pendingGrid = document.getElementById('pendingRequestsGrid');
     const badge = document.getElementById('approvalsBadge');
-
+    const badgeMobile = document.getElementById('approvalsBadgeMobile');
 
     const dashPendingCount = document.getElementById('pendingRequestsCount');
 
@@ -472,6 +512,10 @@ async function loadPendingRequests() {
         if (badge) {
             badge.textContent = count;
             badge.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
+        if (badgeMobile) {
+            badgeMobile.textContent = count;
+            badgeMobile.style.display = count > 0 ? 'flex' : 'none';
         }
         if (dashPendingCount) {
             dashPendingCount.textContent = count;
@@ -538,13 +582,13 @@ async function loadPendingRequests() {
                         ${isBorrow ? `
                             <div class="detail-row"><span>Room:</span> <span>${req.room || 'N/A'}</span></div>
                             <div class="detail-row"><span>Purpose:</span> <span>${req.purpose || 'N/A'}</span></div>
-                            <div class="detail-row"><span>Duration:</span> <span>Until ${req.expectedReturnTime}</span></div>
+                            <div class="detail-row"><span>Duration:</span> <span>Until ${formatTimeTo12h(req.expectedReturnTime)}</span></div>
                         ` : isReturn ? `
                             <div class="detail-row"><span>Condition:</span> <span style="text-transform: capitalize;">${req.pendingReturnCondition || 'N/A'}</span></div>
                             <div class="detail-row"><span>Notes:</span> <span style="font-style: italic;">${req.pendingReturnNotes || 'None'}</span></div>
                         ` : `
-                            <div class="detail-row"><span>Current Due:</span> <span>${req.expectedReturnTime}</span></div>
-                            <div class="detail-row"><span>New Requested:</span> <span style="font-weight:700; color:#1e40af;">${req.requestedReturnTime}</span></div>
+                            <div class="detail-row"><span>Current Due:</span> <span>${formatTimeTo12h(req.expectedReturnTime)}</span></div>
+                            <div class="detail-row"><span>New Requested:</span> <span style="font-weight:700; color:#1e40af;">${formatTimeTo12h(req.requestedReturnTime)}</span></div>
                             <div class="detail-row"><span>Reason:</span> <span>${req.extensionReason || 'N/A'}</span></div>
                         `}
                     </div>
@@ -1883,7 +1927,7 @@ function initializeUserManagement() {
         newUserRole.addEventListener('change', (e) => {
             const isStudent = e.target.value === 'student';
             const isAdmin = e.target.value === 'admin';
-            
+
             if (additionalFields) additionalFields.style.display = isStudent ? 'block' : 'none';
             if (additionalAdminFields) additionalAdminFields.style.display = isAdmin ? 'block' : 'none';
 
@@ -1897,7 +1941,7 @@ function initializeUserManagement() {
         addUserForm?.reset();
         if (additionalFields) additionalFields.style.display = 'none';
         if (additionalAdminFields) additionalAdminFields.style.display = 'none';
-        
+
         const avatarContainer = document.getElementById("addUserAvatarContainer");
         if (avatarContainer) {
             avatarContainer.innerHTML = `<span><i class="fa-solid fa-user"></i></span>`;
@@ -1934,7 +1978,7 @@ async function createNewUser() {
     const firstName = document.getElementById('newUserFirstName').value.trim();
     const middleInitial = document.getElementById('newUserMiddleInitial').value.trim();
     const lastName = document.getElementById('newUserLastName').value.trim();
-    
+
     // Auto-compose full name
     const mInitial = middleInitial ? `${middleInitial}. ` : '';
     const name = `${firstName} ${mInitial}${lastName}`;
@@ -1946,7 +1990,7 @@ async function createNewUser() {
     const mobile = document.getElementById('newUserMobile')?.value.trim();
     const gender = document.getElementById('newUserGender')?.value;
     const course = document.getElementById('newUserCourse')?.value.trim();
-    
+
     const yearLevel = document.getElementById('newUserYearLevel')?.value;
     const section = document.getElementById('newUserSection')?.value;
     const yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
@@ -2007,7 +2051,7 @@ async function createNewUser() {
 
         document.getElementById('addUserModal').classList.remove('active');
         document.getElementById('addUserForm').reset();
-        
+
         const avatarContainer = document.getElementById("addUserAvatarContainer");
         if (avatarContainer) {
             avatarContainer.innerHTML = `<span><i class="fa-solid fa-user"></i></span>`;
@@ -2233,7 +2277,7 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
     document.getElementById("editUserGender").value = gender || "";
     document.getElementById("editUserCourse").value = course || "";
     document.getElementById("editUserAdminId").value = adminId || "";
-    
+
     // Set split fields
     document.getElementById("editUserFirstName").value = firstName || "";
     document.getElementById("editUserMiddleInitial").value = middleInitial || "";
@@ -2322,7 +2366,7 @@ if (editUserForm) {
             const firstName = document.getElementById("editUserFirstName").value.trim();
             const middleInitial = document.getElementById("editUserMiddleInitial").value.trim();
             const lastName = document.getElementById("editUserLastName").value.trim();
-            
+
             const mInitial = middleInitial ? `${middleInitial}. ` : '';
             const name = `${firstName} ${mInitial}${lastName}`;
 
@@ -2336,7 +2380,7 @@ if (editUserForm) {
             if (role === 'student') {
                 const yearLevel = document.getElementById("editUserYearLevel").value;
                 const section = document.getElementById("editUserSection").value;
-                
+
                 updateData.mobile = document.getElementById("editUserMobile").value;
                 updateData.gender = document.getElementById("editUserGender").value;
                 updateData.course = document.getElementById("editUserCourse").value;
@@ -2409,7 +2453,7 @@ async function loadPending() {
 
         if (snap.empty) {
             tbody.html('');
-            
+
             // Still initialize an empty DataTable so the structure exists
             pendingTable.DataTable({
                 responsive: true,

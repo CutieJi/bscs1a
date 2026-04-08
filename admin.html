@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -232,74 +232,101 @@
                         </div>
                     </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon total">
-                                <i class="fa-solid fa-globe"></i>
+                    <div class="dashboard-upper-section">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon total">
+                                    <i class="fa-solid fa-globe"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total Equipment</div>
+                                    <div class="stat-value" id="totalEquipment">0</div>
+                                </div>
                             </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Total Equipment</div>
-                                <div class="stat-value" id="totalEquipment">0</div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon reviewed">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total of Item Availability</div>
+                                    <div class="stat-value" id="availableEquipment">0</div>
+                                </div>
                             </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon pending">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Currently Borrowed</div>
+                                    <div class="stat-value" id="borrowedEquipment">0</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon resolved">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total Borrows Today</div>
+                                    <div class="stat-value" id="todayBorrows">0</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon total">
+                                    <i class="fa-solid fa-hand"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total Borrowed Items</div>
+                                    <div class="stat-value" id="totalHistoricalBorrows">0</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon accounts">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total Users</div>
+                                    <div class="stat-value" id="totalUsers">0</div>
+                                </div>
+                            </div>
+
                         </div>
 
-                        <div class="stat-card">
-                            <div class="stat-icon reviewed">
-                                <i class="fa-solid fa-check"></i>
+                        <div class="dashboard-card overdue-card-compact">
+                            <div class="card-header">
+                                <h3>Overdue Returns</h3>
+                                <div class="card-actions">
+                                    <button class="btn btn-primary" id="sendAllRemindersBtn" style="display: none;">
+                                        Batch SMS
+                                    </button>
+                                    <button class="btn btn-secondary" id="sendAllEmailRemindersBtn"
+                                        style="display: none;">
+                                        Batch Email
+                                    </button>
+                                </div>
                             </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Total of Item Availability</div>
-                                <div class="stat-value" id="availableEquipment">0</div>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon pending">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                </svg>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Currently Borrowed</div>
-                                <div class="stat-value" id="borrowedEquipment">0</div>
+                            <div class="alert-list" id="overdueList">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="stat-card">
-                            <div class="stat-icon resolved">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                </svg>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Total Borrows Today</div>
-                                <div class="stat-value" id="todayBorrows">0</div>
+                    <div class="dashboard-grid single-column">
+                        <div class="dashboard-card">
+                            <h3>Recent Activities</h3>
+                            <div class="transaction-list" id="recentActivities">
                             </div>
                         </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon total">
-                                <i class="fa-solid fa-hand"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Total Borrowed Items</div>
-                                <div class="stat-value" id="totalHistoricalBorrows">0</div>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon accounts">
-                                <i class="fa-solid fa-users"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Total Users</div>
-                                <div class="stat-value" id="totalUsers">0</div>
-                            </div>
-                        </div>
-
                     </div>
 
                     <div class="analytics-grid">
@@ -317,35 +344,6 @@
                             </div>
                             <div id="categoryDistChart"></div>
                         </div>
-                    </div>
-
-                    <div class="dashboard-grid">
-                        <div class="dashboard-card">
-                            <h3>Recent Activities</h3>
-                            <div class="transaction-list" id="recentActivities">
-                            </div>
-                        </div>
-
-                        <div class="dashboard-card">
-                            <div class="card-header"
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <h3 style="margin-bottom: 0;">Overdue Returns</h3>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn btn-primary" id="sendAllRemindersBtn"
-                                        style="display: none; padding: 6px 12px; font-size: 0.75rem;">
-                                        Batch SMS
-                                    </button>
-                                    <button class="btn btn-secondary" id="sendAllEmailRemindersBtn"
-                                        style="display: none; padding: 6px 12px; font-size: 0.75rem;">
-                                        Batch Email
-                                    </button>
-                                </div>
-
-                            </div>
-                            <div class="alert-list" id="overdueList">
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
@@ -612,26 +610,31 @@
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <div style="flex: 1;">
                         <label>First Name</label>
-                        <input id="newUserFirstName" class="form-control" style="width: 100%;" placeholder="First Name" required>
+                        <input id="newUserFirstName" class="form-control" style="width: 100%;" placeholder="First Name"
+                            required>
                     </div>
                     <div style="width: 70px;">
                         <label>M.I.</label>
-                        <input id="newUserMiddleInitial" class="form-control" style="width: 100%;" placeholder="M.I." maxlength="2">
+                        <input id="newUserMiddleInitial" class="form-control" style="width: 100%;" placeholder="M.I."
+                            maxlength="2">
                     </div>
                     <div style="flex: 1;">
                         <label>Last Name</label>
-                        <input id="newUserLastName" class="form-control" style="width: 100%;" placeholder="Last Name" required>
+                        <input id="newUserLastName" class="form-control" style="width: 100%;" placeholder="Last Name"
+                            required>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label>Email</label>
-                    <input type="email" id="newUserEmail" class="form-control" style="width: 100%;" placeholder="email" required>
+                    <input type="email" id="newUserEmail" class="form-control" style="width: 100%;" placeholder="email"
+                        required>
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label>Password</label>
-                    <input type="password" id="newUserPassword" class="form-control" style="width: 100%;" placeholder="password" minlength="8" required>
+                    <input type="password" id="newUserPassword" class="form-control" style="width: 100%;"
+                        placeholder="password" minlength="8" required>
                 </div>
 
                 <div style="margin-bottom: 10px;">
@@ -645,12 +648,14 @@
                 <div id="additionalStudentFields" style="display: none;">
                     <div style="margin-bottom: 10px;">
                         <label>Student ID</label>
-                        <input type="text" id="newUserStudentId" class="form-control" style="width: 100%;" placeholder="20250000-S" minlength="10" maxlength="10">
+                        <input type="text" id="newUserStudentId" class="form-control" style="width: 100%;"
+                            placeholder="20250000-S" minlength="10" maxlength="10">
                     </div>
 
                     <div style="margin-bottom: 10px;">
                         <label>Mobile No.</label>
-                        <input type="tel" id="newUserMobile" class="form-control" style="width: 100%;" placeholder="09*********" minlength="11" maxlength="11">
+                        <input type="tel" id="newUserMobile" class="form-control" style="width: 100%;"
+                            placeholder="09*********" minlength="11" maxlength="11">
                     </div>
 
                     <div style="margin-bottom: 10px;">
@@ -665,7 +670,8 @@
 
                     <div style="margin-bottom: 10px;">
                         <label>Course / Program</label>
-                        <input type="text" id="newUserCourse" class="form-control" style="width: 100%;" placeholder="e.g., BSCS">
+                        <input type="text" id="newUserCourse" class="form-control" style="width: 100%;"
+                            placeholder="e.g., BSCS">
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -693,7 +699,8 @@
                 </div>
                 <div id="additionalAdminFields" style="display: none; margin-bottom: 10px;">
                     <label>Admin ID (Private Login ID)</label>
-                    <input type="text" id="newUserAdminId" class="form-control" style="width: 100%;" placeholder="e.g., ADMIN-01">
+                    <input type="text" id="newUserAdminId" class="form-control" style="width: 100%;"
+                        placeholder="e.g., ADMIN-01">
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>
@@ -894,7 +901,8 @@
                 <button class="modal-close" id="closeStudentIdCaptureModal">&times;</button>
             </div>
             <div class="student-id-capture-wrap">
-                <p class="student-id-helper">Take a clear photo of the student's ID before releasing the borrowed item. This record will be deleted automatically once the item is returned.</p>
+                <p class="student-id-helper">Take a clear photo of the student's ID before releasing the borrowed item.
+                    This record will be deleted automatically once the item is returned.</p>
 
                 <div class="student-id-camera-stage" id="studentIdCameraStage">
                     <video id="studentIdVideo" autoplay playsinline muted></video>
@@ -902,7 +910,8 @@
                     <canvas id="studentIdCanvas" style="display:none;"></canvas>
                 </div>
 
-                <div class="student-id-status" id="studentIdCaptureStatus">Camera is ready. You can also upload a photo if camera access is blocked.</div>
+                <div class="student-id-status" id="studentIdCaptureStatus">Camera is ready. You can also upload a photo
+                    if camera access is blocked.</div>
 
                 <div class="student-id-actions-row">
                     <button class="btn btn-secondary btn-sm" type="button" id="openStudentIdCameraBtn">
@@ -911,18 +920,21 @@
                     <button class="btn btn-secondary btn-sm" type="button" id="captureStudentIdBtn">
                         <i class="fa-solid fa-camera-retro"></i> Capture
                     </button>
-                    <button class="btn btn-secondary btn-sm" type="button" id="retakeStudentIdBtn" style="display:none;">
+                    <button class="btn btn-secondary btn-sm" type="button" id="retakeStudentIdBtn"
+                        style="display:none;">
                         <i class="fa-solid fa-rotate-left"></i> Retake
                     </button>
                     <label class="btn btn-secondary btn-sm student-id-upload-btn" for="studentIdFileInput">
                         <i class="fa-solid fa-upload"></i> Upload Photo
                     </label>
-                    <input type="file" id="studentIdFileInput" accept="image/*" capture="environment" style="display:none;">
+                    <input type="file" id="studentIdFileInput" accept="image/*" capture="environment"
+                        style="display:none;">
                 </div>
 
                 <div class="modal-actions">
                     <button class="btn btn-secondary" type="button" id="cancelStudentIdCaptureBtn">Cancel</button>
-                    <button class="btn btn-primary" type="button" id="saveStudentIdCaptureBtn">Save ID & Approve Borrow</button>
+                    <button class="btn btn-primary" type="button" id="saveStudentIdCaptureBtn">Save ID & Approve
+                        Borrow</button>
                 </div>
             </div>
         </div>
@@ -968,6 +980,39 @@
             </div>
         </div>
     </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="bottom-nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-house"></i></div>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="equipment" onclick="switchView('equipment')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-briefcase"></i></div>
+            <span>Items</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="approvals" onclick="switchView('approvals')">
+            <div class="nav-icon-wrap">
+                <i class="fa-regular fa-clock"></i>
+                <span class="nav-badge" id="approvalsBadgeMobile" style="display: none;">0</span>
+            </div>
+            <span>Pending</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="borrowed" onclick="switchView('borrowed')">
+            <div class="nav-icon-wrap">
+                <i class="fa-solid fa-hourglass-half"></i>
+                <span class="nav-badge" id="borrowedBadgeMobile">0</span>
+            </div>
+            <span>Borrowed</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="logs" onclick="switchView('logs')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-file-lines"></i></div>
+            <span>Logs</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-view="users" onclick="switchView('users')">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-users"></i></div>
+            <span>Users</span>
+        </a>
+    </nav>
 
     <div class="toast" id="toast"></div>
 

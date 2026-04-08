@@ -125,6 +125,10 @@ function initializeNavigation() {
         navItems.forEach(nav => nav.classList.remove('active'));
         sidebarItems.forEach(si => si.classList.remove('active'));
         views.forEach(view => view.classList.remove('active'));
+        
+        // Bottom nav support
+        const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+        bottomNavItems.forEach(bi => bi.classList.remove('active'));
 
         const matchingNav = document.querySelector(`.nav-item[data-view="${viewId}"]`);
         if (matchingNav) {
@@ -132,6 +136,9 @@ function initializeNavigation() {
             const parentLi = matchingNav.closest('.sidebar-item');
             if (parentLi) parentLi.classList.add('active');
         }
+
+        const matchingBottom = document.querySelector(`.bottom-nav-item[data-view="${viewId}"]`);
+        if (matchingBottom) matchingBottom.classList.add('active');
 
         const targetView = document.getElementById(`${viewId}View`);
         if (!targetView) return;
@@ -145,6 +152,7 @@ function initializeNavigation() {
         else if (viewId === 'myborrowed') loadBorrowedItems();
         else if (viewId === 'history') loadHistory();
         else if (viewId === 'scan') startQRScanner();
+        else if (viewId === 'settings') loadSettings();
 
         try { localStorage.setItem('student-active-view', viewId); } catch (e) { }
 
@@ -160,6 +168,30 @@ function initializeNavigation() {
             activateView(item.getAttribute('data-view'));
         });
     });
+
+    const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+    bottomNavItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            const view = item.getAttribute('data-view');
+            if (!view) return;
+            e.preventDefault();
+            activateView(view);
+        });
+    });
+
+    const bottomNavProfile = document.getElementById('bottomNavProfile');
+    if (bottomNavProfile) {
+        bottomNavProfile.addEventListener('click', (e) => {
+            e.preventDefault();
+            const profileTrigger = document.getElementById('profileTrigger');
+            if (profileTrigger) {
+                profileTrigger.click();
+            }
+        });
+    }
+
+    // Export globally for onclick handlers
+    window.switchView = activateView;
 
     const saved = (() => { try { return localStorage.getItem('student-active-view'); } catch (e) { return null; } })();
     if (saved && document.getElementById(`${saved}View`)) {
@@ -551,6 +583,7 @@ async function borrowEquipment() {
 async function loadBorrowedItems() {
     const borrowedItemsGrid = document.getElementById('borrowedItemsGrid');
     const borrowedCountBadge = document.getElementById('borrowedCount');
+    const borrowedCountMobile = document.getElementById('borrowedCountMobile');
 
     if (!borrowedItemsGrid) return;
 
@@ -572,7 +605,12 @@ async function loadBorrowedItems() {
         });
 
         if (borrowedCountBadge) {
-            borrowedCountBadge.textContent = borrowedItems.filter(i => i.status === 'borrowed').length;
+            const count = borrowedItems.filter(i => i.status === 'borrowed').length;
+            borrowedCountBadge.textContent = count;
+            if (borrowedCountMobile) {
+                borrowedCountMobile.textContent = count;
+                borrowedCountMobile.style.display = count > 0 ? 'flex' : 'none';
+            }
         }
 
         if (borrowedItems.length === 0) {
@@ -636,7 +674,7 @@ async function loadBorrowedItems() {
                             <span><i class="fa-solid fa-calendar"></i> Borrowed: ${formatDate(item.borrowedAt)}</span>
                             |
                             <span class="due-date">
-                                <i class="fa-solid fa-clock"></i> Due Time: ${item.expectedReturnTime || 'N/A'}
+                                <i class="fa-solid fa-clock"></i> Due Time: ${formatTimeTo12h(item.expectedReturnTime)}
                             </span>
                         </div>
                         <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
@@ -674,7 +712,7 @@ async function openReturnModal(borrowingId) {
                 <strong>Equipment:</strong> ${borrowing.equipmentName}<br>
                 <strong>Borrowed:</strong> ${formatDate(borrowing.borrowedAt)}<br>
                 <strong>Room:</strong> ${borrowing.room || 'N/A'}<br>
-                <strong>Expected Return Time:</strong> ${borrowing.expectedReturnTime || 'N/A'}
+                <strong>Expected Return Time:</strong> ${formatTimeTo12h(borrowing.expectedReturnTime)}
             </div>
         `;
 

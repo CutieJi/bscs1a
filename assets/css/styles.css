@@ -4602,3 +4602,41 @@ textarea {
 .team-socials a:hover {
     color: #fff;
 }
+
+/* Extra Small Screens (300px+) */
+@media (max-width: 350px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-description {
+        font-size: 0.95rem;
+    }
+
+    .login-cards {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .login-card {
+        padding: 1.25rem;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+    }
+
+    .feature-item {
+        padding: 1.5rem 1rem;
+    }
+
+    .team-card {
+        padding: 1.5rem 1rem !important;
+    }
+
+    .team-avatar-box {
+        width: 100px;
+        height: 100px;
+    }
+}
