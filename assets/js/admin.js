@@ -1243,13 +1243,13 @@ async function loadAllEquipment() {
                         </div>
                     </div>
                     <div class="equipment-list-actions">
-                    <button class="btn btn-icon" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.description || ''}', '${item.status}')" title="Edit">
+                    <button class="btn btn-warning" onclick="openEditEquipment('${item.id}','${item.equipmentId}','${item.name}','${item.category}','${item.description || ''}', '${item.status}')" title="Edit">
                     Edit
                     </button>
                         <button class="btn btn-secondary btn-sm" onclick="generateQRCode('${item.id}', '${item.equipmentId}', '${item.name}')">
                             QR Code
                         </button>
-                        <button class="btn btn-icon danger" onclick="deleteEquipment('${item.id}', '${item.name}')" title="Delete">
+                        <button class="btn btn-danger" onclick="deleteEquipment('${item.id}', '${item.name}')" title="Delete">
                         Delete
                         </button>
                     </div>
@@ -1518,7 +1518,7 @@ async function loadCurrentlyBorrowed() {
                         ${!isPendingExtend ? `
                             <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                                 ${item.userId ? `
-                                    <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
+                                    <button class="btn btn-blue btn-sm" onclick="sendSMSOverdue('${item.userId}', '${item.equipmentName}', '${item.id}')" title="Send SMS Reminder">
                                         SMS
                                     </button>
                                 ` : ''}
@@ -1648,7 +1648,7 @@ async function loadBorrowingLogs() {
                         <span class="log-item-title">${log.equipmentName}</span>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${(log.status === 'borrowed' || log.status === 'pending_return') && log.userId ? `
-                                <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
+                                <button class="btn btn-blue btn-sm" onclick="sendSMSOverdue('${log.userId}', '${log.equipmentName}', '${log.id}')" title="Send SMS Reminder">
                                     SMS
                                 </button>
                             ` : ''}
@@ -2160,7 +2160,7 @@ async function loadUsers() {
                             </button>
 
                             ${(user.role === 'student' && user.mobile) ? `
-                                <button class="btn btn-secondary btn-sm" onclick="sendSMSOverdue('${user.id}', 'Equipment', '')" title="Send SMS message">
+                                <button class="btn btn-blue btn-sm" onclick="sendSMSOverdue('${user.id}', 'Equipment', '')" title="Send SMS message">
                                     SMS
                                 </button>
                             ` : ''}
