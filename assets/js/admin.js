@@ -2159,11 +2159,9 @@ async function loadUsers() {
                                 Delete
                             </button>
 
-                            ${(user.role === 'student' && user.mobile) ? `
-                                <button class="btn btn-blue btn-sm" onclick="sendSMSOverdue('${user.id}', 'Equipment', '')" title="Send SMS message">
-                                    SMS
-                                </button>
-                            ` : ''}
+                            <button class="btn btn-secondary btn-sm" onclick="openAdminSetPassword('${user.id}','${user.name}','${user.email}','${(user.photoURL || '').replace(/'/g, "&#39;")}')" title="Reset/change this user's password">
+                            Reset Password
+                            </button>
                         </div>
                     `;
                 } else {
@@ -2847,6 +2845,111 @@ window.openEditUser = openEditUser;
 window.rejectReturn = rejectReturn;
 window.approveExtension = approveExtension;
 window.rejectExtension = rejectExtension;
+
+function openAdminSetPassword(userId, userName, userEmail, userPhotoURL) {
+    // Populate hidden fields
+    document.getElementById('adminSetPasswordUserId').value = userId;
+    document.getElementById('adminSetPasswordUserEmail').value = userEmail;
+
+    // Populate user info display
+    document.getElementById('adminSetPasswordUserName').textContent = userName;
+    document.getElementById('adminSetPasswordUserEmailDisplay').textContent = userEmail;
+
+    // ── Avatar: show photo if available, else initials ──
+    const avatarEl = document.getElementById('adminSetPasswordAvatar');
+    if (avatarEl) {
+        if (userPhotoURL && userPhotoURL !== '' && userPhotoURL !== 'undefined') {
+            avatarEl.innerHTML = `<img src="${userPhotoURL}" alt="${userName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+            avatarEl.innerHTML = '';
+            avatarEl.textContent = getUserInitials(userName);
+        }
+    }
+
+    // Reset form & switch to direct tab by default
+    const form = document.getElementById('adminSetPasswordForm');
+    if (form) form.reset();
+    adminPassSwitchTab('direct');
+
+    // Clear all password inputs explicitly
+    ['adminCurrentPassword', 'adminNewPassword', 'adminConfirmPassword'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    document.getElementById('adminSetPasswordModal').classList.add('active');
+}
+
+function closeAdminSetPasswordModal() {
+    document.getElementById('adminSetPasswordModal').classList.remove('active');
+    const form = document.getElementById('adminSetPasswordForm');
+    if (form) form.reset();
+}
+
+function adminPassSwitchTab(tab) {
+    const emailTab = document.getElementById('adminPassTabEmail');
+    const directTab = document.getElementById('adminPassTabDirect');
+    const btnEmail = document.getElementById('tabResetEmail');
+    const btnDirect = document.getElementById('tabSetDirect');
+    if (!emailTab || !directTab) return;
+
+    if (tab === 'email') {
+        emailTab.style.display = '';
+        directTab.style.display = 'none';
+        if (btnEmail) { btnEmail.className = 'btn btn-primary btn-sm'; btnEmail.style.flex = '1'; }
+        if (btnDirect) { btnDirect.className = 'btn btn-secondary btn-sm'; btnDirect.style.flex = '1'; }
+    } else {
+        emailTab.style.display = 'none';
+        directTab.style.display = '';
+        if (btnEmail) { btnEmail.className = 'btn btn-secondary btn-sm'; btnEmail.style.flex = '1'; }
+        if (btnDirect) { btnDirect.className = 'btn btn-primary btn-sm'; btnDirect.style.flex = '1'; }
+    }
+}
+
+// Wire up modal controls once DOM is ready
+(function initAdminSetPassword() {
+    const modal = document.getElementById('adminSetPasswordModal');
+    const closeBtn = document.getElementById('closeAdminSetPasswordModal');
+    const cancelBtn = document.getElementById('cancelAdminSetPassword');
+    const cancelBtn2 = document.getElementById('cancelAdminSetPassword2');
+    const sendBtn = document.getElementById('adminSendResetEmailBtn');
+    const form = document.getElementById('adminSetPasswordForm');
+
+    const close = () => closeAdminSetPasswordModal();
+
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
+    if (cancelBtn2) cancelBtn2.addEventListener('click', close);
+    if (modal) modal.addEventListener('click', e => { if (e.target === modal) close(); });
+
+    // ── Option A: Send Firebase password-reset email ──────────
+    if (sendBtn) {
+        sendBtn.addEventListener('click', async () => {
+            const email = document.getElementById('adminSetPasswordUserEmail').value;
+            if (!email) return;
+
+            const orig = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showToast(`Password reset email sent to ${email}`, 'success');
+                close();
+            } catch (err) {
+                console.error('Reset email error:', err);
+                showToast('Failed to send reset email: ' + (err.message || ''), 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = orig;
+            }
+        });
+    }
+})();
+
+window.openAdminSetPassword = openAdminSetPassword;
+window.adminPassSwitchTab = adminPassSwitchTab;
+window.closeAdminSetPasswordModal = closeAdminSetPasswordModal;
 window.adminConfirmReturn = adminConfirmReturn;
 window.openImageZoomModal = openImageZoomModal;
 window.closeImageZoomModal = closeImageZoomModal;

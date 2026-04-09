@@ -893,6 +893,51 @@
         </div>
     </div>
 
+    <!-- Admin: Set User Password Modal -->
+    <div class="modal" id="adminSetPasswordModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>User Password Reset</h2>
+                <button class="modal-close" id="closeAdminSetPasswordModal">&times;</button>
+            </div>
+            <form class="login-form" id="adminSetPasswordForm">
+                <input type="hidden" id="adminSetPasswordUserId">
+                <input type="hidden" id="adminSetPasswordUserEmail">
+
+                <!-- User info display -->
+                <div id="adminSetPasswordUserInfo" style="
+                    display:flex; align-items:center; gap:.75rem;
+                    padding:.85rem 1rem; margin-bottom:1rem;
+                    background:var(--bg-secondary); border-radius:var(--radius-md);
+                    border:1px solid var(--border);
+                ">
+                    <div id="adminSetPasswordAvatar" style="
+                        width:42px; height:42px; border-radius:50%;
+                        background:linear-gradient(135deg,var(--primary),var(--secondary));
+                        color:#fff; display:flex; align-items:center; justify-content:center;
+                        font-weight:700; font-size:1rem; flex-shrink:0;
+                    "></div>
+                    <div>
+                        <div id="adminSetPasswordUserName" style="font-weight:600; font-size:.9rem;"></div>
+                        <div id="adminSetPasswordUserEmailDisplay" style="font-size:.78rem; color:var(--text-secondary);"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Send Reset Email -->
+                <div id="adminPassTabEmail">
+                    <p style="font-size:.875rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.6;">
+                        A password reset link will be sent to the user's email address. The user can click the link to set their own new password.
+                    </p>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelAdminSetPassword">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="adminSendResetEmailBtn">
+                            <i class="fa-solid fa-paper-plane"></i> Send Reset Link
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="modal" id="studentIdCaptureModal" style="display: none;">
         <div class="modal-content student-id-modal-content">
