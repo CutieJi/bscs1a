@@ -587,4 +587,35 @@ a {
     .auth-desc {
         font-size: 0.82rem;
     }
-}
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.back-btn:hover {
+    background-color: #c8921a;
+    color: white;
+    border-color: #c8921a;
+    transform: translateX(-3px);
+}
+
+.back-btn:active {
+    transform: translateX(-3px) scale(0.95);
+}
+
+.back-btn svg {
+    width: 20px;
+    height: 20px;
+}

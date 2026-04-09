@@ -15,6 +15,14 @@
     --shadow-md: 0 12px 40px rgba(11, 31, 58, .12);
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+a[href^="#"] {
+    scroll-behavior: smooth;
+}
+
 * {
     margin: 0;
     padding: 0;
