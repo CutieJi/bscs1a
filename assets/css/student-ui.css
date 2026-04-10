@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     overflow-x: hidden;
     width: 100%;
     position: relative;
@@ -119,11 +120,13 @@ body {
     opacity: 1;
 }
 
-/* LAYOUT */
 .dashboard-container {
     display: flex;
     min-height: 100vh;
     background: var(--bg-secondary);
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .sidebar-overlay {
@@ -203,6 +206,7 @@ body {
 
 .sidebar-item {
     position: relative;
+    margin-bottom: 2px;
 }
 
 .sidebar-link {
@@ -240,15 +244,30 @@ body {
     height: 22px;
 }
 
-.sidebar-text {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #aeaeb7;
+.sidebar-link:hover .sidebar-icon {
+    transform: scale(1.1);
 }
 
-.sidebar svg,
-.sidebar i {
-    color: #aeaeb7;
+.sidebar-link.active .sidebar-icon {
+    color: var(--gold-light);
+}
+
+.sidebar-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    color: inherit;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: 0.75rem var(--spacing-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+    position: relative;
 }
 
 .sidebar-badge {
@@ -1733,7 +1752,8 @@ textarea {
 
 /* Smartphone Strict View (Exclusive Bottom Nav) */
 @media (max-width: 600px) {
-    .sidebar, 
+
+    .sidebar,
     .topbar-toggle {
         display: none !important;
     }
