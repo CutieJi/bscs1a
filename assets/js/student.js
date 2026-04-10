@@ -125,7 +125,7 @@ function initializeNavigation() {
         navItems.forEach(nav => nav.classList.remove('active'));
         sidebarItems.forEach(si => si.classList.remove('active'));
         views.forEach(view => view.classList.remove('active'));
-        
+
         // Bottom nav support
         const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
         bottomNavItems.forEach(bi => bi.classList.remove('active'));
@@ -1069,28 +1069,75 @@ function initializeProfileDropdown() {
 }
 
 function initializeTheme() {
-    const themeCheckbox = document.getElementById('themeCheckbox');
+    const themeCheckbox = document.getElementById('themeCheckbox'); // sidebar
+    const topbarCheckbox = document.getElementById('topbarThemeCheckbox'); // mobile topbar
     const themeLabel = document.querySelector('.theme-label');
     const themeIcon = document.querySelector('.theme-icon');
 
     const applyTheme = (isDark) => {
+        // APPLY THEME (your system uses data-theme)
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        if (themeLabel) themeLabel.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+
+        // Update label
+        if (themeLabel) {
+            themeLabel.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+        }
+
+        // Update icon
         if (themeIcon) {
             themeIcon.innerHTML = isDark
                 ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
-                : '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+                : '<circle cx="12" cy="12" r="5"></circle>\
+                   <line x1="12" y1="1" x2="12" y2="3"></line>\
+                   <line x1="12" y1="21" x2="12" y2="23"></line>\
+                   <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>\
+                   <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>\
+                   <line x1="1" y1="12" x2="3" y2="12"></line>\
+                   <line x1="21" y1="12" x2="23" y2="12"></line>\
+                   <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>\
+                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+
             themeIcon.setAttribute('fill', isDark ? 'currentColor' : 'none');
         }
+
+        // SYNC BOTH TOGGLES
         if (themeCheckbox) themeCheckbox.checked = isDark;
-        try { localStorage.setItem('mislend-theme', isDark ? 'dark' : 'light'); } catch (e) { }
+        if (topbarCheckbox) topbarCheckbox.checked = isDark;
+
+        // SAVE THEME
+        try {
+            localStorage.setItem('mislend-theme', isDark ? 'dark' : 'light');
+        } catch (e) { }
     };
 
-    const saved = (() => { try { return localStorage.getItem('mislend-theme'); } catch (e) { return null; } })();
-    applyTheme(saved === 'dark');
+    // LOAD SAVED THEME
+    let savedTheme;
+    try {
+        savedTheme = localStorage.getItem('mislend-theme');
+    } catch (e) {
+        savedTheme = null;
+    }
 
+    // AUTO DETECT IF NONE
+    if (!savedTheme) {
+        savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    // APPLY INITIAL THEME
+    applyTheme(savedTheme === 'dark');
+
+    // SIDEBAR TOGGLE
     if (themeCheckbox) {
-        themeCheckbox.addEventListener('change', () => applyTheme(themeCheckbox.checked));
+        themeCheckbox.addEventListener('change', () => {
+            applyTheme(themeCheckbox.checked);
+        });
+    }
+
+    // TOPBAR (MOBILE) TOGGLE
+    if (topbarCheckbox) {
+        topbarCheckbox.addEventListener('change', () => {
+            applyTheme(topbarCheckbox.checked);
+        });
     }
 }
 
@@ -1140,7 +1187,7 @@ async function saveProfile() {
     const firstName = document.getElementById("profileFirstName")?.value.trim();
     const middleInitial = document.getElementById("profileMiddleInitial")?.value.trim() || "";
     const lastName = document.getElementById("profileLastName")?.value.trim();
-    
+
     const mInitial = middleInitial ? `${middleInitial}. ` : '';
     const name = `${firstName} ${mInitial}${lastName}`;
 
@@ -1149,14 +1196,14 @@ async function saveProfile() {
     const mobile = document.getElementById("profileMobile")?.value;
     const gender = document.getElementById("profileGender")?.value;
     const course = document.getElementById("profileCourse")?.value;
-    
+
     const yearLevel = document.getElementById("profileYearLevel")?.value;
     const section = document.getElementById("profileSection")?.value;
     const yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
     const photoInput = document.getElementById("profilePhotoInput");
 
     const saveBtn = document.querySelector("#profileModal .btn-primary") || document.querySelector("button[onclick='saveProfile()']");
-    
+
     if (!saveBtn) {
         console.error("Save button not found!");
         return;
@@ -1177,7 +1224,7 @@ async function saveProfile() {
         if (photoInput && photoInput.files && photoInput.files[0]) {
             console.log(">>> [STEP 2] Photo selected, resizing to Base64...");
             const file = photoInput.files[0];
-            
+
             try {
                 // Resize and convert to Base64 string directly
                 const base64Data = await resizeImage(file, 200, 200);
@@ -1191,10 +1238,10 @@ async function saveProfile() {
 
         console.log(">>> [STEP 8] Updating Firestore document...");
         const dbPromise = db.collection("users").doc(currentUser.uid).update(updateData);
-        const dbTimeout = new Promise((_, reject) => 
+        const dbTimeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error("Database update timed out (15s)")), 15000)
         );
-        
+
         await Promise.race([dbPromise, dbTimeout]);
         console.log(">>> [STEP 9] Firestore update successful.");
 
@@ -1230,7 +1277,7 @@ function previewProfilePhoto(input) {
         }
 
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const previewContainer = document.getElementById("profileEditAvatarContainer");
             if (previewContainer) {
                 previewContainer.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">`;

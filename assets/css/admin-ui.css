@@ -2871,14 +2871,14 @@ body {
     display: block;
     width: 42px;
     height: 22px;
-    background: rgba(255, 255, 255, 0.18);
+    background: #c0c0c0;
     border-radius: 11px;
     transition: background 0.3s;
     position: relative;
 }
 
 .theme-switch input:checked+.theme-switch-track {
-    background: var(--primary);
+    background: var(--gold);
 }
 
 .theme-switch-thumb {
@@ -3120,4 +3120,17 @@ body {
 .analytics-card p {
     font-size: 0.85rem;
     color: var(--text-secondary);
+}
+
+.topbar-theme-toggle {
+    display: none;
+    align-items: center;
+    margin-right: 10px;
+}
+
+/* show only on phone */
+@media (max-width: 768px) {
+    .topbar-theme-toggle {
+        display: flex;
+    }
 }
