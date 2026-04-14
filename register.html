@@ -46,14 +46,14 @@
         <section class="auth-right">
             <div class="auth-card register-card compact-register">
                 <h2>UCC - MIS | <span style="color: #c8921a;">Registration</span></h2>
-                <p class="auth-desc">Fill in your student details</p>
+                <p class="auth-desc">Fill in your student/employee details</p>
 
                 <form id="unifiedRegisterForm" class="auth-form">
                     <div id="registerAlert" class="form-alert d-none"></div>
 
                     <div class="register-grid compact-grid">
-                        <!-- Role Selector -->
-                        <div class="field full">
+                        <!-- Role Selector (Hidden, handled by toggle link) -->
+                        <div class="field full" style="display: none;">
                             <label for="registerRole">I am a</label>
                             <select id="registerRole" required>
                                 <option value="student" selected>Student</option>
@@ -88,8 +88,18 @@
                             <input type="text" id="registerMobile" placeholder="Mobile Number" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
                         </div>
 
-                        <!-- Row 3: Course / Department -->
-                        <div class="field full">
+                        <!-- Row 3: Gender | Course / Department -->
+                        <div class="field">
+                            <label for="registerGender">Gender</label>
+                            <select id="registerGender" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
                             <label for="registerCourse" id="registerCourseLabel">Course</label>
                             <input type="text" id="registerCourse" placeholder="e.g. BSCS, BSIT" required />
                         </div>
@@ -162,40 +172,51 @@
             });
         }
 
-        // Role toggle: Student ↔ Professor
+        // Role toggle logic
         const roleSelect = document.getElementById('registerRole');
-        if (roleSelect) {
-            roleSelect.addEventListener('change', () => {
-                const isProfessor = roleSelect.value === 'professor';
-                const yearField = document.getElementById('yearLevelField');
-                const sectionField = document.getElementById('sectionField');
-                const idLabel = document.getElementById('registerIdLabel');
-                const courseLabel = document.getElementById('registerCourseLabel');
-                const idInput = document.getElementById('registerStudentId');
-                const courseInput = document.getElementById('registerCourse');
-                const yearSelect = document.getElementById('registerYearLevel');
-                const sectionSelect = document.getElementById('registerSection');
 
-                if (isProfessor) {
-                    yearField.style.display = 'none';
-                    sectionField.style.display = 'none';
-                    yearSelect.required = false;
-                    sectionSelect.required = false;
-                    idLabel.textContent = 'Faculty ID';
-                    idInput.placeholder = 'Faculty ID';
-                    courseLabel.textContent = 'Department';
-                    courseInput.placeholder = 'e.g. CCS, COE, CBA';
-                } else {
-                    yearField.style.display = '';
-                    sectionField.style.display = '';
-                    yearSelect.required = true;
-                    sectionSelect.required = true;
-                    idLabel.textContent = 'Student ID';
-                    idInput.placeholder = 'Student ID';
-                    courseLabel.textContent = 'Course';
-                    courseInput.placeholder = 'e.g. BSCS, BSIT';
-                }
-            });
+        function updateRoleUI(role) {
+            const isProfessor = role === 'professor';
+            const yearField = document.getElementById('yearLevelField');
+            const sectionField = document.getElementById('sectionField');
+            const idLabel = document.getElementById('registerIdLabel');
+            const courseLabel = document.getElementById('registerCourseLabel');
+            const idInput = document.getElementById('registerStudentId');
+            const courseInput = document.getElementById('registerCourse');
+            const yearSelect = document.getElementById('registerYearLevel');
+            const sectionSelect = document.getElementById('registerSection');
+
+            if (isProfessor) {
+                yearField.style.display = 'none';
+                sectionField.style.display = 'none';
+                yearSelect.required = false;
+                sectionSelect.required = false;
+                idLabel.textContent = 'Faculty ID';
+                idInput.placeholder = 'Faculty ID';
+                courseLabel.textContent = 'Department';
+                courseInput.placeholder = 'e.g. CSD, PSYCH';
+            } else {
+                yearField.style.display = '';
+                sectionField.style.display = '';
+                yearSelect.required = true;
+                sectionSelect.required = true;
+                idLabel.textContent = 'Student ID';
+                idInput.placeholder = 'Student ID';
+                courseLabel.textContent = 'Course';
+                courseInput.placeholder = 'e.g. BSCS, BSIT';
+            }
+        }
+
+        if (roleSelect) {
+            roleSelect.addEventListener('change', () => updateRoleUI(roleSelect.value));
+        }
+
+        // Check for role parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const roleParam = urlParams.get('role');
+        if (roleParam === 'professor' && roleSelect) {
+            roleSelect.value = 'professor';
+            updateRoleUI('professor');
         }
     </script>
 </body>

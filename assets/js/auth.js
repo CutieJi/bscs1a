@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const courseOrDept  = document.getElementById('registerCourse').value.trim();
             const yearLevel     = document.getElementById('registerYearLevel')?.value || '';
             const section       = document.getElementById('registerSection')?.value || '';
+            const gender        = document.getElementById('registerGender')?.value || '';
             const submitBtn     = registerForm.querySelector('button[type="submit"]');
 
             // Compose full name
@@ -225,6 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFormAlert('registerAlert', 'Mobile number must be exactly 11 digits.', 'error');
                 return;
             }
+            if (!gender) {
+                showFormAlert('registerAlert', 'Please select your gender.', 'error');
+                return;
+            }
 
             try {
                 isRegistering = true;
@@ -243,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     lastName,
                     email,
                     mobile,
+                    gender,
                     role: role,
                     status: 'pending',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
