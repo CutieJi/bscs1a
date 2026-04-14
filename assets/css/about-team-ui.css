@@ -185,7 +185,7 @@ img {
     align-items: center;
     justify-content: center;
     padding: 60px 0;
-    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    background: linear-gradient(135deg, var(--navy), var(--navy-light)); /* Fallback */
     color: #fff;
     text-align: center;
     position: relative;
@@ -196,11 +196,59 @@ img {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle at 20% 50%, rgba(200, 146, 26, .1), transparent 60%), radial-gradient(circle at 80% 30%, rgba(30, 95, 168, .2), transparent 60%);
+    background-image: radial-gradient(circle at 20% 50%, rgba(200, 146, 26, .2), transparent 60%), radial-gradient(circle at 80% 30%, rgba(30, 95, 168, .3), transparent 60%);
+    z-index: 1; /* Above slider for gradient effects */
+    pointer-events: none;
+}
+
+/* Background Slider styles */
+.bg-slider {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.bg-slider::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(11, 31, 58, 0.80); /* Dark overlay to keep text readable */
+    z-index: 1;
+}
+
+.bg-slider .slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    animation: slideFade 9s infinite;
+    z-index: 0;
+}
+
+.bg-slider .slide:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.bg-slider .slide:nth-child(2) {
+    animation-delay: 3s;
+}
+
+.bg-slider .slide:nth-child(3) {
+    animation-delay: 6s;
+}
+
+@keyframes slideFade {
+    0% { opacity: 0; transform: scale(1.05); }
+    15% { opacity: 1; transform: scale(1); }
+    33% { opacity: 1; transform: scale(1); }
+    48% { opacity: 0; transform: scale(1.05); }
+    100% { opacity: 0; transform: scale(1.05); }
 }
 
 .page-hero-inner {
     position: relative;
+    z-index: 2;
 }
 
 .page-badge {
@@ -290,6 +338,8 @@ img {
     padding-top: 40px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
+    position: relative;
+    z-index: 2;
 }
 
 .about-stat {
@@ -483,6 +533,9 @@ img {
     box-shadow: var(--shadow-sm);
     position: relative;
     transition: box-shadow .3s, transform .3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .member-card::before {
@@ -557,6 +610,9 @@ img {
 .member-body {
     padding: 18px 20px 22px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .member-body p {
@@ -564,12 +620,14 @@ img {
     font-size: .88rem;
     margin-bottom: 14px;
     line-height: 1.6;
+    flex-grow: 1;
 }
 
 .member-links {
     display: flex;
     justify-content: center;
     gap: 8px;
+    margin-top: auto;
 }
 
 .member-links a {
@@ -919,7 +977,65 @@ footer {
 
 @media(max-width:640px) {
     .team-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
+    }
+
+    .member-card {
+        flex-direction: row; /* Landscape orientation */
+        align-items: stretch;
+    }
+
+    .member-card::before {
+        width: 4px; /* Left border instead of top border */
+        height: 100%;
+        transform: scaleY(0);
+        transform-origin: top;
+    }
+    
+    .member-card:hover::before {
+        transform: scaleY(1);
+    }
+
+    .member-top {
+        border-bottom: none;
+        border-right: 1px solid var(--line);
+        padding: 20px 15px;
+        width: 130px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 10px;
+    }
+
+    .member-top h4 {
+        font-size: .9rem;
+    }
+
+    .role-badge {
+        font-size: .7rem;
+        padding: 4px 8px;
+    }
+
+    .member-body {
+        padding: 16px 20px;
+        text-align: left;
+    }
+
+    .member-body p {
+        font-size: .85rem;
+        margin-bottom: 10px;
+    }
+
+    .member-links {
+        justify-content: flex-start;
+        margin-top: 10px;
     }
 
     .footer-bottom {

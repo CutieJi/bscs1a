@@ -107,7 +107,7 @@ a {
 .brand-logo {
     width: 48px;
     height: 48px;
-    border-radius: 50%;
+    border-radius: 30%;
     background: rgba(255, 255, 255, 0.95);
     color: #111827;
     display: flex;
