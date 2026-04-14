@@ -100,6 +100,15 @@
                             <span class="sidebar-text">Borrowing Logs</span>
                         </a>
                     </li>
+                    <li class="sidebar-item" data-view="incidents">
+                        <a href="#" class="sidebar-link nav-item" data-view="incidents">
+                            <span class="sidebar-icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </span>
+                            <span class="sidebar-text">Incident Reports</span>
+                            <span class="sidebar-badge" id="incidentsBadge" style="background-color: var(--danger); display: none; border-radius: 50%;">0</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item" data-view="users">
                         <a href="#" class="sidebar-link nav-item" data-view="users">
                             <span class="sidebar-icon">
@@ -524,6 +533,49 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="view-container" id="incidentsView">
+                    <div class="content-header">
+                        <div>
+                            <h1 class="page-title">Incident Reports</h1>
+                            <p class="page-subtitle">Manage equipment damage reports from borrowers</p>
+                        </div>
+                    </div>
+                    <div class="incident-reports-list" id="adminIncidentsList"></div>
+
+                    <!-- Incident Detail / Chat Panel -->
+                    <div class="incident-detail-panel" id="incidentDetailPanel" style="display: none;">
+                        <div class="incident-detail-header">
+                            <button class="btn btn-secondary btn-sm" id="backToIncidentListBtn">
+                                <i class="fa-solid fa-arrow-left"></i> Back to List
+                            </button>
+                            <div class="incident-detail-status" id="incidentDetailStatus"></div>
+                        </div>
+                        <div class="incident-info-card" id="incidentInfoCard"></div>
+                        <div class="incident-chat-container">
+                            <h3 style="margin-bottom: 0.75rem;">Conversation</h3>
+                            <div class="chat-messages" id="adminChatMessages"></div>
+                            <div class="chat-input-row">
+                                <input type="text" id="adminChatInput" placeholder="Type a message..." />
+                                <button class="btn btn-primary btn-sm" id="adminSendChatBtn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="incident-actions-row" id="incidentActionsRow">
+                            <div class="form-group" style="flex:1;">
+                                <label>Approved By (Head Name)</label>
+                                <input type="text" id="incidentApprovedBy" placeholder="e.g. Dr. Juan Dela Cruz" />
+                            </div>
+                            <button class="btn btn-success" id="approveIncidentBtn">
+                                <i class="fa-solid fa-check"></i> Approve Incident
+                            </button>
+                            <button class="btn btn-primary" id="exportIncidentPdfBtn">
+                                <i class="fa-solid fa-file-pdf"></i> Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -650,6 +702,7 @@
                     <select id="newUserRole" class="form-control" style="width: 100%;" required>
                         <option value="">Select role</option>
                         <option value="student">Student</option>
+                        <option value="professor">Professor / Faculty</option>
                         <option value="admin">Admin</option>
                     </select>
                 </div>
@@ -663,7 +716,7 @@
                     <div style="margin-bottom: 10px;">
                         <label>Mobile No.</label>
                         <input type="tel" id="newUserMobile" class="form-control" style="width: 100%;"
-                            placeholder="09*********" minlength="11" maxlength="11">
+                            placeholder="09*********" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
 
                     <div style="margin-bottom: 10px;">
@@ -703,6 +756,32 @@
                                 <option value="D">D</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+                <div id="additionalProfessorFields" style="display: none;">
+                    <div style="margin-bottom: 10px;">
+                        <label>Faculty ID</label>
+                        <input type="text" id="newUserFacultyId" class="form-control" style="width: 100%;"
+                            placeholder="Faculty ID" minlength="10" maxlength="10">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>Department</label>
+                        <input type="text" id="newUserDepartment" class="form-control" style="width: 100%;"
+                            placeholder="e.g., CCS, COE">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>Mobile No.</label>
+                        <input type="tel" id="newUserProfMobile" class="form-control" style="width: 100%;"
+                            placeholder="09*********" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>Gender</label>
+                        <select id="newUserProfGender" class="form-control" style="width: 100%;">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                 </div>
                 <div id="additionalAdminFields" style="display: none; margin-bottom: 10px;">
@@ -816,15 +895,16 @@
                 <label>Role</label>
                 <select id="editUserRole">
                     <option value="student">Student</option>
+                    <option value="professor">Professor / Faculty</option>
                     <option value="admin">Admin</option>
                 </select>
 
                 <div id="editStudentFieldsContainers">
                     <label>Student ID</label>
-                    <input id="editUserStudentId">
+                    <input id="editUserStudentId" class="form-control" style="width: 100%;" minlength="10" maxlength="10">
 
                     <label>Mobile No.</label>
-                    <input type="tel" id="editUserMobile" minlength="11" maxlength="11">
+                    <input type="tel" id="editUserMobile" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
 
                     <label>Gender</label>
                     <select id="editUserGender">
@@ -859,6 +939,25 @@
                             </select>
                         </div>
                     </div>
+                </div>
+
+                <div id="editProfessorFieldsContainers" style="display: none;">
+                    <label>Faculty ID</label>
+                    <input id="editUserFacultyId" class="form-control" style="width: 100%;" minlength="10" maxlength="10">
+
+                    <label>Department</label>
+                    <input id="editUserDepartment" class="form-control" style="width: 100%;">
+
+                    <label>Mobile No.</label>
+                    <input type="tel" id="editUserProfMobile" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="form-control" style="width: 100%;">
+
+                    <label>Gender</label>
+                    <select id="editUserProfGender" class="form-control" style="width: 100%;">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Custom">Custom</option>
+                    </select>
                 </div>
 
                 <div id="editAdminFieldsContainers" style="display: none; margin-bottom: 10px;">
@@ -1061,9 +1160,12 @@
             <div class="nav-icon-wrap"><i class="fa-solid fa-file-lines"></i></div>
             <span>Logs</span>
         </a>
-        <a href="#" class="bottom-nav-item" data-view="users" onclick="switchView('users')">
-            <div class="nav-icon-wrap"><i class="fa-solid fa-users"></i></div>
-            <span>Users</span>
+        <a href="#" class="bottom-nav-item" data-view="incidents" onclick="switchView('incidents')">
+            <div class="nav-icon-wrap">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span class="nav-badge" id="incidentsBadgeMobile" style="display: none;">0</span>
+            </div>
+            <span>Incidents</span>
         </a>
     </nav>
 
@@ -1080,6 +1182,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/admin.js"></script>
     <script src="assets/js/charts-config.js"></script>

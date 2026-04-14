@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Borrower - MISLend</title>
-    <link rel="stylesheet" href="assets/css/student-ui.css">
+    <title>Professor - MISLend</title>
+    <link rel="stylesheet" href="assets/css/professor-ui.css">
     <link rel="stylesheet" href="assets/css/modal.css">
     <link rel="shortcut icon" href="assets/images/13.png" type="image/x-icon">
     <link
@@ -14,7 +14,7 @@
     <script>(function () {
             try {
                 var labels = { browse: 'Browse Equipment', scan: 'Scan QR Code', myborrowed: 'My Borrowed Items', history: 'Borrowing History', incidents: 'Incident Reports', settings: 'Settings' };
-                var v = localStorage.getItem('student-active-view');
+                var v = localStorage.getItem('professor-active-view');
                 if (v) {
                     document.addEventListener('DOMContentLoaded', function () {
                         document.querySelectorAll('.view-container').forEach(function (el) { el.classList.remove('active'); });
@@ -113,8 +113,8 @@
                         <span id="userInitial">S</span>
                     </div>
                     <div class="sidebar-user-info">
-                        <div class="sidebar-user-name" id="userName">Student</div>
-                        <div class="sidebar-user-email" id="userEmail">student@email.com</div>
+                        <div class="sidebar-user-name" id="userName">Professor</div>
+                        <div class="sidebar-user-email" id="userEmail">professor@email.com</div>
                     </div>
                 </div>
 
@@ -158,7 +158,7 @@
                     <nav class="topbar-breadcrumb" id="topbarBreadcrumb">
                         <span class="breadcrumb-home">
                             <i class="fa-regular fa-house"></i>
-                            Student
+                            Professor
                         </span>
                         <span class="breadcrumb-sep">/</span>
                         <span class="breadcrumb-current" id="breadcrumbCurrent">Browse Equipment</span>
@@ -189,8 +189,8 @@
                                 <span id="topbarInitial">S</span>
                             </div>
                             <div class="topbar-user-info">
-                                <span class="topbar-user-name" id="topbarUserName">Student</span>
-                                <span class="topbar-user-role">Borrower</span>
+                                <span class="topbar-user-name" id="topbarUserName">Professor</span>
+                                <span class="topbar-user-role">Professor</span>
                             </div>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
@@ -200,8 +200,8 @@
                                     <span id="menuInitial">S</span>
                                 </div>
                                 <div>
-                                    <div class="profile-menu-name" id="menuUserName">Student</div>
-                                    <div class="profile-menu-email" id="menuUserEmail">student@email.com</div>
+                                    <div class="profile-menu-name" id="menuUserName">Professor</div>
+                                    <div class="profile-menu-email" id="menuUserEmail">professor@email.com</div>
                                 </div>
                             </div>
                             <div class="profile-menu-divider"></div>
@@ -504,8 +504,8 @@
                         <input type="email" id="profileEmail">
                     </div>
                     <div class="form-group">
-                        <label>Student ID</label>
-                        <input type="text" id="profileStudentId" minlength="10" maxlength="10">
+                        <label>Faculty ID</label>
+                        <input type="text" id="profileFacultyId" minlength="10" maxlength="10">
                     </div>
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
@@ -523,24 +523,8 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Course / Program</label>
-                        <input type="text" id="profileCourse">
-                    </div>
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Year Level</label>
-                            <select id="profileYearLevel" required>
-                                <option value="">Select Year</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
-                                <option value="3rd Year">3rd Year</option>
-                                <option value="4th Year">4th Year</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Section</label>
-                            <input type="text" id="profileSection" placeholder="e.g., A, B, C" required>
-                        </div>
+                        <label>Department</label>
+                        <input type="text" id="profileDepartment">
                     </div>
                     <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
                 </div>
@@ -556,7 +540,7 @@
                 <div class="login-form">
                     <div class="form-group">
                         <label>Current Password</label>
-                        <input type="password" id="currentPasswordStudent" placeholder="Enter current password"
+                        <input type="password" id="currentPassword" placeholder="Enter current password"
                             required>
                     </div>
                     <div class="form-group">
@@ -566,7 +550,7 @@
                     </div>
                     <div class="form-group">
                         <label>Confirm New Password</label>
-                        <input type="password" id="confirmPasswordStudent" placeholder="Repeat new password"
+                        <input type="password" id="confirmPassword" placeholder="Repeat new password"
                             autocomplete="new-password" minlength="8" required>
                     </div>
                     <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
@@ -614,7 +598,7 @@
         <script src="https://unpkg.com/html5-qrcode"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="assets/js/app.js"></script>
-        <script src="assets/js/student.js"></script>
+        <script src="assets/js/professor.js"></script>
 </body>
 
 </html>

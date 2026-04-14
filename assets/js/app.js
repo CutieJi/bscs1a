@@ -92,10 +92,11 @@ function getSecondaryAuth() {
 }
 
 function showToast(message, type = 'success') {
+    console.log(`[TOAST] ${type.toUpperCase()}: ${message}`);
     const toast = document.getElementById('toast');
     if (!toast) return;
 
-    const icon = type === 'success' ? '' : '' ;
+    const icon = type === 'success' ? '' : '';
     toast.innerHTML = `${icon} <span>${message}</span>`;
     toast.className = `toast show ${type}`;
 
@@ -120,7 +121,7 @@ function showConfirm(options = {}) {
 
     return new Promise((resolve) => {
         let modal = document.getElementById('confirmModal');
-        
+
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'confirmModal';
@@ -149,7 +150,7 @@ function showConfirm(options = {}) {
         messageEl.textContent = message;
         cancelBtn.textContent = cancelText;
         confirmBtn.textContent = confirmText;
-        
+
         // Set button color based on type
         confirmBtn.className = `btn btn-${type}`;
 
@@ -241,7 +242,16 @@ function checkAuth(requiredRole = null) {
                 if (userData?.role === requiredRole) {
                     resolve({ user, userData });
                 } else {
-                    window.location.href = userData?.role === "admin" ? "admin.html" : "student.html";
+                    let targetUrl = 'student.html';
+                    if (userData?.role === 'admin') targetUrl = 'admin.html';
+                    else if (userData?.role === 'professor') targetUrl = 'professor.html';
+
+                    // Transfer any query parameters (like ?borrow=ID) to the correct dashboard
+                    if (window.location.search && targetUrl !== 'admin.html') {
+                        targetUrl += window.location.search;
+                    }
+
+                    window.location.href = targetUrl;
                     reject("Wrong role");
                 }
             } catch (err) {

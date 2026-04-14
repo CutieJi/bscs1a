@@ -198,6 +198,7 @@ function initializeNavigation() {
         borrowed: 'Currently Borrowed',
         logs: 'Borrowing Logs',
         users: 'User Management',
+        incidents: 'Incident Reports',
         history: 'Audit History'
     };
 
@@ -235,6 +236,7 @@ function initializeNavigation() {
         else if (viewId === 'borrowed') loadCurrentlyBorrowed();
         else if (viewId === 'logs') loadBorrowingLogs();
         else if (viewId === 'users') { loadUsers(); loadPending(); }
+        else if (viewId === 'incidents') loadAllIncidents();
 
         try { localStorage.setItem('admin-active-view', viewId); } catch (e) { }
     }
@@ -1966,9 +1968,12 @@ function initializeUserManagement() {
         newUserRole.addEventListener('change', (e) => {
             const isStudent = e.target.value === 'student';
             const isAdmin = e.target.value === 'admin';
+            const isProfessor = e.target.value === 'professor';
 
             if (additionalFields) additionalFields.style.display = isStudent ? 'block' : 'none';
             if (additionalAdminFields) additionalAdminFields.style.display = isAdmin ? 'block' : 'none';
+            const profFields = document.getElementById('additionalProfessorFields');
+            if (profFields) profFields.style.display = isProfessor ? 'block' : 'none';
 
             const studentIdInput = document.getElementById('newUserStudentId');
             if (studentIdInput) studentIdInput.required = isStudent;
@@ -1980,6 +1985,8 @@ function initializeUserManagement() {
         addUserForm?.reset();
         if (additionalFields) additionalFields.style.display = 'none';
         if (additionalAdminFields) additionalAdminFields.style.display = 'none';
+        const profFields = document.getElementById('additionalProfessorFields');
+        if (profFields) profFields.style.display = 'none';
 
         const avatarContainer = document.getElementById("addUserAvatarContainer");
         if (avatarContainer) {
@@ -1998,10 +2005,12 @@ function initializeUserManagement() {
     const editRoleSelect = document.getElementById('editUserRole');
     const editStudentContainer = document.getElementById('editStudentFieldsContainers');
     const editAdminContainer = document.getElementById('editAdminFieldsContainers');
+    const editProfContainer = document.getElementById('editProfessorFieldsContainers');
     if (editRoleSelect) {
         editRoleSelect.addEventListener('change', (e) => {
             if (editStudentContainer) editStudentContainer.style.display = e.target.value === 'student' ? 'block' : 'none';
             if (editAdminContainer) editAdminContainer.style.display = e.target.value === 'admin' ? 'block' : 'none';
+            if (editProfContainer) editProfContainer.style.display = e.target.value === 'professor' ? 'block' : 'none';
         });
     }
 
@@ -2068,6 +2077,14 @@ async function createNewUser() {
             userData.lastName = lastName;
             userData.yearLevel = yearLevel;
             userData.section = section;
+        } else if (role === 'professor') {
+            userData.facultyId = document.getElementById('newUserFacultyId')?.value.trim() || "";
+            userData.department = document.getElementById('newUserDepartment')?.value.trim() || "";
+            userData.mobile = document.getElementById('newUserProfMobile')?.value.trim() || "";
+            userData.gender = document.getElementById('newUserProfGender')?.value || "";
+            userData.firstName = firstName;
+            userData.middleInitial = middleInitial;
+            userData.lastName = lastName;
         } else if (role === 'admin') {
             userData.adminId = adminId || "";
         }
@@ -2151,7 +2168,7 @@ async function loadUsers() {
                 if (user.id !== currentAdmin.uid) {
                     actionHtml = `
                         <div class="user-table-actions">
-                            <button class="btn btn-warning btn-sm" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}', '${user.adminId || ''}')" title="Edit user details">
+                            <button class="btn btn-warning btn-sm" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}', '${user.adminId || ''}', '${user.facultyId || ''}', '${user.department || ''}')" title="Edit user details">
                                 Edit
                             </button>
 
@@ -2305,7 +2322,7 @@ if (editEquipmentForm) {
     });
 }
 
-function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL, firstName, middleInitial, lastName, yearLevel, section, adminId) {
+function openEditUser(id, name, email, role, studentId, mobile, gender, course, yearSection, photoURL, firstName, middleInitial, lastName, yearLevel, section, adminId, facultyId, department) {
     document.getElementById("editUserId").value = id;
     document.getElementById("editUserEmail").value = email;
     document.getElementById("editUserRole").value = role;
@@ -2314,6 +2331,16 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
     document.getElementById("editUserGender").value = gender || "";
     document.getElementById("editUserCourse").value = course || "";
     document.getElementById("editUserAdminId").value = adminId || "";
+
+    // Professor fields
+    const facIdEl = document.getElementById("editUserFacultyId");
+    const deptEl = document.getElementById("editUserDepartment");
+    const profMobileEl = document.getElementById("editUserProfMobile");
+    const profGenderEl = document.getElementById("editUserProfGender");
+    if (facIdEl) facIdEl.value = facultyId || "";
+    if (deptEl) deptEl.value = department || "";
+    if (profMobileEl) profMobileEl.value = (role === 'professor' ? mobile : '') || "";
+    if (profGenderEl) profGenderEl.value = (role === 'professor' ? gender : '') || "";
 
     // Set split fields
     document.getElementById("editUserFirstName").value = firstName || "";
@@ -2343,11 +2370,15 @@ function openEditUser(id, name, email, role, studentId, mobile, gender, course, 
 
     const studentContainer = document.getElementById("editStudentFieldsContainers");
     const adminContainer = document.getElementById("editAdminFieldsContainers");
+    const profContainer = document.getElementById("editProfessorFieldsContainers");
     if (studentContainer) {
         studentContainer.style.display = role === 'student' ? 'block' : 'none';
     }
     if (adminContainer) {
         adminContainer.style.display = role === 'admin' ? 'block' : 'none';
+    }
+    if (profContainer) {
+        profContainer.style.display = role === 'professor' ? 'block' : 'none';
     }
 
     document.getElementById("editUserModal").classList.add("active");
@@ -2382,7 +2413,6 @@ if (editUserForm) {
     editUserForm.addEventListener("submit", async e => {
         e.preventDefault();
         console.log("editUserForm submitted");
-        alert("Saving user data...");
 
         const id = document.getElementById("editUserId").value;
         const role = document.getElementById("editUserRole").value;
@@ -2424,6 +2454,14 @@ if (editUserForm) {
                 updateData.yearLevel = yearLevel;
                 updateData.section = section;
                 updateData.yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
+                updateData.firstName = firstName;
+                updateData.middleInitial = middleInitial;
+                updateData.lastName = lastName;
+            } else if (role === 'professor') {
+                updateData.facultyId = document.getElementById("editUserFacultyId")?.value.trim() || '';
+                updateData.department = document.getElementById("editUserDepartment")?.value.trim() || '';
+                updateData.mobile = document.getElementById("editUserProfMobile")?.value.trim() || '';
+                updateData.gender = document.getElementById("editUserProfGender")?.value || '';
                 updateData.firstName = firstName;
                 updateData.middleInitial = middleInitial;
                 updateData.lastName = lastName;
@@ -3000,3 +3038,465 @@ window.closeAdminSetPasswordModal = closeAdminSetPasswordModal;
 window.adminConfirmReturn = adminConfirmReturn;
 window.openImageZoomModal = openImageZoomModal;
 window.closeImageZoomModal = closeImageZoomModal;
+
+// ═══════════════════════════════════════════════════════════════
+// INCIDENT REPORT MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+let currentIncidentId = null;
+let incidentChatUnsubscribe = null;
+
+async function loadAllIncidents() {
+    const listEl = document.getElementById('adminIncidentsList');
+    const detailPanel = document.getElementById('incidentDetailPanel');
+    if (!listEl) return;
+
+    // Show list, hide detail
+    listEl.style.display = '';
+    if (detailPanel) detailPanel.style.display = 'none';
+
+    try {
+        const snapshot = await db.collection('incidents')
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const incidents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Update badge
+        const pendingCount = incidents.filter(i => i.status === 'pending' || i.status === 'under_review').length;
+        const badge = document.getElementById('incidentsBadge');
+        const badgeMobile = document.getElementById('incidentsBadgeMobile');
+        if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
+        if (badgeMobile) { badgeMobile.textContent = pendingCount; badgeMobile.style.display = pendingCount > 0 ? '' : 'none'; }
+
+        if (incidents.length === 0) {
+            listEl.innerHTML = `
+                <div class="empty-state">
+                    <h3>No incident reports</h3>
+                    <p>Borrowers can submit damage reports from their dashboard</p>
+                </div>
+            `;
+            return;
+        }
+
+        listEl.innerHTML = incidents.map(inc => {
+            const statusColors = {
+                pending: 'background: rgba(245,158,11,0.1); color: #92400e;',
+                under_review: 'background: rgba(59,130,246,0.1); color: #1e40af;',
+                approved: 'background: rgba(16,185,129,0.1); color: #065f46;',
+                resolved: 'background: rgba(107,114,128,0.1); color: #374151;'
+            };
+            const statusStyle = statusColors[inc.status] || statusColors.pending;
+            const statusLabel = (inc.status || 'pending').replace('_', ' ').toUpperCase();
+            const dateStr = inc.createdAt?.toDate ? inc.createdAt.toDate().toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+
+            return `
+                <div class="incident-card" onclick="openIncidentDetail('${inc.id}')">
+                    <div class="incident-card-header">
+                        <div>
+                            <strong>${inc.equipmentName || 'Unknown Equipment'}</strong>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);"> — ${inc.equipmentCode || ''}</span>
+                        </div>
+                        <span class="badge" style="${statusStyle} padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600;">${statusLabel}</span>
+                    </div>
+                    <div class="incident-card-body">
+                        <p style="margin: 0.25rem 0; color: var(--text-secondary); font-size: 0.85rem;">
+                            Reported by <strong>${inc.reporterName}</strong> (${capitalize(inc.reporterRole || 'user')}) — ${dateStr}
+                        </p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-primary);">${(inc.description || '').substring(0, 120)}${(inc.description || '').length > 120 ? '...' : ''}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error loading incidents:', error);
+        listEl.innerHTML = '<div class="empty-state"><h3>Error loading incidents</h3></div>';
+    }
+}
+
+async function openIncidentDetail(incidentId) {
+    currentIncidentId = incidentId;
+    const listEl = document.getElementById('adminIncidentsList');
+    const detailPanel = document.getElementById('incidentDetailPanel');
+    if (listEl) listEl.style.display = 'none';
+    if (detailPanel) detailPanel.style.display = '';
+
+    try {
+        const doc = await db.collection('incidents').doc(incidentId).get();
+        const inc = { id: doc.id, ...doc.data() };
+
+        // Status
+        const statusEl = document.getElementById('incidentDetailStatus');
+        const statusLabel = (inc.status || 'pending').replace('_', ' ').toUpperCase();
+        if (statusEl) statusEl.innerHTML = `<span class="badge badge-status">${statusLabel}</span>`;
+
+        // Info card
+        const infoCard = document.getElementById('incidentInfoCard');
+        if (infoCard) {
+            const dateStr = inc.createdAt?.toDate ? inc.createdAt.toDate().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+            infoCard.innerHTML = `
+                <div class="incident-info-grid">
+                    <div><strong>Reporter:</strong> ${inc.reporterName} (${capitalize(inc.reporterRole || 'user')})</div>
+                    <div><strong>Email:</strong> ${inc.reporterEmail || 'N/A'}</div>
+                    <div><strong>ID:</strong> ${inc.reporterId_number || 'N/A'}</div>
+                    <div><strong>Equipment:</strong> ${inc.equipmentName} (${inc.equipmentCode || 'N/A'})</div>
+                    <div><strong>Date:</strong> ${dateStr}</div>
+                    <div><strong>Status:</strong> ${statusLabel}</div>
+                </div>
+                <div style="margin-top: 0.75rem;">
+                    <strong>Description:</strong>
+                    <p style="margin: 0.25rem 0; color: var(--text-secondary);">${inc.description || 'No description'}</p>
+                </div>
+                ${inc.photoURL ? `<div style="margin-top: 0.75rem;"><strong>Photo:</strong><br><img src="${inc.photoURL}" style="max-width: 300px; border-radius: 8px; margin-top: 0.5rem; cursor: pointer;" onclick="openImageZoomModal(this.src)" /></div>` : ''}
+                ${inc.approvedBy ? `<div style="margin-top: 0.75rem; padding: 0.5rem; background: rgba(16,185,129,0.1); border-radius: 8px;"><strong>Approved by:</strong> ${inc.approvedBy}</div>` : ''}
+            `;
+        }
+
+        // Show/hide actions
+        const actionsRow = document.getElementById('incidentActionsRow');
+        if (actionsRow) {
+            actionsRow.style.display = (inc.status === 'approved' || inc.status === 'resolved') ? 'none' : '';
+        }
+
+        // Load chat messages (real-time)
+        if (incidentChatUnsubscribe) incidentChatUnsubscribe();
+        const chatContainer = document.getElementById('adminChatMessages');
+        incidentChatUnsubscribe = db.collection('incidents').doc(incidentId)
+            .collection('messages')
+            .orderBy('timestamp', 'asc')
+            .onSnapshot(snapshot => {
+                if (!chatContainer) return;
+                const messages = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (messages.length === 0) {
+                    chatContainer.innerHTML = '<div style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No messages yet. Start the conversation.</div>';
+                } else {
+                    chatContainer.innerHTML = messages.map(msg => {
+                        const isAdmin = msg.senderRole === 'admin';
+                        const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '';
+                        return `
+                            <div class="chat-bubble ${isAdmin ? 'chat-admin' : 'chat-user'}">
+                                <div class="chat-sender">${msg.senderName} <span class="chat-role">(${capitalize(msg.senderRole)})</span></div>
+                                <div class="chat-text">${msg.message}</div>
+                                <div class="chat-time">${time}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            });
+
+        // Mark as under_review if pending
+        if (inc.status === 'pending') {
+            await db.collection('incidents').doc(incidentId).update({ status: 'under_review' });
+        }
+
+    } catch (error) {
+        console.error('Error opening incident detail:', error);
+        showToast('Failed to load incident details', 'error');
+    }
+}
+
+async function sendAdminIncidentMessage() {
+    if (!currentIncidentId) return;
+    const input = document.getElementById('adminChatInput');
+    const message = input?.value.trim();
+    if (!message) return;
+
+    try {
+        await db.collection('incidents').doc(currentIncidentId).collection('messages').add({
+            senderId: currentAdmin.uid,
+            senderName: currentAdminData?.name || 'Administrator',
+            senderRole: 'admin',
+            message: message,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showToast('Failed to send message', 'error');
+    }
+}
+
+async function approveIncident() {
+    if (!currentIncidentId) return;
+    const approvedBy = document.getElementById('incidentApprovedBy')?.value.trim();
+
+    if (!approvedBy) {
+        showToast('Please enter the approving head\'s name', 'error');
+        return;
+    }
+
+    if (!await showConfirm({
+        title: 'Approve Incident Report',
+        message: `Approve this incident report? Head: ${approvedBy}`,
+        confirmText: 'Approve',
+        type: 'success'
+    })) return;
+
+    try {
+        await db.collection('incidents').doc(currentIncidentId).update({
+            status: 'approved',
+            approvedBy: approvedBy,
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('Incident report approved', 'success');
+        openIncidentDetail(currentIncidentId);
+    } catch (error) {
+        console.error('Error approving incident:', error);
+        showToast('Failed to approve', 'error');
+    }
+}
+
+async function exportIncidentPDF() {
+    if (!currentIncidentId) return;
+
+    try {
+        showToast('Generating PDF...', 'info');
+        const doc = await db.collection('incidents').doc(currentIncidentId).get();
+        const inc = { id: doc.id, ...doc.data() };
+
+        // Load chat messages
+        const msgSnap = await db.collection('incidents').doc(currentIncidentId).collection('messages').orderBy('timestamp', 'asc').get();
+        const messages = msgSnap.docs.map(d => ({ ...d.data() }));
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 20;
+        const contentWidth = pageWidth - 2 * margin;
+        let y = 20;
+
+        // Helper for page breaks
+        const checkPageBreak = (neededHeight) => {
+            if (y + neededHeight > 270) {
+                pdf.addPage();
+                y = 20;
+            }
+        };
+
+        // ── School Logo / Seal area ──
+        pdf.setFillColor(13, 148, 136);
+        pdf.rect(0, 0, pageWidth, 40, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('UNIVERSITY OF CALOOCAN CITY', pageWidth / 2, 15, { align: 'center' });
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Management Information Systems Office', pageWidth / 2, 22, { align: 'center' });
+        pdf.text('Biglang Awa St., 11th Ave., East Grace Park, Caloocan City', pageWidth / 2, 27, { align: 'center' });
+
+        // ── Circle seal ──
+        pdf.setDrawColor(255, 255, 255);
+        pdf.setLineWidth(0.5);
+        pdf.circle(pageWidth / 2, 35, 4.5);
+        pdf.setFontSize(6);
+        pdf.text('UCC', pageWidth / 2, 36, { align: 'center' });
+
+        y = 50;
+
+        // ── TITLE ──
+        pdf.setTextColor(13, 148, 136);
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('INCIDENT REPORT', pageWidth / 2, y, { align: 'center' });
+        y += 5;
+
+        // Reference number and date
+        pdf.setTextColor(100, 100, 100);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        const refNo = `IR-${(inc.createdAt?.toDate ? inc.createdAt.toDate().getFullYear() : new Date().getFullYear())}-${currentIncidentId.substring(0, 6).toUpperCase()}`;
+        const dateStr = inc.createdAt?.toDate ? inc.createdAt.toDate().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-PH');
+        pdf.text(`Reference No: ${refNo}`, margin, y + 5);
+        pdf.text(`Date: ${dateStr}`, pageWidth - margin, y + 5, { align: 'right' });
+        y += 12;
+
+        // ── Separator ──
+        pdf.setDrawColor(13, 148, 136);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += 8;
+
+        // ── Reporter Info ──
+        pdf.setTextColor(30, 30, 30);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('REPORTER INFORMATION', margin, y);
+        y += 7;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        const reporterLines = [
+            `Name: ${inc.reporterName || 'N/A'}`,
+            `Role: ${capitalize(inc.reporterRole || 'User')}`,
+            `ID: ${inc.reporterId_number || 'N/A'}`,
+            `Email: ${inc.reporterEmail || 'N/A'}`
+        ];
+        reporterLines.forEach(line => {
+            pdf.text(line, margin, y);
+            y += 5;
+        });
+        y += 4;
+
+        // ── Equipment Info ──
+        checkPageBreak(30);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('EQUIPMENT INFORMATION', margin, y);
+        y += 7;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        const equipLines = [
+            `Equipment: ${inc.equipmentName || 'N/A'}`,
+            `Equipment Code: ${inc.equipmentCode || 'N/A'}`
+        ];
+        equipLines.forEach(line => {
+            pdf.text(line, margin, y);
+            y += 5;
+        });
+        y += 4;
+
+        // ── Description ──
+        checkPageBreak(30);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('INCIDENT DESCRIPTION', margin, y);
+        y += 7;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        const descLines = pdf.splitTextToSize(inc.description || 'No description provided.', contentWidth);
+        descLines.forEach(line => {
+            checkPageBreak(6);
+            pdf.text(line, margin, y);
+            y += 5;
+        });
+        y += 6;
+
+        // ── Chat History ──
+        if (messages.length > 0) {
+            checkPageBreak(20);
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('COMMUNICATION LOG', margin, y);
+            y += 7;
+
+            messages.forEach(msg => {
+                checkPageBreak(16);
+                const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(13, 148, 136);
+                pdf.text(`${msg.senderName} (${capitalize(msg.senderRole)}) — ${time}`, margin, y);
+                y += 4;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(60, 60, 60);
+                const msgLines = pdf.splitTextToSize(msg.message, contentWidth - 5);
+                msgLines.forEach(line => {
+                    checkPageBreak(5);
+                    pdf.text(line, margin + 3, y);
+                    y += 4;
+                });
+                y += 3;
+            });
+        }
+        y += 6;
+
+        // ── Approval Section ──
+        checkPageBreak(50);
+        pdf.setDrawColor(13, 148, 136);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += 10;
+
+        if (inc.approvedBy) {
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(16, 120, 96);
+            pdf.text('✓ APPROVED', pageWidth / 2, y, { align: 'center' });
+            y += 10;
+
+            pdf.setTextColor(30, 30, 30);
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(inc.approvedBy, pageWidth / 2, y, { align: 'center' });
+            y += 5;
+
+            // Signature line
+            pdf.setDrawColor(30, 30, 30);
+            pdf.setLineWidth(0.3);
+            pdf.line(pageWidth / 2 - 30, y, pageWidth / 2 + 30, y);
+            y += 5;
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Head / Authorized Signatory', pageWidth / 2, y, { align: 'center' });
+            y += 4;
+
+            if (inc.approvedAt?.toDate) {
+                pdf.setFontSize(7);
+                pdf.text(`Date Approved: ${inc.approvedAt.toDate().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}`, pageWidth / 2, y, { align: 'center' });
+            }
+        } else {
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'italic');
+            pdf.setTextColor(150, 150, 150);
+            pdf.text('Pending Approval', pageWidth / 2, y, { align: 'center' });
+        }
+
+        // Watermark seal on last page
+        pdf.setGState(new pdf.GState({ opacity: 0.08 }));
+        pdf.setFontSize(60);
+        pdf.setTextColor(13, 148, 136);
+        pdf.text('UCC-MIS', pageWidth / 2, 160, { align: 'center', angle: 30 });
+        pdf.setGState(new pdf.GState({ opacity: 1 }));
+
+        // Footer
+        const pageCount = pdf.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            pdf.setPage(i);
+            pdf.setFontSize(7);
+            pdf.setTextColor(150, 150, 150);
+            pdf.text(`MISLend System — Incident Report ${refNo} — Page ${i} of ${pageCount}`, pageWidth / 2, 290, { align: 'center' });
+        }
+
+        pdf.save(`Incident-Report-${refNo}.pdf`);
+        showToast('PDF exported successfully!', 'success');
+
+    } catch (error) {
+        console.error('PDF export error:', error);
+        showToast('Failed to export PDF', 'error');
+    }
+}
+
+// ── Wire up incident panel buttons ──
+(function initIncidentPanel() {
+    const backBtn = document.getElementById('backToIncidentListBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            if (incidentChatUnsubscribe) { incidentChatUnsubscribe(); incidentChatUnsubscribe = null; }
+            currentIncidentId = null;
+            loadAllIncidents();
+        });
+    }
+
+    const sendBtn = document.getElementById('adminSendChatBtn');
+    const chatInput = document.getElementById('adminChatInput');
+    if (sendBtn) sendBtn.addEventListener('click', sendAdminIncidentMessage);
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendAdminIncidentMessage();
+        });
+    }
+
+    const approveBtn = document.getElementById('approveIncidentBtn');
+    if (approveBtn) approveBtn.addEventListener('click', approveIncident);
+
+    const exportBtn = document.getElementById('exportIncidentPdfBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportIncidentPDF);
+})();
+
+window.openIncidentDetail = openIncidentDetail;
+window.loadAllIncidents = loadAllIncidents;

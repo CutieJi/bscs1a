@@ -48,15 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (userData.role === "student" && userData.status === "pending") {
+            if ((userData.role === "student" || userData.role === "professor") && userData.status === "pending") {
                 await auth.signOut();
                 showFormAlert('loginAlert', "Your account is pending admin approval.", "warning");
                 return;
             }
 
             if (userData.role === "admin") window.location.href = "admin.html";
-            else if (userData.role === "student" && userData.status === "approved") {
-                window.location.href = "student.html";
+            else if ((userData.role === "student" || userData.role === "professor") && userData.status === "approved") {
+                window.location.href = userData.role === "professor" ? "professor.html" : "student.html";
             }
 
         } catch (err) {
@@ -89,6 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             .where('studentId', '==', loginInput)
                             .limit(1)
                             .get();
+
+                        if (userSnap.empty) {
+                            userSnap = await db.collection('users')
+                                .where('facultyId', '==', loginInput)
+                                .limit(1)
+                                .get();
+                        }
 
                         if (userSnap.empty) {
                             userSnap = await db.collection('users')
@@ -126,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('User data not found. Please contact administrator.');
                 }
 
-                if (userData.role === "student" && userData.status !== "approved") {
+                if ((userData.role === "student" || userData.role === "professor") && userData.status !== "approved") {
                     await auth.signOut();
                     showFormAlert('loginAlert', "Your account is waiting for admin approval.", "warning");
                     submitBtn.disabled = false;
@@ -140,8 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     if (userData.role === 'admin') {
                         window.location.href = 'admin.html';
-                    } else if (userData.role === 'student') {
-                        window.location.href = 'student.html';
+                    } else if (userData.role === 'student' || userData.role === 'professor') {
+                        window.location.href = userData.role === 'professor' ? 'professor.html' : 'student.html';
                     }
                 }, 1500);
 
@@ -164,27 +171,35 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             clearFormAlert('registerAlert');
 
+            const role          = document.getElementById('registerRole')?.value || 'student';
             const firstName     = document.getElementById('registerFirstName').value.trim();
             const middleInitial = document.getElementById('registerMiddleInitial').value.trim();
             const lastName      = document.getElementById('registerLastName').value.trim();
             const email         = document.getElementById('registerEmail').value.trim();
             const password      = document.getElementById('registerPassword').value;
-            const studentId     = document.getElementById('registerStudentId').value.trim();
+            const idValue       = document.getElementById('registerStudentId').value.trim();
             const mobile        = document.getElementById('registerMobile').value.trim();
-            const course        = document.getElementById('registerCourse').value.trim();
-            const yearLevel     = document.getElementById('registerYearLevel').value;
-            const section       = document.getElementById('registerSection').value;
+            const courseOrDept  = document.getElementById('registerCourse').value.trim();
+            const yearLevel     = document.getElementById('registerYearLevel')?.value || '';
+            const section       = document.getElementById('registerSection')?.value || '';
             const submitBtn     = registerForm.querySelector('button[type="submit"]');
 
-            // Compose full name and yearSection
-            const name        = middleInitial
+            // Compose full name
+            const name = middleInitial
                 ? `${firstName} ${middleInitial}. ${lastName}`
                 : `${firstName} ${lastName}`;
-            const yearSection = `${yearLevel}-${section}`;
 
             // Basic client-side validation
             if (password.length < 6) {
                 showFormAlert('registerAlert', 'Password must be at least 6 characters.', 'error');
+                return;
+            }
+            if (idValue.length !== 10) {
+                showFormAlert('registerAlert', 'ID must be exactly 10 characters.', 'error');
+                return;
+            }
+            if (!/^[0-9]{11}$/.test(mobile)) {
+                showFormAlert('registerAlert', 'Mobile number must be exactly 11 digits.', 'error');
                 return;
             }
 
@@ -198,22 +213,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 await user.updateProfile({ displayName: name });
 
-                await db.collection('users').doc(user.uid).set({
+                const userData = {
                     name,
                     firstName,
                     middleInitial,
                     lastName,
                     email,
-                    studentId,
                     mobile,
-                    course,
-                    yearLevel,
-                    section,
-                    yearSection,
-                    role: 'student',
+                    role: role,
                     status: 'pending',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+
+                if (role === 'professor') {
+                    userData.facultyId = idValue;
+                    userData.department = courseOrDept;
+                } else {
+                    userData.studentId = idValue;
+                    userData.course = courseOrDept;
+                    userData.yearLevel = yearLevel;
+                    userData.section = section;
+                    userData.yearSection = `${yearLevel}-${section}`;
+                }
+
+                await db.collection('users').doc(user.uid).set(userData);
 
                 await auth.signOut();
                 isRegistering = false;

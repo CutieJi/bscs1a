@@ -7,7 +7,7 @@ let selectedBorrowingForExtend = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const { user, userData } = await checkAuth('student');
+        const { user, userData } = await checkAuth('professor');
         currentUser = user;
         currentUserData = userData;
 
@@ -75,7 +75,7 @@ function initializeDashboard() {
 
 
 function updateUserInfo() {
-    const name = currentUserData.name || 'Student';
+    const name = currentUserData.name || 'Professor';
     const email = currentUser.email || '';
     const initials = getUserInitials(name);
     const photoURL = currentUserData.photoURL || null;
@@ -158,7 +158,7 @@ function initializeNavigation() {
         else if (viewId === 'settings') loadSettings();
         else if (viewId === 'incidents') loadMyIncidents();
 
-        try { localStorage.setItem('student-active-view', viewId); } catch (e) { }
+        try { localStorage.setItem('professor-active-view', viewId); } catch (e) { }
 
         if (window.innerWidth <= 768) {
             document.getElementById('sidebar')?.classList.remove('mobile-open');
@@ -197,7 +197,7 @@ function initializeNavigation() {
     // Export globally for onclick handlers
     window.switchView = activateView;
 
-    const saved = (() => { try { return localStorage.getItem('student-active-view'); } catch (e) { return null; } })();
+    const saved = (() => { try { return localStorage.getItem('professor-active-view'); } catch (e) { return null; } })();
     if (saved && document.getElementById(`${saved}View`)) {
         activateView(saved);
     } else {
@@ -557,7 +557,7 @@ async function borrowEquipment() {
             userName: currentUserData.name,
             userEmail: currentUser.email,
             userMobile: currentUserData.mobile || 'N/A',
-            studentId: currentUserData.studentId,
+            facultyId: currentUserData.facultyId || 'N/A',
             userPhotoURL: currentUserData.photoURL || null,
             borrowedAt: firebase.firestore.FieldValue.serverTimestamp(),
             expectedReturnTime: returnTime,
@@ -1152,10 +1152,15 @@ function openProfileModal() {
     document.getElementById("profileMiddleInitial").value = currentUserData.middleInitial || "";
     document.getElementById("profileLastName").value = currentUserData.lastName || "";
     document.getElementById("profileEmail").value = currentUser.email || "";
-    document.getElementById("profileStudentId").value = currentUserData.studentId || "";
-    document.getElementById("profileCourse").value = currentUserData.course || "";
-    document.getElementById("profileYearLevel").closest('.form-group').style.display = 'block';
-    document.getElementById("profileSection").closest('.form-group').style.display = 'block';
+    document.getElementById("profileFacultyId").value = currentUserData.facultyId || "";
+    document.getElementById("profileDepartment").value = currentUserData.department || "";
+
+    const yearLevelGroup = document.getElementById("profileYearLevel")?.closest('.form-group');
+    if (yearLevelGroup) yearLevelGroup.style.display = 'none';
+    const sectionGroup = document.getElementById("profileSection")?.closest('.form-group');
+    if (sectionGroup) sectionGroup.style.display = 'none';
+    const courseGroup = document.getElementById("profileCourse")?.closest('.form-group');
+    if (courseGroup) courseGroup.style.display = 'none';
 
     document.getElementById("profileMobile").value = currentUserData.mobile || "";
     document.getElementById("profileGender").value = currentUserData.gender || "";
@@ -1198,14 +1203,11 @@ async function saveProfile() {
     const name = `${firstName} ${mInitial}${lastName}`;
 
     const email = document.getElementById("profileEmail")?.value;
-    const studentId = document.getElementById("profileStudentId")?.value;
+    const facultyId = document.getElementById("profileFacultyId")?.value;
     const mobile = document.getElementById("profileMobile")?.value;
     const gender = document.getElementById("profileGender")?.value;
-    const course = document.getElementById("profileCourse")?.value;
+    const department = document.getElementById("profileDepartment")?.value;
 
-    const yearLevel = document.getElementById("profileYearLevel")?.value;
-    const section = document.getElementById("profileSection")?.value;
-    const yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
     const photoInput = document.getElementById("profilePhotoInput");
 
     const saveBtn = document.querySelector("#profileModal .btn-primary") || document.querySelector("button[onclick='saveProfile()']");
@@ -1220,8 +1222,8 @@ async function saveProfile() {
     try {
         console.log(">>> [STEP 1] Starting saveProfile...");
 
-        if (studentId && studentId.length !== 10) {
-            showToast("Student ID must be exactly 10 characters.", "error");
+        if (facultyId && facultyId.length !== 10) {
+            showToast("Faculty ID must be exactly 10 characters.", "error");
             return;
         }
 
@@ -1234,7 +1236,7 @@ async function saveProfile() {
         saveBtn.innerHTML = "<span>Saving...</span>";
 
         let updateData = {
-            name, firstName, middleInitial, lastName, email, mobile, gender, studentId, course, yearLevel, section, yearSection
+            name, firstName, middleInitial, lastName, email, mobile, gender, facultyId, department
         };
 
         // Handle photo upload if a new file is selected
@@ -1313,9 +1315,9 @@ function closePasswordModal() {
 }
 
 async function changePassword() {
-    const currentPass = document.getElementById("currentPasswordStudent").value;
+    const currentPass = document.getElementById("currentPassword").value;
     const newPass = document.getElementById("newPassword").value;
-    const confirmPass = document.getElementById("confirmPasswordStudent").value;
+    const confirmPass = document.getElementById("confirmPassword").value;
 
     if (!currentPass || !newPass || !confirmPass) {
         showToast("Please fill in all password fields", "error");
@@ -1347,9 +1349,9 @@ async function changePassword() {
         showToast("Password updated successfully!", "success");
         closePasswordModal();
 
-        document.getElementById("currentPasswordStudent").value = "";
+        document.getElementById("currentPassword").value = "";
         document.getElementById("newPassword").value = "";
-        document.getElementById("confirmPasswordStudent").value = "";
+        document.getElementById("confirmPassword").value = "";
 
     } catch (err) {
         console.error("Change password error:", err);
@@ -1680,9 +1682,9 @@ async function submitIncidentReport() {
         const incidentData = {
             reporterId: currentUser.uid,
             reporterName: currentUserData?.name || currentUser.displayName || 'Unknown',
-            reporterRole: 'student',
+            reporterRole: 'professor',
             reporterEmail: currentUser.email || '',
-            reporterId_number: currentUserData?.studentId || 'N/A',
+            reporterId_number: currentUserData?.facultyId || 'N/A',
             borrowingId: borrowingId,
             equipmentName: equipmentName,
             equipmentCode: equipmentCode,
@@ -1700,7 +1702,7 @@ async function submitIncidentReport() {
         await db.collection('incidents').doc(docRef.id).collection('messages').add({
             senderId: currentUser.uid,
             senderName: currentUserData?.name || 'User',
-            senderRole: 'student',
+            senderRole: 'professor',
             message: `Incident report submitted: ${description.substring(0, 200)}`,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -1863,7 +1865,7 @@ async function sendUserIncidentMessage() {
     if (!message) return;
 
     try {
-        const userRole = currentUserData?.role || 'student';
+        const userRole = currentUserData?.role || 'professor';
         await db.collection('incidents').doc(currentUserIncidentId).collection('messages').add({
             senderId: currentUser.uid,
             senderName: currentUserData?.name || 'User',

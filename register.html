@@ -52,6 +52,15 @@
                     <div id="registerAlert" class="form-alert d-none"></div>
 
                     <div class="register-grid compact-grid">
+                        <!-- Role Selector -->
+                        <div class="field full">
+                            <label for="registerRole">I am a</label>
+                            <select id="registerRole" required>
+                                <option value="student" selected>Student</option>
+                                <option value="professor">Professor / Faculty</option>
+                            </select>
+                        </div>
+
                         <!-- Row 1: First Name | Middle Initial | Last Name -->
                         <div class="field col-first">
                             <label for="registerFirstName">First Name</label>
@@ -68,20 +77,20 @@
                             <input type="text" id="registerLastName" placeholder="Last Name" required />
                         </div>
 
-                        <!-- Row 2: Student ID | Mobile Number -->
+                        <!-- Row 2: ID | Mobile Number -->
                         <div class="field">
-                            <label for="registerStudentId">Student ID</label>
-                            <input type="text" id="registerStudentId" placeholder="Student ID" maxlength="10" required />
+                            <label for="registerStudentId" id="registerIdLabel">Student ID</label>
+                            <input type="text" id="registerStudentId" placeholder="Student ID" minlength="10" maxlength="10" required />
                         </div>
 
                         <div class="field">
                             <label for="registerMobile">Mobile Number</label>
-                            <input type="text" id="registerMobile" placeholder="Mobile Number" maxlength="11" required />
+                            <input type="text" id="registerMobile" placeholder="Mobile Number" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
                         </div>
 
-                        <!-- Row 3: Course | (spacer handled by grid) -->
+                        <!-- Row 3: Course / Department -->
                         <div class="field full">
-                            <label for="registerCourse">Course</label>
+                            <label for="registerCourse" id="registerCourseLabel">Course</label>
                             <input type="text" id="registerCourse" placeholder="e.g. BSCS, BSIT" required />
                         </div>
 
@@ -100,8 +109,8 @@
                             </div>
                         </div>
 
-                        <!-- Row 6: Year Level | Section -->
-                        <div class="field">
+                        <!-- Row 6: Year Level | Section (Student only) -->
+                        <div class="field" id="yearLevelField">
                             <label for="registerYearLevel">Year Level</label>
                             <select id="registerYearLevel" required>
                                 <option value="">Select Year</option>
@@ -112,7 +121,7 @@
                             </select>
                         </div>
 
-                        <div class="field">
+                        <div class="field" id="sectionField">
                             <label for="registerSection">Section</label>
                             <select id="registerSection" required>
                                 <option value="">Select Section</option>
@@ -150,6 +159,42 @@
                 const isHidden = regPasswordInput.type === 'password';
                 regPasswordInput.type = isHidden ? 'text' : 'password';
                 toggleRegBtn.textContent = isHidden ? 'Hide' : 'Show';
+            });
+        }
+
+        // Role toggle: Student ↔ Professor
+        const roleSelect = document.getElementById('registerRole');
+        if (roleSelect) {
+            roleSelect.addEventListener('change', () => {
+                const isProfessor = roleSelect.value === 'professor';
+                const yearField = document.getElementById('yearLevelField');
+                const sectionField = document.getElementById('sectionField');
+                const idLabel = document.getElementById('registerIdLabel');
+                const courseLabel = document.getElementById('registerCourseLabel');
+                const idInput = document.getElementById('registerStudentId');
+                const courseInput = document.getElementById('registerCourse');
+                const yearSelect = document.getElementById('registerYearLevel');
+                const sectionSelect = document.getElementById('registerSection');
+
+                if (isProfessor) {
+                    yearField.style.display = 'none';
+                    sectionField.style.display = 'none';
+                    yearSelect.required = false;
+                    sectionSelect.required = false;
+                    idLabel.textContent = 'Faculty ID';
+                    idInput.placeholder = 'Faculty ID';
+                    courseLabel.textContent = 'Department';
+                    courseInput.placeholder = 'e.g. CCS, COE, CBA';
+                } else {
+                    yearField.style.display = '';
+                    sectionField.style.display = '';
+                    yearSelect.required = true;
+                    sectionSelect.required = true;
+                    idLabel.textContent = 'Student ID';
+                    idInput.placeholder = 'Student ID';
+                    courseLabel.textContent = 'Course';
+                    courseInput.placeholder = 'e.g. BSCS, BSIT';
+                }
             });
         }
     </script>

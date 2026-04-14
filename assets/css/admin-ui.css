@@ -3134,3 +3134,282 @@ body {
         display: flex;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   INCIDENT REPORTS & CHAT STYLES (Admin)
+   ═══════════════════════════════════════════════════════════════ */
+
+.incident-reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.incident-card {
+    background: var(--bg-secondary, #fff);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.incident-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border-color: var(--primary, #0d9488);
+    transform: translateY(-1px);
+}
+
+.incident-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.incident-card-body {
+    margin-top: 0.35rem;
+}
+
+/* Incident Detail Panel */
+.incident-detail-panel {
+    background: var(--bg-secondary, #fff);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.incident-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.incident-info-card {
+    background: var(--bg-primary, #f8fafc);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.incident-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.incident-actions-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.incident-actions-row .form-group {
+    margin-bottom: 0;
+}
+
+.incident-actions-row .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+    display: block;
+    color: var(--text-secondary);
+}
+
+.incident-actions-row .form-group input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    width: 100%;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Chat */
+.incident-chat-container {
+    margin-top: 1rem;
+}
+
+.chat-messages {
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: var(--bg-primary, #f8fafc);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    scroll-behavior: smooth;
+}
+
+.chat-bubble {
+    max-width: 75%;
+    padding: 0.6rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    animation: chatFadeAdmin 0.25s ease;
+}
+
+@keyframes chatFadeAdmin {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-user {
+    align-self: flex-end;
+    background: rgba(13,148,136,0.12);
+    color: var(--text-primary, #1e293b);
+    border-bottom-right-radius: 4px;
+    border: 1px solid rgba(13,148,136,0.2);
+}
+
+.chat-admin {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #0d9488, #14b8a6);
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-sender {
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+    opacity: 0.85;
+}
+
+.chat-role {
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.chat-text {
+    word-break: break-word;
+}
+
+.chat-time {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 0.2rem;
+    text-align: right;
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chat-input-row input {
+    flex: 1;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    background: var(--bg-primary, #fff);
+    color: var(--text-primary, #1e293b);
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.chat-input-row input:focus {
+    border-color: var(--primary, #0d9488);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+}
+
+.chat-input-row .btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+/* Dark mode incident (admin) */
+[data-theme="dark"] .incident-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .incident-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+[data-theme="dark"] .incident-detail-panel {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .incident-info-card {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .chat-messages {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .chat-user {
+    background: rgba(13,148,136,0.15);
+    border-color: rgba(13,148,136,0.25);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .chat-input-row input {
+    background: #1a2744;
+    border-color: #334155;
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .incident-actions-row {
+    border-top-color: #334155;
+}
+
+[data-theme="dark"] .incident-actions-row .form-group input {
+    background: #1a2744;
+    border-color: #334155;
+    color: var(--text-primary);
+}
+
+/* Responsive incidents */
+@media (max-width: 480px) {
+    .chat-bubble {
+        max-width: 88%;
+    }
+
+    .chat-messages {
+        max-height: 280px;
+        padding: 0.75rem;
+    }
+
+    .incident-detail-panel {
+        padding: 0.85rem;
+    }
+
+    .incident-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .incident-actions-row {
+        flex-direction: column;
+    }
+}
