@@ -230,6 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFormAlert('registerAlert', 'Please select your gender.', 'error');
                 return;
             }
+            if (!document.getElementById('registerTerms').checked) {
+                showFormAlert('registerAlert', 'Please agree to the Terms & Conditions and Privacy Policy.', 'error');
+                return;
+            }
 
             try {
                 isRegistering = true;
