@@ -240,6 +240,19 @@ function checkAuth(requiredRole = null) {
                 const userData = userDoc.data();
 
                 if (userData?.role === requiredRole) {
+                    // Start real-time listener for account suspension
+                    db.collection("users").doc(user.uid).onSnapshot(doc => {
+                        const updatedData = doc.data();
+                        if (updatedData && updatedData.status === 'suspended') {
+                            auth.signOut().then(() => {
+                                localStorage.setItem('mislend_suspended_lockout', 'true');
+                                window.location.href = 'login.html';
+                            });
+                        }
+                    }, err => {
+                        console.error("Account status listener error:", err);
+                    });
+
                     resolve({ user, userData });
                 } else {
                     let targetUrl = 'student.html';

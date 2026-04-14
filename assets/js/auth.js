@@ -35,6 +35,12 @@ function clearFormAlert(alertId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check for real-time suspension lockout
+    if (localStorage.getItem('mislend_suspended_lockout') === 'true') {
+        showFormAlert('loginAlert', "Your account has been suspended. Please contact administrator.", "error");
+        localStorage.removeItem('mislend_suspended_lockout');
+    }
+
     auth.onAuthStateChanged(async (user) => {
         if (!user) return;
         if (isRegistering || isLoggingIn) return;
@@ -48,10 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if ((userData.role === "student" || userData.role === "professor") && userData.status === "pending") {
-                await auth.signOut();
-                showFormAlert('loginAlert', "Your account is pending admin approval.", "warning");
-                return;
+            if (userData.role === "student" || userData.role === "professor") {
+                if (userData.status === "suspended") {
+                    await auth.signOut();
+                    showFormAlert('loginAlert', "Your account has been suspended. Please contact administrator.", "error");
+                    return;
+                }
+                if (userData.status === "pending") {
+                    await auth.signOut();
+                    showFormAlert('loginAlert', "Your account is pending admin approval.", "warning");
+                    return;
+                }
             }
 
             if (userData.role === "admin") window.location.href = "admin.html";
@@ -133,13 +146,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('User data not found. Please contact administrator.');
                 }
 
-                if ((userData.role === "student" || userData.role === "professor") && userData.status !== "approved") {
-                    await auth.signOut();
-                    showFormAlert('loginAlert', "Your account is waiting for admin approval.", "warning");
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = "<span>Sign In</span>";
-                    isLoggingIn = false;
-                    return;
+                if ((userData.role === "student" || userData.role === "professor")) {
+                    if (userData.status === "suspended") {
+                        await auth.signOut();
+                        showFormAlert('loginAlert', "Your account has been suspended. Please contact administrator.", "error");
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = "<span>Sign In</span>";
+                        isLoggingIn = false;
+                        return;
+                    }
+                    if (userData.status === "pending") {
+                        await auth.signOut();
+                        showFormAlert('loginAlert', "Your account is waiting for admin approval.", "warning");
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = "<span>Sign In</span>";
+                        isLoggingIn = false;
+                        return;
+                    }
                 }
 
                 showFormAlert('loginAlert', 'Login successful! Redirecting...', 'success');

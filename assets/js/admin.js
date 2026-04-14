@@ -2145,9 +2145,30 @@ async function loadUsers() {
             .orderBy('createdAt', 'desc')
             .get();
 
-        const users = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(user => user.status === 'approved');
+        const allUsersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const users = allUsersData.filter(user => user.status === 'approved' || user.status === 'suspended');
+
+        // Fetch active borrowings to calculate overdue items per user
+        const borrowingsSnapshot = await db.collection('borrowings')
+            .where('status', 'in', ['borrowed', 'pending_extension'])
+            .get();
+        
+        const overdueMap = {};
+        const now = new Date();
+        borrowingsSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.userId && data.borrowedAt && data.expectedReturnTime) {
+                const borrowedDate = data.borrowedAt.toDate();
+                const [hh, mm] = String(data.expectedReturnTime).split(':').map(Number);
+                if (!isNaN(hh) && !isNaN(mm)) {
+                    const due = new Date(borrowedDate);
+                    due.setHours(hh, mm, 0, 0);
+                    if (now > due) {
+                        overdueMap[data.userId] = (overdueMap[data.userId] || 0) + 1;
+                    }
+                }
+            }
+        });
 
         if ($.fn.DataTable.isDataTable('#usersTable')) {
             usersTable.DataTable().clear().destroy();
@@ -2164,6 +2185,12 @@ async function loadUsers() {
                     : `<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold;">${initials}</div>`;
 
                 const roleBadge = `<span class="badge badge-category ${user.role}">${capitalize(user.role)}</span>`;
+                const isSuspended = user.status === 'suspended';
+                const statusBadge = isSuspended ? `<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); margin-left: 5px;">SUSPENDED</span>` : '';
+                
+                const overdueCount = overdueMap[user.id] || 0;
+                const overdueBadge = overdueCount > 0 ? `<br><span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); font-size: 0.7rem; margin-top: 4px;">${overdueCount} Overdue Item${overdueCount > 1 ? 's' : ''}</span>` : '';
+
                 const idNum = (user.studentId || user.facultyId) ? `<br><small class="text-muted">ID: ${user.studentId || user.facultyId}</small>` : '';
 
                 let actionHtml = '';
@@ -2173,6 +2200,16 @@ async function loadUsers() {
                             <button class="btn btn-warning btn-sm" onclick="openEditUser('${user.id}','${user.name}','${user.email}','${user.role}','${user.studentId || ''}','${user.mobile || ''}','${user.gender || ''}','${user.course || ''}','${user.yearSection || ''}', '${user.photoURL || ''}', '${user.firstName || ''}', '${user.middleInitial || ''}', '${user.lastName || ''}', '${user.yearLevel || ''}', '${user.section || ''}', '${user.adminId || ''}', '${user.facultyId || ''}', '${user.department || ''}')" title="Edit user details">
                                 Edit
                             </button>
+
+                            ${isSuspended ? `
+                                <button class="btn btn-primary btn-sm" onclick="unsuspendUser('${user.id}', '${user.name.replace(/'/g, "\\'")}')" title="Unsuspend account" style="background: #10b981;">
+                                    Unsuspend
+                                </button>
+                            ` : `
+                                <button class="btn btn-danger btn-sm" onclick="suspendUser('${user.id}', '${user.name.replace(/'/g, "\\'")}')" title="Suspend account" style="background: #6b7280;">
+                                    Suspend
+                                </button>
+                            `}
 
                             <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}', '${user.email}')" title="Delete user">
                                 Delete
@@ -2188,11 +2225,11 @@ async function loadUsers() {
                 }
 
                 return `
-                    <tr>
+                    <tr ${isSuspended ? 'style="background: rgba(239, 68, 68, 0.02); opacity: 0.85;"' : ''}>
                         <td style="text-align: center; vertical-align: middle;">${avatarHTML}</td>
-                        <td style="vertical-align: middle;"><strong>${user.name}</strong></td>
+                        <td style="vertical-align: middle;"><strong>${user.name}</strong>${statusBadge}</td>
                         <td style="vertical-align: middle;">${user.email}</td>
-                        <td class="user-role-cell" style="vertical-align: middle;">${roleBadge}${idNum}</td>
+                        <td class="user-role-cell" style="vertical-align: middle;">${roleBadge}${idNum}${overdueBadge}</td>
                         <td class="user-actions-cell" style="vertical-align: middle;">${actionHtml}</td>
                     </tr>
                 `;
@@ -2233,6 +2270,50 @@ async function deleteUser(userId, userEmail) {
     } catch (error) {
         console.error('Error deleting user:', error);
         showToast('Failed to delete user. Please try again.', 'error');
+    }
+}
+
+async function suspendUser(userId, userName) {
+    if (!await showConfirm({
+        title: 'Suspend Account',
+        message: `Are you sure you want to suspend ${userName}'s account?\n\nThey will be immediately logged out and blocked from logging in.`,
+        confirmText: 'Suspend',
+        type: 'danger'
+    })) return;
+
+    try {
+        await db.collection('users').doc(userId).update({
+            status: 'suspended',
+            suspendedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            suspendedBy: currentAdmin?.uid || 'admin'
+        });
+        showToast(`Account for ${userName} has been suspended.`, 'success');
+        loadUsers();
+    } catch (error) {
+        console.error('Error suspending user:', error);
+        showToast('Failed to suspend account.', 'error');
+    }
+}
+
+async function unsuspendUser(userId, userName) {
+    if (!await showConfirm({
+        title: 'Unsuspend Account',
+        message: `Restore access for ${userName}?`,
+        confirmText: 'Restore Access',
+        type: 'primary'
+    })) return;
+
+    try {
+        await db.collection('users').doc(userId).update({
+            status: 'approved',
+            unsuspendedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            unsuspendedBy: currentAdmin?.uid || 'admin'
+        });
+        showToast(`Account for ${userName} has been restored.`, 'success');
+        loadUsers();
+    } catch (error) {
+        console.error('Error unsuspending user:', error);
+        showToast('Failed to restore account.', 'error');
     }
 }
 
@@ -2851,6 +2932,8 @@ async function sendEmailOverdue(userId, equipmentName, borrowingId) {
 window.generateQRCode = generateQRCode;
 window.deleteEquipment = deleteEquipment;
 window.deleteUser = deleteUser;
+window.suspendUser = suspendUser;
+window.unsuspendUser = unsuspendUser;
 window.sendSMSOverdue = sendSMSOverdue;
 window.sendEmailOverdue = sendEmailOverdue;
 window.openStudentIdCaptureModal = openStudentIdCaptureModal;
