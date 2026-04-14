@@ -92,12 +92,64 @@ function initializeRealtimeListeners() {
     db.collection('users')
         .where('status', '==', 'pending')
         .onSnapshot((snapshot) => {
-            const count = document.getElementById("pendingCount");
-            if (count) count.textContent = snapshot.size;
+            const count = snapshot.size;
+            const badge = document.getElementById("pendingCount");
+            const badgeMobile = document.getElementById('usersBadgeMobile');
+            
+            if (badge) badge.textContent = count;
+            if (badgeMobile) {
+                badgeMobile.textContent = count;
+                badgeMobile.style.display = count > 0 ? 'flex' : 'none';
+            }
 
             const activeView = document.querySelector('.view-container.active')?.id;
             if (activeView === 'usersView') {
                 loadPending();
+            }
+        });
+
+    // Real-time Active Borrowings Badge
+    db.collection('borrowings')
+        .where('status', '==', 'borrowed')
+        .onSnapshot((snapshot) => {
+            const count = snapshot.size;
+            const badge = document.getElementById('borrowedBadge');
+            const badgeMobile = document.getElementById('borrowedBadgeMobile');
+
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-flex' : 'none';
+            }
+            if (badgeMobile) {
+                badgeMobile.textContent = count;
+                badgeMobile.style.display = count > 0 ? 'flex' : 'none';
+            }
+            
+            // Also update dashboard stat if exists
+            const dashBorrowedCount = document.getElementById('borrowedEquipment');
+            if (dashBorrowedCount) dashBorrowedCount.textContent = count;
+        });
+
+    // Real-time Pending Incidents Badge
+    db.collection('incidents')
+        .where('status', 'in', ['pending', 'under_review'])
+        .onSnapshot((snapshot) => {
+            const count = snapshot.size;
+            const badge = document.getElementById('incidentsBadge');
+            const badgeMobile = document.getElementById('incidentsBadgeMobile');
+
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-flex' : 'none';
+            }
+            if (badgeMobile) {
+                badgeMobile.textContent = count;
+                badgeMobile.style.display = count > 0 ? 'flex' : 'none';
+            }
+
+            const activeView = document.querySelector('.view-container.active')?.id;
+            if (activeView === 'incidentsView') {
+                loadAllIncidents();
             }
         });
 }
@@ -346,15 +398,8 @@ async function loadDashboardData() {
 
         document.getElementById('totalEquipment').textContent = totalEquipment;
         document.getElementById('availableEquipment').textContent = availableEquipment;
-        document.getElementById('borrowedEquipment').textContent = borrowedEquipment;
         document.getElementById('todayBorrows').textContent = todayBorrows;
         document.getElementById('totalHistoricalBorrows').textContent = totalHistoricalBorrows;
-        document.getElementById('borrowedBadge').textContent = borrowedEquipment;
-        const borrowedBadgeMobile = document.getElementById('borrowedBadgeMobile');
-        if (borrowedBadgeMobile) {
-            borrowedBadgeMobile.textContent = borrowedEquipment;
-            borrowedBadgeMobile.style.display = borrowedEquipment > 0 ? 'flex' : 'none';
-        }
         document.getElementById('totalUsers').textContent = totalUsers;
 
         await loadRecentActivities();
@@ -3146,12 +3191,7 @@ async function loadAllIncidents() {
 
         const incidents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Update badge
-        const pendingCount = incidents.filter(i => i.status === 'pending' || i.status === 'under_review').length;
-        const badge = document.getElementById('incidentsBadge');
-        const badgeMobile = document.getElementById('incidentsBadgeMobile');
-        if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
-        if (badgeMobile) { badgeMobile.textContent = pendingCount; badgeMobile.style.display = pendingCount > 0 ? '' : 'none'; }
+
 
         if (incidents.length === 0) {
             listEl.innerHTML = `

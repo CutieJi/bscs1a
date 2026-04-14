@@ -2334,12 +2334,12 @@ body {
     }
 
     .bottom-nav-item i {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         transition: transform 0.2s ease;
     }
 
     .bottom-nav-item span {
-        font-size: 0.58rem;
+        font-size: 0.55rem;
         font-weight: 500;
         letter-spacing: -0.01em;
         white-space: nowrap;
