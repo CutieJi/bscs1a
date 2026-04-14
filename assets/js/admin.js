@@ -617,7 +617,7 @@ async function loadPendingRequests() {
                             </div>
                             <div>
                                 <div style="font-size: 0.875rem; font-weight: 500;">${req.userName}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${req.studentId}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${req.studentId || req.facultyId || 'N/A'}</div>
                             </div>
                         </div>
                         
@@ -1471,8 +1471,8 @@ async function loadCurrentlyBorrowed() {
                             <div>
                                 <div class="borrowed-student">${displayName}</div>
                                 <div class="borrowed-list-details">
-                                    ${item.userEmail} • ${item.studentId} <br>
-                                    ${courseInfo} • ${yearSecInfo}
+                                    ${item.userEmail} • ID: ${item.studentId || item.facultyId || 'N/A'} <br>
+                                    ${userDoc.role === 'professor' ? (userDoc.department || 'N/A') : `${courseInfo} • ${yearSecInfo}`}
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -1494,7 +1494,7 @@ async function loadCurrentlyBorrowed() {
                                 <div style="margin-top: 0.9rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: rgba(11, 31, 58, 0.02); display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap;">
                                     <img src="${item.studentIdPhoto}" alt="Student ID" class="zoomable-id-photo" data-zoom-src="${item.studentIdPhoto}" title="Click to zoom" style="width: 120px; max-width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 0.75rem; border: 1px solid var(--border); background: #fff; cursor: zoom-in; transition: transform 0.2s ease, box-shadow 0.2s ease;">
                                     <div style="flex: 1; min-width: 180px;">
-                                        <strong style="display:block; margin-bottom: 0.2rem;">Stored Student ID</strong>
+                                        <strong style="display:block; margin-bottom: 0.2rem;">Stored ID Photo</strong>
                                         <div style="color: var(--text-secondary); font-size: 0.85rem;">Click the photo to zoom. This captured ID will be removed automatically after the item is returned.</div>
                                         ${item.studentIdPhotoCapturedAt ? `<div style="margin-top: 0.35rem; font-size: 0.8rem; color: var(--text-secondary);">Captured: ${formatDate(item.studentIdPhotoCapturedAt)}</div>` : ''}
                                     </div>
@@ -1660,17 +1660,19 @@ async function loadBorrowingLogs() {
 
                     <div class="log-item-info">
                         <div class="log-field">
-                            <span class="log-label">Student Name:</span>
+                            <span class="log-label">Borrower Name:</span>
                             <span class="log-value">${displayName}</span>
                         </div>
                         <div class="log-field">
-                            <span class="log-label">Course:</span>
-                            <span class="log-value">${courseInfo}</span>
+                            <span class="log-label">${userDoc.role === 'professor' ? 'Department' : 'Course'}:</span>
+                            <span class="log-value">${userDoc.role === 'professor' ? (userDoc.department || 'N/A') : courseInfo}</span>
                         </div>
+                        ${userDoc.role !== 'professor' ? `
                         <div class="log-field">
                             <span class="log-label">Year & Section:</span>
                             <span class="log-value">${yearSecInfo}</span>
                         </div>
+                        ` : ''}
                         <div class="log-field">
                             <span class="log-label">Email:</span>
                             <span class="log-value">${log.userEmail}</span>
@@ -1680,8 +1682,8 @@ async function loadBorrowingLogs() {
                             <span class="log-value">${log.userMobile || 'N/A'}</span>
                         </div>
                         <div class="log-field">
-                            <span class="log-label">Student ID:</span>
-                            <span class="log-value">${log.studentId || 'N/A'}</span>
+                            <span class="log-label">ID Number:</span>
+                            <span class="log-value">${log.studentId || log.facultyId || 'N/A'}</span>
                         </div>
                         <div class="log-field">
                             <span class="log-label">Borrowed:</span>
@@ -2162,7 +2164,7 @@ async function loadUsers() {
                     : `<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold;">${initials}</div>`;
 
                 const roleBadge = `<span class="badge badge-category ${user.role}">${capitalize(user.role)}</span>`;
-                const idNum = user.studentId ? `<br><small class="text-muted">ID: ${user.studentId}</small>` : '';
+                const idNum = (user.studentId || user.facultyId) ? `<br><small class="text-muted">ID: ${user.studentId || user.facultyId}</small>` : '';
 
                 let actionHtml = '';
                 if (user.id !== currentAdmin.uid) {
@@ -2545,7 +2547,7 @@ async function loadPending() {
                 <tr>
                     <td style="vertical-align: middle;"><strong>${u.name}</strong></td>
                     <td style="vertical-align: middle;">${u.email}</td>
-                    <td style="vertical-align: middle;">ID: ${u.studentId || "N/A"}</td>
+                    <td style="vertical-align: middle;">ID: ${u.studentId || u.facultyId || "N/A"}</td>
                     <td style="text-align: center; vertical-align: middle;">
                         <div style="display:flex; gap:0.5rem; justify-content:center;">
                             <button class="btn btn-success btn-sm" onclick="approveUser('${doc.id}')">Approve</button>
@@ -3275,8 +3277,61 @@ async function exportIncidentPDF() {
         };
 
         // ── School Logo / Seal area ──
-        pdf.setFillColor(13, 148, 136);
+        pdf.setFillColor(11, 31, 58);
         pdf.rect(0, 0, pageWidth, 40, 'F');
+
+        // Helper to crop image to circle using Canvas
+        const getCircularLogo = (imgPath) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const size = Math.min(img.width, img.height);
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(img, (size - img.width) / 2, (size - img.height) / 2);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = () => resolve(imgPath); // Fallback to original
+                img.src = imgPath;
+            });
+        };
+
+        // Circular Logo 1 (Left: CS1A.png)
+        try {
+            const logo1Circle = await getCircularLogo('assets/images/CS1A.png');
+            pdf.addImage(logo1Circle, 'PNG', margin, 7, 25, 25);
+        } catch (e) {
+            console.error("Logo 1 error:", e);
+        }
+
+        // Circular Logo 2 (Right: ucc.png)
+        try {
+            const logo2Circle = await getCircularLogo('assets/images/ucc.png');
+            pdf.addImage(logo2Circle, 'PNG', pageWidth - margin - 25, 7, 25, 25);
+        } catch (e) {
+            console.error("Logo 2 error:", e);
+        }
+
+        // Watermark Seal (13.png)
+        pdf.saveGraphicsState();
+        try {
+            const GState = pdf.GState || (window.jspdf && window.jspdf.GState);
+            if (GState) {
+                pdf.setGState(new GState({ opacity: 0.1 }));
+            }
+            const sealSize = 100;
+            pdf.addImage('assets/images/logs.png', 'PNG', (pageWidth - sealSize) / 2, 80, sealSize, sealSize);
+        } catch (e) {
+            console.error("Watermark error:", e);
+        } finally {
+            pdf.restoreGraphicsState();
+        }
+
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(18);
         pdf.setFont('helvetica', 'bold');
@@ -3285,13 +3340,6 @@ async function exportIncidentPDF() {
         pdf.setFont('helvetica', 'normal');
         pdf.text('Management Information Systems Office', pageWidth / 2, 22, { align: 'center' });
         pdf.text('Biglang Awa St., 11th Ave., East Grace Park, Caloocan City', pageWidth / 2, 27, { align: 'center' });
-
-        // ── Circle seal ──
-        pdf.setDrawColor(255, 255, 255);
-        pdf.setLineWidth(0.5);
-        pdf.circle(pageWidth / 2, 35, 4.5);
-        pdf.setFontSize(6);
-        pdf.text('UCC', pageWidth / 2, 36, { align: 'center' });
 
         y = 50;
 

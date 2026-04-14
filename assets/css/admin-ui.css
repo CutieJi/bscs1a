@@ -2442,16 +2442,16 @@ body {
    DARK MODE — ADMIN
    ============================================================ */
 [data-theme="dark"] {
-    --bg-primary:    #0f172a;
-    --bg-secondary:  #1e293b;
-    --bg-tertiary:   #263249;
-    --text-primary:  #f1f5f9;
-    --text-secondary:#94a3b8;
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #263249;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
     --text-tertiary: #64748b;
-    --border:        #334155;
-    --shadow-sm:     0 2px 4px rgba(0,0,0,0.3);
-    --shadow-md:     0 10px 20px rgba(0,0,0,0.35);
-    --shadow-lg:     0 20px 40px rgba(0,0,0,0.4);
+    --border: #334155;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* Page & body */
@@ -2468,7 +2468,7 @@ body {
 [data-theme="dark"] .topbar {
     background: #1e293b;
     border-bottom-color: #334155;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .topbar-toggle,
@@ -2532,13 +2532,13 @@ body {
 [data-theme="dark"] .user-card {
     background: #1e293b;
     border-color: #334155;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .stat-card:hover,
 [data-theme="dark"] .equipment-card:hover,
 [data-theme="dark"] .user-card:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .dashboard-card .card-header {
@@ -2651,7 +2651,7 @@ body {
 [data-theme="dark"] .search-group input:focus {
     border-color: var(--gold);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(200,146,26,0.15);
+    box-shadow: 0 0 0 3px rgba(200, 146, 26, 0.15);
 }
 
 /* Pending section */
@@ -2689,7 +2689,7 @@ body {
 [data-theme="dark"] .profile-menu {
     background: #1e293b;
     border-color: #334155;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="dark"] .profile-menu-header {
@@ -2743,7 +2743,7 @@ body {
 
 /* Badges & status pills */
 [data-theme="dark"] .badge-category {
-    background: rgba(200,146,26,0.15);
+    background: rgba(200, 146, 26, 0.15);
     color: var(--gold-light);
 }
 
@@ -2797,9 +2797,9 @@ body {
 
 /* Bottom nav (mobile) */
 [data-theme="dark"] .bottom-nav {
-    background: rgba(15,23,42,0.95);
+    background: rgba(15, 23, 42, 0.95);
     border-top-color: #334155;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .bottom-nav-item {
@@ -3152,11 +3152,11 @@ body {
     padding: 1rem 1.25rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .incident-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     border-color: var(--primary, #0d9488);
     transform: translateY(-1px);
 }
@@ -3179,7 +3179,7 @@ body {
     border: 1px solid var(--border, #e2e8f0);
     border-radius: 14px;
     padding: 1.25rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .incident-detail-header {
@@ -3266,16 +3266,23 @@ body {
 }
 
 @keyframes chatFadeAdmin {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .chat-user {
     align-self: flex-end;
-    background: rgba(13,148,136,0.12);
+    background: rgba(13, 148, 136, 0.12);
     color: var(--text-primary, #1e293b);
     border-bottom-right-radius: 4px;
-    border: 1px solid rgba(13,148,136,0.2);
+    border: 1px solid rgba(13, 148, 136, 0.2);
 }
 
 .chat-admin {
@@ -3329,7 +3336,7 @@ body {
 .chat-input-row input:focus {
     border-color: var(--primary, #0d9488);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
 }
 
 .chat-input-row .btn {
@@ -3350,7 +3357,7 @@ body {
 
 [data-theme="dark"] .incident-card:hover {
     border-color: var(--primary);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="dark"] .incident-detail-panel {
@@ -3369,8 +3376,8 @@ body {
 }
 
 [data-theme="dark"] .chat-user {
-    background: rgba(13,148,136,0.15);
-    border-color: rgba(13,148,136,0.25);
+    background: rgba(13, 148, 136, 0.15);
+    border-color: rgba(13, 148, 136, 0.25);
     color: var(--text-primary);
 }
 

@@ -646,6 +646,9 @@ async function loadBorrowedItems() {
                         <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="openExtendModal('${item.id}')">
                             Extend Time
                         </button>
+                        <button class="btn btn-secondary btn-sm" style="flex:1; border-color:var(--danger); color:var(--danger);" onclick="switchView('incidents'); setTimeout(() => openNewIncidentForm('${item.id}'), 100)">
+                            Report
+                        </button>
                     `;
                 } else if (isPendingBorrow) {
                     actions = `
@@ -1585,16 +1588,16 @@ function initializeIncidentReporting() {
     }
 }
 
-async function openNewIncidentForm() {
-    // Load current/past borrowed equipment for selection
+async function openNewIncidentForm(preselectedBorrowingId = null) {
+    // Load currently borrowed equipment for selection
     try {
         // Simple query to strictly fetch by user ID to avoid composite index requirement
         const snapshot = await db.collection('borrowings')
             .where('userId', '==', currentUser.uid)
             .get();
 
-        // Filter valid statuses, sort by borrowedAt descending, and limit to recent 30 client-side
-        const validStatuses = ['borrowed', 'pending_return', 'returned'];
+        // Filter valid statuses: strictly 'borrowed' as requested
+        const validStatuses = ['borrowed'];
         const borrowings = snapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
             .filter(b => validStatuses.includes(b.status))
@@ -1642,6 +1645,14 @@ async function openNewIncidentForm() {
                 </div>
             </div>
         `;
+
+        // Handle pre-selection if provided
+        if (preselectedBorrowingId) {
+            const select = document.getElementById('incidentEquipmentSelect');
+            if (select) {
+                select.value = preselectedBorrowingId;
+            }
+        }
     } catch (error) {
         console.error('Error loading borrowings for incident:', error);
         showToast('Failed to load equipment list', 'error');
@@ -1883,3 +1894,4 @@ async function sendUserIncidentMessage() {
 window.openUserIncidentDetail = openUserIncidentDetail;
 window.submitIncidentReport = submitIncidentReport;
 window.loadMyIncidents = loadMyIncidents;
+window.openNewIncidentForm = openNewIncidentForm;
