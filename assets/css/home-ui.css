@@ -211,6 +211,39 @@ ul {
     position: relative;
     overflow: hidden;
     background: linear-gradient(rgba(11, 31, 58, 0.85), rgba(11, 31, 58, 0.9)), url('../images/wprev.png') center/cover no-repeat;
+    animation: hero-bg-zoom 20s ease infinite alternate;
+}
+
+@keyframes hero-bg-zoom {
+    from { background-size: 100% 100%; }
+    to { background-size: 110% 110%; }
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(200, 146, 26, 0.05) 48%,
+        rgba(255, 255, 255, 0.348) 50%,
+        rgba(200, 146, 26, 0.05) 52%,
+        transparent 100%
+    );
+    background-size: 100% 200%;
+    animation: scanner-sweep 4s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+}
+
+@keyframes scanner-sweep {
+    0% { background-position: 0 -100%; }
+    100% { background-position: 0 100%; }
 }
 
 .hero::before {
@@ -876,7 +909,24 @@ footer {
     color: var(--gold);
 }
 
-/* --- DROP-DOWN SYSTEM (Desktop Base) --- */
+/* HERO SPECIFIC REVEALS */
+.reveal-hero-1, .reveal-hero-2, .reveal-hero-3, .reveal-hero-4 {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: heroReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.reveal-hero-1 { animation-delay: 0.2s; }
+.reveal-hero-2 { animation-delay: 0.4s; }
+.reveal-hero-3 { animation-delay: 0.6s; }
+.reveal-hero-4 { animation-delay: 0.8s; }
+
+@keyframes heroReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 .careers-menu {
     position: relative;
     cursor: pointer;
