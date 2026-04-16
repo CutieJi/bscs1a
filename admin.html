@@ -391,6 +391,24 @@
                         </div>
                     </div>
 
+                    <div class="equipment-filters" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <div class="search-group" style="max-width: 300px; margin-left: 0;">
+                            <input type="text" id="equipmentSearchInput" placeholder="Search equipment..." oninput="loadAllEquipment()" style="width: 100%;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </div>
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <label>Sort By:</label>
+                            <select id="equipmentSortSelect" onchange="loadAllEquipment()" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem;">
+                                <option value="desc">Newest Added (Default)</option>
+                                <option value="id_asc">ID Number (Ascending)</option>
+                                <option value="id_desc">ID Number (Descending)</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="equipment-list" id="equipmentList">
                     </div>
                 </div>
@@ -604,6 +622,8 @@
                         <option value="remote">Remote Control</option>
                         <option value="display">Display/TV</option>
                         <option value="extension">Extension Cord</option>
+                        <option value="laptop">Laptop/Computer</option>
+                        <option value="network">Networking Kit</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
@@ -837,6 +857,8 @@
                         <option value="remote">Remote Control</option>
                         <option value="display">Display/TV</option>
                         <option value="extension">Extension Cord</option>
+                        <option value="laptop">Laptop/Computer</option>
+                        <option value="network">Networking Kit</option>
                         <option value="other">Other</option>
                     </select>
                 </div>

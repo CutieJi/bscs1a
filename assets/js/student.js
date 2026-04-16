@@ -205,6 +205,20 @@ function initializeNavigation() {
     }
 }
 
+function getEquipmentImage(category) {
+    const images = {
+        'projector': 'assets/images/projector.png',
+        'cable': 'assets/images/hdmi.png',
+        'remote': 'assets/images/remote.png',
+        'display': 'assets/images/display.png',
+        'extension': 'assets/images/ext-cord.png',
+        'laptop': 'assets/images/laptop.png',
+        'network': 'assets/images/network-kit.png',
+        'other': 'assets/images/other-kit.png'
+    };
+    return images[category] || 'assets/images/other-kit.png';
+}
+
 async function loadEquipment() {
     const equipmentGrid = document.getElementById('equipmentGrid');
     if (!equipmentGrid) return;
@@ -246,8 +260,13 @@ async function loadEquipment() {
                 </div>
             `;
         } else {
-            equipmentGrid.innerHTML = equipment.map(item => `
+            equipmentGrid.innerHTML = equipment.map(item => {
+                const imgPath = getEquipmentImage(item.category);
+                return `
                 <div class="equipment-card">
+                    <div style="background: rgba(11, 31, 58, 0.03); border-bottom: 1px solid var(--border); margin: -1.5rem -1.5rem 1rem -1.5rem; padding: 1.5rem; border-top-left-radius: 12px; border-top-right-radius: 12px; display: flex; justify-content: center; align-items: center; min-height: 180px; cursor: zoom-in;" onclick="openImageZoomModal('${imgPath}')" title="Click to zoom">
+                        <img src="${imgPath}" alt="${item.name}" style="max-height: 140px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+                    </div>
                     <div class="equipment-header">
                         <span class="equipment-id">${item.equipmentId}</span>
                         <span class="equipment-status ${item.status}">${capitalize(item.status)}</span>
@@ -265,7 +284,7 @@ async function loadEquipment() {
                         `}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
     } catch (error) {
         console.error('Error loading equipment:', error);
@@ -1893,3 +1912,11 @@ window.openUserIncidentDetail = openUserIncidentDetail;
 window.submitIncidentReport = submitIncidentReport;
 window.loadMyIncidents = loadMyIncidents;
 window.openNewIncidentForm = openNewIncidentForm;
+window.openImageZoomModal = function(src) { 
+    const modal = document.getElementById('imageZoomModal'); 
+    const zoomedImage = document.getElementById('zoomedImagePreview'); 
+    if (!modal || !zoomedImage || !src) return; 
+    zoomedImage.src = src; 
+    modal.classList.add('active'); 
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); }; 
+};

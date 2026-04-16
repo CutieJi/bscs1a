@@ -427,7 +427,7 @@
                 </div>
                 <div class="form-group">
                     <label for="room">Room (Where you will use it)</label>
-                    <input type="text" id="room" placeholder="e.g., Room 203" required />
+                    <input type="text" id="room" placeholder="e.g., 301, CL1" required />
                 </div>
                 <div class="form-group">
                     <label for="purpose">Purpose of Borrowing</label>
@@ -588,6 +588,15 @@
         </nav>
 
         <div class="toast" id="toast"></div>
+
+    <div class="modal" id="imageZoomModal" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="modal-content" style="max-width: 90vw; background: transparent; box-shadow: none; padding: 0;">
+            <div style="position: relative; text-align: center; display: inline-block;">
+                <button class="modal-close" onclick="document.getElementById('imageZoomModal').classList.remove('active')" style="position: absolute; top: -15px; right: -15px; background: #fff; width: 35px; height: 35px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; z-index: 10;">&times;</button>
+                <img id="zoomedImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+            </div>
+        </div>
+    </div>
 
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>

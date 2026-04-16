@@ -1260,6 +1260,20 @@ async function addEquipment() {
     }
 }
 
+function getEquipmentImage(category) {
+    const images = {
+        'projector': 'assets/images/projector.png',
+        'cable': 'assets/images/hdmi.png',
+        'remote': 'assets/images/remote.png',
+        'display': 'assets/images/display.png',
+        'extension': 'assets/images/ext-cord.png',
+        'laptop': 'assets/images/laptop.png',
+        'network': 'assets/images/network-kit.png',
+        'other': 'assets/images/other-kit.png'
+    };
+    return images[category] || 'assets/images/other-kit.png';
+}
+
 async function loadAllEquipment() {
     const equipmentList = document.getElementById('equipmentList');
     if (!equipmentList) return;
@@ -1269,7 +1283,36 @@ async function loadAllEquipment() {
             .orderBy('createdAt', 'desc')
             .get();
 
-        const equipment = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let equipment = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const searchInput = document.getElementById('equipmentSearchInput')?.value.trim();
+        if (searchInput) {
+            const searchLower = searchInput.toLowerCase();
+            equipment = equipment.filter(item => {
+                const match = String(item.equipmentId).match(/\d+/);
+                const idNum = match ? match[0] : '';
+                return idNum.includes(searchInput) ||
+                       String(item.equipmentId).toLowerCase().includes(searchLower) ||
+                       String(item.name || '').toLowerCase().includes(searchLower) ||
+                       String(item.category || '').toLowerCase().includes(searchLower) ||
+                       String(item.description || '').toLowerCase().includes(searchLower);
+            });
+        }
+
+        const sortSelect = document.getElementById('equipmentSortSelect')?.value;
+        if (sortSelect === 'id_asc' || sortSelect === 'id_desc') {
+            equipment.sort((a, b) => {
+                const matchA = String(a.equipmentId).match(/\d+/);
+                const matchB = String(b.equipmentId).match(/\d+/);
+                const numA = matchA ? parseInt(matchA[0], 10) : 0;
+                const numB = matchB ? parseInt(matchB[0], 10) : 0;
+                if (sortSelect === 'id_asc') {
+                    return numA - numB;
+                } else {
+                    return numB - numA;
+                }
+            });
+        }
 
         if (equipment.length === 0) {
             equipmentList.innerHTML = `
@@ -1279,9 +1322,14 @@ async function loadAllEquipment() {
                 </div>
             `;
         } else {
-            equipmentList.innerHTML = equipment.map(item => `
+            equipmentList.innerHTML = equipment.map(item => {
+                const imgPath = getEquipmentImage(item.category);
+                return `
                 <div class="equipment-list-item">
-                    <div class="equipment-list-info">
+                    <div style="width: 60px; height: 60px; background: rgba(11, 31, 58, 0.03); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; cursor: zoom-in;" onclick="openImageZoomModal('${imgPath}')" title="Click to zoom">
+                        <img src="${imgPath}" alt="${item.name}" style="max-width: 45px; max-height: 45px; object-fit: contain;">
+                    </div>
+                    <div class="equipment-list-info" style="flex:1;">
                         <div class="equipment-list-name">${item.name}</div>
                         <div class="equipment-list-meta">
                             <span class="badge badge-category">${item.equipmentId}</span>
@@ -1301,7 +1349,7 @@ async function loadAllEquipment() {
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
     } catch (error) {
         console.error('Error loading equipment:', error);
