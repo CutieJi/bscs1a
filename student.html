@@ -224,6 +224,27 @@
             </header>
 
             <div class="main-content-inner">
+                <div id="overdueReminderBanner"
+                    style="display: none; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-left: 4px solid var(--danger); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border-radius: var(--radius-md); align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div
+                            style="width: 40px; height: 40px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fa-solid fa-triangle-exclamation"
+                                style="color: var(--danger); font-size: 1.25rem;"></i>
+                        </div>
+                        <div>
+                            <strong
+                                style="color: var(--danger); display: block; font-size: 1.05rem; margin-bottom: 0.2rem;">Account
+                                Warning: Overdue Strikes</strong>
+                            <span style="color: var(--text-primary); font-size: 0.875rem;"
+                                id="overdueReminderText"></span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="switchView('myborrowed')"
+                        style="border-color: var(--danger); color: var(--danger); font-weight: 600;">
+                        View My Items
+                    </button>
+                </div>
                 <div class="view-container active" id="browseView">
                     <div class="content-header">
                         <div>
@@ -486,33 +507,46 @@
                     </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">First Name</label>
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">First
+                                Name</label>
                             <input type="text" id="profileFirstName" class="form-control" style="width: 100%;" required>
                         </div>
                         <div style="width: 70px;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">M.I.</label>
-                            <input type="text" id="profileMiddleInitial" class="form-control" style="width: 100%;" maxlength="2" placeholder="A.">
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">M.I.</label>
+                            <input type="text" id="profileMiddleInitial" class="form-control" style="width: 100%;"
+                                maxlength="2" placeholder="A.">
                         </div>
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Last Name</label>
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Last
+                                Name</label>
                             <input type="text" id="profileLastName" class="form-control" style="width: 100%;" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Email</label>
-                        <input type="email" id="profileEmail" class="form-control" disabled style="background: var(--bg-secondary); cursor: not-allowed;">
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Email</label>
+                        <input type="email" id="profileEmail" class="form-control" disabled
+                            style="background: var(--bg-secondary); cursor: not-allowed;">
                     </div>
                     <div class="form-group">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Student ID</label>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Student
+                            ID</label>
                         <input type="text" id="profileStudentId" class="form-control" minlength="10" maxlength="10">
                     </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Mobile No.</label>
-                            <input type="tel" id="profileMobile" class="form-control" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Mobile
+                                No.</label>
+                            <input type="tel" id="profileMobile" class="form-control" minlength="11" maxlength="11"
+                                pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         </div>
                         <div style="width: 120px;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Gender</label>
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Gender</label>
                             <select id="profileGender" class="form-control">
                                 <option value="">Select</option>
                                 <option value="Male">Male</option>
@@ -522,12 +556,15 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Course / Program</label>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Course
+                            / Program</label>
                         <input type="text" id="profileCourse" class="form-control">
                     </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Year Level</label>
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Year
+                                Level</label>
                             <select id="profileYearLevel" class="form-control" required style="height: 42px;">
                                 <option value="">Select Year</option>
                                 <option value="1st Year">1st Year</option>
@@ -537,8 +574,10 @@
                             </select>
                         </div>
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Section</label>
-                            <input type="text" id="profileSection" class="form-control" placeholder="e.g., A, B, C" required>
+                            <label
+                                style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Section</label>
+                            <input type="text" id="profileSection" class="form-control" placeholder="e.g., A, B, C"
+                                required>
                         </div>
                     </div>
                     <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
@@ -605,14 +644,18 @@
 
         <div class="toast" id="toast"></div>
 
-    <div class="modal" id="imageZoomModal" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
-        <div class="modal-content" style="max-width: 90vw; background: transparent; box-shadow: none; padding: 0;">
-            <div style="position: relative; text-align: center; display: inline-block;">
-                <button class="modal-close" onclick="document.getElementById('imageZoomModal').classList.remove('active')" style="position: absolute; top: -15px; right: -15px; background: #fff; width: 35px; height: 35px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; z-index: 10;">&times;</button>
-                <img id="zoomedImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+        <div class="modal" id="imageZoomModal"
+            style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+            <div class="modal-content" style="max-width: 90vw; background: transparent; box-shadow: none; padding: 0;">
+                <div style="position: relative; text-align: center; display: inline-block;">
+                    <button class="modal-close"
+                        onclick="document.getElementById('imageZoomModal').classList.remove('active')"
+                        style="position: absolute; top: -15px; right: -15px; background: #fff; width: 35px; height: 35px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; z-index: 10;">&times;</button>
+                    <img id="zoomedImagePreview" src=""
+                        style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+                </div>
             </div>
         </div>
-    </div>
 
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>

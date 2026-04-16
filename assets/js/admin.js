@@ -473,6 +473,7 @@ async function loadOverdueItems() {
 
                 return now > due;
             });
+        await checkAndAutoSuspendUsers(overdue);
 
         if (sendAllRemindersBtn) {
             sendAllRemindersBtn.style.display = overdue.length > 0 ? 'inline-flex' : 'none';
@@ -530,6 +531,66 @@ async function loadOverdueItems() {
                 </div>
             </div>
         `;
+    }
+}
+
+async function checkAllUsersForAutoSuspend() {
+    try {
+        const activeSnapshot = await db.collection('borrowings')
+            .where('status', 'in', ['borrowed', 'pending_extension'])
+            .get();
+        
+        const historicalSnapshot = await db.collection('borrowings')
+            .where('wasOverdue', '==', true)
+            .get();
+
+        const strikeMap = {};
+        const now = new Date();
+
+        // Calculate current active overdues
+        activeSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.userId && data.borrowedAt && data.expectedReturnTime) {
+                const borrowedDate = data.borrowedAt.toDate();
+                const [hh, mm] = String(data.expectedReturnTime).split(':').map(Number);
+                if (!isNaN(hh) && !isNaN(mm)) {
+                    const due = new Date(borrowedDate);
+                    due.setHours(hh, mm, 0, 0);
+                    if (now > due) {
+                        strikeMap[data.userId] = (strikeMap[data.userId] || 0) + 1;
+                    }
+                }
+            }
+        });
+
+        // Calculate past overdues
+        historicalSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.userId) strikeMap[data.userId] = (strikeMap[data.userId] || 0) + 1;
+        });
+
+        // Suspend users who hit 3 strikes
+        for (const [userId, count] of Object.entries(strikeMap)) {
+            if (count >= 3) {
+                const userRef = db.collection('users').doc(userId);
+                const userDoc = await userRef.get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    if (userData.status !== 'suspended' && userData.role !== 'admin') {
+                        await userRef.update({
+                            status: 'suspended',
+                            suspendedReason: `Auto-suspended: Accumulated ${count} lifetime overdue items.`,
+                            suspendedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            suspendedBy: 'system'
+                        });
+                        showToast(`System auto-suspended ${userData.name} for accumulating ${count} overdue items.`, 'warning');
+                        if (typeof loadUsers === 'function') loadUsers();
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Auto-suspend error:", err);
     }
 }
 
@@ -1161,6 +1222,7 @@ async function adminConfirmReturn(borrowingId, equipmentId) {
         showToast('Return confirmed successfully', 'success');
         loadCurrentlyBorrowed();
         loadDashboardData();
+        checkAllUsersForAutoSuspend();
     } catch (err) {
         console.error(err);
         showToast('Error confirming return', 'error');
@@ -2259,14 +2321,21 @@ async function loadUsers() {
         const allUsersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         const users = allUsersData.filter(user => user.status === 'approved' || user.status === 'suspended');
 
-        // Fetch active borrowings to calculate overdue items per user
-        const borrowingsSnapshot = await db.collection('borrowings')
+        // 1. Fetch active borrowings to calculate CURRENT overdue items
+        const activeBorrowingsSnapshot = await db.collection('borrowings')
             .where('status', 'in', ['borrowed', 'pending_extension'])
             .get();
 
+        // 2. Fetch historical borrowings to count PAST items that were returned late
+        const pastOverdueSnapshot = await db.collection('borrowings')
+            .where('wasOverdue', '==', true)
+            .get();
+        
         const overdueMap = {};
         const now = new Date();
-        borrowingsSnapshot.docs.forEach(doc => {
+
+        // Add current active overdues to the map
+        activeBorrowingsSnapshot.docs.forEach(doc => {
             const data = doc.data();
             if (data.userId && data.borrowedAt && data.expectedReturnTime) {
                 const borrowedDate = data.borrowedAt.toDate();
@@ -2278,6 +2347,14 @@ async function loadUsers() {
                         overdueMap[data.userId] = (overdueMap[data.userId] || 0) + 1;
                     }
                 }
+            }
+        });
+
+        // Add past returned overdues to the map
+        pastOverdueSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.userId) {
+                overdueMap[data.userId] = (overdueMap[data.userId] || 0) + 1;
             }
         });
 
@@ -2408,20 +2485,46 @@ async function suspendUser(userId, userName) {
 
 async function unsuspendUser(userId, userName) {
     if (!await showConfirm({
-        title: 'Unsuspend Account',
-        message: `Restore access for ${userName}?`,
-        confirmText: 'Restore Access',
+        title: 'Unsuspend & Reset Account',
+        message: `Restore access for ${userName}?\n\nThis will also forgive their past overdue strikes, resetting their historical count to 0.`,
+        confirmText: 'Restore & Reset',
         type: 'primary'
     })) return;
 
     try {
+        // 1. Update the user's status back to approved
         await db.collection('users').doc(userId).update({
             status: 'approved',
             unsuspendedAt: firebase.firestore.FieldValue.serverTimestamp(),
             unsuspendedBy: currentAdmin?.uid || 'admin'
         });
-        showToast(`Account for ${userName} has been restored.`, 'success');
+
+        // 2. Find all of their past overdue borrowings
+        const pastOverdueSnapshot = await db.collection('borrowings')
+            .where('userId', '==', userId)
+            .where('wasOverdue', '==', true)
+            .get();
+
+        // 3. Batch update them to clear the strike
+        if (!pastOverdueSnapshot.empty) {
+            const batch = db.batch();
+            pastOverdueSnapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { 
+                    wasOverdue: false,         // This removes the strike from the count
+                    strikeForgiven: true       // Keeps an audit trail that this was forgiven
+                });
+            });
+            await batch.commit();
+        }
+
+        showToast(`Account for ${userName} restored and overdue count reset.`, 'success');
+        
+        // Refresh the tables and check system
         loadUsers();
+        if (typeof checkAllUsersForAutoSuspend === 'function') {
+            checkAllUsersForAutoSuspend();
+        }
+        
     } catch (error) {
         console.error('Error unsuspending user:', error);
         showToast('Failed to restore account.', 'error');

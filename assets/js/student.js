@@ -70,9 +70,8 @@ function initializeDashboard() {
     initializeTheme();
     initializeHistoryExport();
     initializeIncidentReporting();
-
+    checkStudentOverdueStatus();
 }
-
 
 function updateUserInfo() {
     const name = currentUserData.name || 'Student';
@@ -1920,3 +1919,72 @@ window.openImageZoomModal = function(src) {
     modal.classList.add('active'); 
     modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); }; 
 };
+
+// ═══════════════════════════════════════════════════════════════
+// LIFETIME OVERDUE REMINDER SYSTEM
+// ═══════════════════════════════════════════════════════════════
+async function checkStudentOverdueStatus() {
+    const banner = document.getElementById('overdueReminderBanner');
+    const textEl = document.getElementById('overdueReminderText');
+    if (!banner || !textEl || !currentUser) return;
+
+    try {
+        // 1. Check for items that are CURRENTLY overdue
+        const activeSnapshot = await db.collection('borrowings')
+            .where('userId', '==', currentUser.uid)
+            .where('status', 'in', ['borrowed', 'pending_extension'])
+            .get();
+
+        // 2. Check for past items that were returned late (Historical Strikes)
+        const pastSnapshot = await db.collection('borrowings')
+            .where('userId', '==', currentUser.uid)
+            .where('wasOverdue', '==', true)
+            .get();
+
+        let activeOverdueCount = 0;
+        const now = new Date();
+
+        activeSnapshot.docs.forEach(doc => {
+            const item = doc.data();
+            if (item.borrowedAt && item.expectedReturnTime) {
+                const borrowedDate = item.borrowedAt.toDate();
+                const [hh, mm] = String(item.expectedReturnTime).split(':').map(Number);
+                
+                if (!isNaN(hh) && !isNaN(mm)) {
+                    const due = new Date(borrowedDate);
+                    due.setHours(hh, mm, 0, 0);
+                    if (now > due) {
+                        activeOverdueCount++;
+                    }
+                }
+            }
+        });
+
+        // Calculate total lifetime strikes
+        const pastOverdueCount = pastSnapshot.size;
+        const totalStrikes = activeOverdueCount + pastOverdueCount;
+
+        if (totalStrikes > 0) {
+            let message = `You have <strong style="color: var(--danger);">${totalStrikes} lifetime overdue strike${totalStrikes > 1 ? 's' : ''}</strong>. `;
+            
+            if (activeOverdueCount > 0) {
+                message += `You currently have <strong>${activeOverdueCount} item(s) overdue right now!</strong> Please return them immediately. `;
+            }
+            
+            message += `Accumulating 3 strikes will result in automatic account suspension.`;
+            
+            textEl.innerHTML = message;
+            banner.style.display = 'flex';
+            
+            // Visual escalation if they are at 2 strikes (1 away from suspension)
+            if (totalStrikes >= 2) {
+                banner.style.background = 'rgba(239, 68, 68, 0.15)'; 
+                banner.style.borderLeft = '6px solid var(--danger)';
+            }
+        } else {
+            banner.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error checking overdue status:', error);
+    }
+}
