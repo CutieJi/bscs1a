@@ -12,7 +12,7 @@ function showFormAlert(alertId, message, type = 'error') {
     if (!el) return;
 
     const icons = {
-        error:   '&#10005;',
+        error: '&#10005;',
         success: '&#10003;',
         warning: '&#9888;'
     };
@@ -194,19 +194,19 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             clearFormAlert('registerAlert');
 
-            const role          = document.getElementById('registerRole')?.value || 'student';
-            const firstName     = document.getElementById('registerFirstName').value.trim();
+            const role = document.getElementById('registerRole')?.value || 'student';
+            const firstName = document.getElementById('registerFirstName').value.trim();
             const middleInitial = document.getElementById('registerMiddleInitial').value.trim();
-            const lastName      = document.getElementById('registerLastName').value.trim();
-            const email         = document.getElementById('registerEmail').value.trim();
-            const password      = document.getElementById('registerPassword').value;
-            const idValue       = document.getElementById('registerStudentId').value.trim();
-            const mobile        = document.getElementById('registerMobile').value.trim();
-            const courseOrDept  = document.getElementById('registerCourse').value.trim();
-            const yearLevel     = document.getElementById('registerYearLevel')?.value || '';
-            const section       = document.getElementById('registerSection')?.value || '';
-            const gender        = document.getElementById('registerGender')?.value || '';
-            const submitBtn     = registerForm.querySelector('button[type="submit"]');
+            const lastName = document.getElementById('registerLastName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const idValue = document.getElementById('registerStudentId').value.trim();
+            const mobile = document.getElementById('registerMobile').value.trim();
+            const courseOrDept = document.getElementById('registerCourse').value.trim();
+            const yearLevel = document.getElementById('registerYearLevel')?.value || '';
+            const section = document.getElementById('registerSection')?.value || '';
+            const gender = document.getElementById('registerGender')?.value || '';
+            const submitBtn = registerForm.querySelector('button[type="submit"]');
 
             // Compose full name
             const name = middleInitial
@@ -239,6 +239,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRegistering = true;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>Creating Account...</span>';
+
+                const studentCheck = await db.collection('users').where('studentId', '==', idValue).limit(1).get();
+                const facultyCheck = await db.collection('users').where('facultyId', '==', idValue).limit(1).get();
+
+                if (!studentCheck.empty || !facultyCheck.empty) {
+                    showFormAlert('registerAlert', 'This ID is already registered.', 'error');
+                    isRegistering = false;
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Create Account</span>';
+                    return;
+                }
 
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
@@ -295,12 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function getErrorMessage(error) {
     const errorMessages = {
         'auth/email-already-in-use': 'This email is already registered.',
-        'auth/invalid-email':        'Invalid email address.',
-        'auth/weak-password':        'Password must be at least 6 characters.',
-        'auth/user-not-found':       'Invalid email/Student ID or password.',
-        'auth/wrong-password':       'Invalid email/Student ID or password.',
-        'auth/invalid-credential':   'Invalid email/Student ID or password.',
-        'auth/too-many-requests':    'Too many failed attempts. Please try again later.'
+        'auth/invalid-email': 'Invalid email address.',
+        'auth/weak-password': 'Password must be at least 6 characters.',
+        'auth/user-not-found': 'Invalid email/Student ID or password.',
+        'auth/wrong-password': 'Invalid email/Student ID or password.',
+        'auth/invalid-credential': 'Invalid email/Student ID or password.',
+        'auth/too-many-requests': 'Too many failed attempts. Please try again later.'
     };
 
     return errorMessages[error.code] || error.message;

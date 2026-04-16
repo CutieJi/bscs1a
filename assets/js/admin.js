@@ -95,7 +95,7 @@ function initializeRealtimeListeners() {
             const count = snapshot.size;
             const badge = document.getElementById("pendingCount");
             const badgeMobile = document.getElementById('usersBadgeMobile');
-            
+
             if (badge) badge.textContent = count;
             if (badgeMobile) {
                 badgeMobile.textContent = count;
@@ -124,7 +124,7 @@ function initializeRealtimeListeners() {
                 badgeMobile.textContent = count;
                 badgeMobile.style.display = count > 0 ? 'flex' : 'none';
             }
-            
+
             // Also update dashboard stat if exists
             const dashBorrowedCount = document.getElementById('borrowedEquipment');
             if (dashBorrowedCount) dashBorrowedCount.textContent = count;
@@ -1292,10 +1292,10 @@ async function loadAllEquipment() {
                 const match = String(item.equipmentId).match(/\d+/);
                 const idNum = match ? match[0] : '';
                 return idNum.includes(searchInput) ||
-                       String(item.equipmentId).toLowerCase().includes(searchLower) ||
-                       String(item.name || '').toLowerCase().includes(searchLower) ||
-                       String(item.category || '').toLowerCase().includes(searchLower) ||
-                       String(item.description || '').toLowerCase().includes(searchLower);
+                    String(item.equipmentId).toLowerCase().includes(searchLower) ||
+                    String(item.name || '').toLowerCase().includes(searchLower) ||
+                    String(item.category || '').toLowerCase().includes(searchLower) ||
+                    String(item.description || '').toLowerCase().includes(searchLower);
             });
         }
 
@@ -2147,6 +2147,24 @@ async function createNewUser() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Creating...</span>';
 
+        let idToCheck = "";
+        if (role === 'student') idToCheck = studentId;
+        else if (role === 'professor') idToCheck = document.getElementById('newUserFacultyId')?.value.trim();
+        else if (role === 'admin') idToCheck = adminId;
+
+        if (idToCheck) {
+            const studentCheck = await db.collection('users').where('studentId', '==', idToCheck).limit(1).get();
+            const facultyCheck = await db.collection('users').where('facultyId', '==', idToCheck).limit(1).get();
+            const adminCheck = await db.collection('users').where('adminId', '==', idToCheck).limit(1).get();
+
+            if (!studentCheck.empty || !facultyCheck.empty || !adminCheck.empty) {
+                showToast('This ID is already registered to another user.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+                return;
+            }
+        }
+
         const secAuth = getSecondaryAuth();
         const userCredential = await secAuth.createUserWithEmailAndPassword(email, password);
         const newUser = userCredential.user;
@@ -2245,7 +2263,7 @@ async function loadUsers() {
         const borrowingsSnapshot = await db.collection('borrowings')
             .where('status', 'in', ['borrowed', 'pending_extension'])
             .get();
-        
+
         const overdueMap = {};
         const now = new Date();
         borrowingsSnapshot.docs.forEach(doc => {
@@ -2280,7 +2298,7 @@ async function loadUsers() {
                 const roleBadge = `<span class="badge badge-category ${user.role}">${capitalize(user.role)}</span>`;
                 const isSuspended = user.status === 'suspended';
                 const statusBadge = isSuspended ? `<span class="badge badge-status" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); margin-left: 5px;">SUSPENDED</span>` : '';
-                
+
                 const overdueCount = overdueMap[user.id] || 0;
                 const overdueBadge = overdueCount > 0 ? `<br><span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); font-size: 0.7rem; margin-top: 4px;">${overdueCount} Overdue Item${overdueCount > 1 ? 's' : ''}</span>` : '';
 
@@ -2605,6 +2623,29 @@ if (editUserForm) {
             console.log(">>> [STEP 1] Starting editUserForm submit...");
             submitBtn.disabled = true;
             submitBtn.innerHTML = "<span>Saving...</span>";
+
+            let idToCheck = "";
+            if (role === 'student') idToCheck = document.getElementById("editUserStudentId").value.trim();
+            else if (role === 'professor') idToCheck = document.getElementById("editUserFacultyId")?.value.trim();
+            else if (role === 'admin') idToCheck = document.getElementById("editUserAdminId")?.value.trim();
+
+            if (idToCheck) {
+                const studentCheck = await db.collection('users').where('studentId', '==', idToCheck).limit(1).get();
+                const facultyCheck = await db.collection('users').where('facultyId', '==', idToCheck).limit(1).get();
+                const adminCheck = await db.collection('users').where('adminId', '==', idToCheck).limit(1).get();
+
+                const isDuplicate =
+                    (!studentCheck.empty && studentCheck.docs.some(doc => doc.id !== id)) ||
+                    (!facultyCheck.empty && facultyCheck.docs.some(doc => doc.id !== id)) ||
+                    (!adminCheck.empty && adminCheck.docs.some(doc => doc.id !== id));
+
+                if (isDuplicate) {
+                    showToast('This ID is already registered to another user.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalContent;
+                    return;
+                }
+            }
 
             const firstName = document.getElementById("editUserFirstName").value.trim();
             const middleInitial = document.getElementById("editUserMiddleInitial").value.trim();
