@@ -43,8 +43,25 @@
 
 .contact-hero-minimal .minimal-hero h1 { color: #fff; }
 .contact-hero-minimal .minimal-hero p { color: rgba(255, 255, 255, 0.8); max-width: 650px; }
+
+/* Base Badge Settings */
+.section-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    width: max-content;
+    margin: 0 auto 20px;
+}
+
 .contact-hero-minimal .section-badge { background: rgba(255, 255, 255, 0.1); color: var(--gold-light); border: 1px solid rgba(255, 255, 255, 0.2); }
-.contact-hero-minimal .title-underline { background: var(--gold); }
+.contact-hero-minimal .title-underline { background: var(--gold); margin: 20px auto 0; }
 
 /* 2. Feedback Hub Containers */
 .contact-minimalist {
@@ -162,6 +179,14 @@
 
 .block-header h3 { font-size: 1.1rem; color: var(--navy); }
 
+/* Form Grid */
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
 /* Input Icon Correction */
 .input-with-icon { position: relative; width: 100%; }
 
@@ -235,6 +260,19 @@
     .metric-item { flex-direction: column; gap: 15px; align-items: flex-start; }
 }
 
+@media (max-width: 500px) {
+    .contact-hero-minimal { height: auto; padding: 100px 5% 120px; }
+    .contact-hero-minimal .minimal-hero h1 { font-size: 1.8rem; }
+    .contact-hero-minimal .minimal-hero p { font-size: 0.9rem; }
+    .glass-lite-card { padding: 25px 15px; margin-top: -60px; border-radius: 20px; margin-bottom: 50px; }
+    .form-category-block { padding: 20px 15px; margin-bottom: 25px; }
+    .stars label { font-size: 2rem; }
+    .stars { gap: 8px; }
+    .minimal-submit .button { font-size: 1rem; padding: 16px; }
+    .test-user { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .testimonial-card { padding: 25px 20px; }
+}
+
 /* 6. Toast Notification */
 .toast {
     position: fixed;
@@ -243,7 +281,7 @@
     transform: translateX(-50%);
     background: #1e5fa8;
     color: #fff;
-    padding: 16px 32px;
+    padding: 16px 24px;
     border-radius: 50px;
     font-weight: 600;
     font-family: 'Inter', sans-serif;
@@ -254,6 +292,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    width: 90%;
+    max-width: 380px;
+    justify-content: center;
+    text-align: center;
 }
 
 .toast.show {
