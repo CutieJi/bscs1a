@@ -1344,7 +1344,7 @@ textarea {
 
 /* DARK MODE */
 /* ============================================================
-   DARK MODE — STUDENT
+   DARK MODE - STUDENT
    ============================================================ */
 [data-theme="dark"] {
     --bg-primary: #0f172a;
@@ -1416,7 +1416,7 @@ textarea {
     color: var(--text-secondary);
 }
 
-/* Cards — all white-background components */
+/* Cards - all white-background components */
 [data-theme="dark"] .equipment-card,
 [data-theme="dark"] .borrowed-item-card,
 [data-theme="dark"] .log-item,
