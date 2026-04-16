@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         initializeDashboard();
     } catch (error) {
-        initializeDashboard();
-        loadPending();
+        // If authentication fails, do NOTHING. 
+        // The checkAuth function in app.js will automatically redirect them to login.html.
+        console.warn('Admin authorization pending or failed. Waiting for redirect...');
     }
 });
 
@@ -473,7 +474,9 @@ async function loadOverdueItems() {
 
                 return now > due;
             });
-        await checkAndAutoSuspendUsers(overdue);
+        if (typeof checkAllUsersForAutoSuspend === 'function') {
+    checkAllUsersForAutoSuspend();
+}
 
         if (sendAllRemindersBtn) {
             sendAllRemindersBtn.style.display = overdue.length > 0 ? 'inline-flex' : 'none';
