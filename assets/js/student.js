@@ -1176,9 +1176,9 @@ function openProfileModal() {
     document.getElementById("profileEmail").value = currentUser.email || "";
     document.getElementById("profileStudentId").value = currentUserData.studentId || "";
     document.getElementById("profileCourse").value = currentUserData.course || "";
-    document.getElementById("profileYearLevel").closest('.form-group').style.display = 'block';
-    document.getElementById("profileSection").closest('.form-group').style.display = 'block';
-
+    
+    // REMOVED the two lines causing the crash here
+    
     document.getElementById("profileMobile").value = currentUserData.mobile || "";
     document.getElementById("profileGender").value = currentUserData.gender || "";
     document.getElementById("profileYearLevel").value = currentUserData.yearLevel || "";
