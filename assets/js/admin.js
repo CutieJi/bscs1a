@@ -182,6 +182,30 @@ function initializeDashboard() {
     initializeStudentIdCaptureModal();
     initializeImageZoomModal();
     initializeRealtimeListeners();
+    checkIncidentAccess();
+}
+
+function checkIncidentAccess() {
+    const isHead = isHeadAdmin();
+    const incidentsSidebarItem = document.getElementById('incidentsSidebarItem');
+    const incidentsSidebarItemMobile = document.querySelector('.bottom-nav-item[data-view="incidents"]');
+
+    if (!isHead) {
+        if (incidentsSidebarItem) incidentsSidebarItem.style.display = 'none';
+        if (incidentsSidebarItemMobile) incidentsSidebarItemMobile.style.display = 'none';
+        
+        // If they are currently on incidents view, redirect to dashboard
+        const activeView = localStorage.getItem('admin-active-view');
+        if (activeView === 'incidents') {
+            window.switchView('dashboard');
+        }
+    }
+}
+
+function isHeadAdmin() {
+    // TODO: Replace with the actual head admin email or ID
+    const headEmails = ['uccmislend@gmail.com', 'efrenpvictoria@gmail.com', 'teodoroamacaraeg@gmail.com'];
+    return currentAdmin && headEmails.includes(currentAdmin.email);
 }
 
 function updateAdminInfo() {
@@ -210,7 +234,7 @@ function updateAdminInfo() {
     });
 
     // Update names
-    const nameEls = document.querySelectorAll('.profile-menu-name, .topbar-user-name, .profile-view-name');
+    const nameEls = document.querySelectorAll('.profile-menu-name, .topbar-user-name, .profile-view-name, .sidebar-user-name');
     nameEls.forEach(el => {
         el.textContent = name;
     });
@@ -268,6 +292,11 @@ function initializeNavigation() {
     };
 
     function activateView(viewId) {
+        if (viewId === 'incidents' && !isHeadAdmin()) {
+            showToast('Access Denied: Only the Head Admin can access Incident Reports.', 'error');
+            return;
+        }
+
         navItems.forEach(nav => nav.classList.remove('active'));
         sidebarItems.forEach(si => si.classList.remove('active'));
         views.forEach(view => view.classList.remove('active'));
@@ -3632,16 +3661,11 @@ async function sendAdminIncidentMessage() {
 
 async function approveIncident() {
     if (!currentIncidentId) return;
-    const approvedBy = document.getElementById('incidentApprovedBy')?.value.trim();
-
-    if (!approvedBy) {
-        showToast('Please enter the approving head\'s name', 'error');
-        return;
-    }
+    const approvedBy = currentAdminData?.name || 'Administrator';
 
     if (!await showConfirm({
         title: 'Approve Incident Report',
-        message: `Approve this incident report? Head: ${approvedBy}`,
+        message: `Approve this incident report? Approved by: ${approvedBy}`,
         confirmText: 'Approve',
         type: 'success'
     })) return;
