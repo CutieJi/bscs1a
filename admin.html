@@ -669,7 +669,7 @@
                 <h2>Add New User</h2>
                 <button class="modal-close" id="closeAddUserModal">&times;</button>
             </div>
-            <form class="login-form" id="addUserForm">
+            <form class="login-form" id="addUserForm" novalidate>
                 <div class="add-user-avatar-section" style="text-align: center; margin-bottom: 1.5rem;">
                     <div class="profile-add-avatar" id="addUserAvatarContainer"
                         style="width: 70px; height: 70px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem; font-weight: 600; overflow: hidden; border: 2px solid var(--primary-light);">
@@ -710,12 +710,12 @@
                 <div style="margin-bottom: 10px;">
                     <label>Password</label>
                     <input type="password" id="newUserPassword" class="form-control" style="width: 100%;"
-                        placeholder="password" required>
+                        placeholder="password">
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label>User Role</label>
-                    <select id="newUserRole" class="form-control" style="width: 100%;" required>
+                    <select id="newUserRole" class="form-control" style="width: 100%;">
                         <option value="">Select role</option>
                         <option value="student">Student</option>
                         <option value="professor">Professor / Faculty</option>
@@ -726,7 +726,7 @@
                     <div style="margin-bottom: 10px;">
                         <label>Student ID</label>
                         <input type="text" id="newUserStudentId" class="form-control" style="width: 100%;"
-                            placeholder="20250000-S" maxlength="10" required>
+                            placeholder="20250000-S" maxlength="10">
                     </div>
 
                     <div style="margin-bottom: 10px;">
@@ -778,7 +778,7 @@
                     <div style="margin-bottom: 10px;">
                         <label>Faculty ID</label>
                         <input type="text" id="newUserFacultyId" class="form-control" style="width: 100%;"
-                            placeholder="Faculty ID" maxlength="10" required>
+                            placeholder="Faculty ID" maxlength="10">
                     </div>
                     <div style="margin-bottom: 10px;">
                         <label>Department</label>
@@ -788,7 +788,7 @@
                     <div style="margin-bottom: 10px;">
                         <label>Mobile No.</label>
                         <input type="tel" id="newUserProfMobile" class="form-control" style="width: 100%;"
-                            placeholder="09*********" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required>
+                            placeholder="09*********" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
                     <div style="margin-bottom: 10px;">
                         <label>Gender</label>
@@ -803,7 +803,7 @@
                 <div id="additionalAdminFields" style="display: none; margin-bottom: 10px;">
                     <label>Admin ID (Private Login ID)</label>
                     <input type="text" id="newUserAdminId" class="form-control" style="width: 100%;"
-                        placeholder="e.g., ADMIN-01" required>
+                        placeholder="e.g., ADMIN-01">
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>
@@ -876,7 +876,7 @@
                 <button class="modal-close" onclick="closeEditUser()">&times;</button>
             </div>
 
-            <form id="editUserForm">
+            <form id="editUserForm" novalidate>
                 <input type="hidden" id="editUserId">
 
                 <div class="edit-user-avatar-section" style="text-align: center; margin-bottom: 1.5rem;">
@@ -919,10 +919,10 @@
 
                 <div id="editStudentFieldsContainers">
                     <label>Student ID</label>
-                    <input id="editUserStudentId" class="form-control" style="width: 100%;" maxlength="10" required>
+                    <input id="editUserStudentId" class="form-control" style="width: 100%;" maxlength="10">
 
                     <label>Mobile No.</label>
-                    <input type="tel" id="editUserMobile" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required>
+                    <input type="tel" id="editUserMobile" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
 
                     <label>Gender</label>
                     <select id="editUserGender">
@@ -961,13 +961,13 @@
 
                 <div id="editProfessorFieldsContainers" style="display: none;">
                     <label>Faculty ID</label>
-                    <input id="editUserFacultyId" class="form-control" style="width: 100%;" maxlength="10" required>
+                    <input id="editUserFacultyId" class="form-control" style="width: 100%;" maxlength="10">
 
                     <label>Department</label>
-                    <input id="editUserDepartment" class="form-control" style="width: 100%;" required>
+                    <input id="editUserDepartment" class="form-control" style="width: 100%;">
 
                     <label>Mobile No.</label>
-                    <input type="tel" id="editUserProfMobile" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="form-control" style="width: 100%;" required>
+                    <input type="tel" id="editUserProfMobile" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="form-control" style="width: 100%;">
 
                     <label>Gender</label>
                     <select id="editUserProfGender" class="form-control" style="width: 100%;">
