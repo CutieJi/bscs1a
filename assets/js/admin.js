@@ -2333,14 +2333,25 @@ async function createNewUser() {
     // --- Validation ---
     if (role === 'student') {
         if (!studentId) { showToast('Student ID is required.', 'error'); return; }
+        if (studentId.length !== 10) { showToast('Student ID must be exactly 10 characters (e.g., 20250000-S).', 'error'); return; }
         if (!mobile) { showToast('Mobile number is required.', 'error'); return; }
         if (!/^[0-9]{11}$/.test(mobile)) { showToast('Mobile number must be exactly 11 digits.', 'error'); return; }
+        if (!gender) { showToast('Gender is required.', 'error'); return; }
+        if (!course) { showToast('Course is required.', 'error'); return; }
+        if (!yearLevel) { showToast('Year level is required.', 'error'); return; }
+        if (!section) { showToast('Section is required.', 'error'); return; }
     } else if (role === 'professor') {
         const facultyId = document.getElementById('newUserFacultyId')?.value.trim();
         const profMobile = document.getElementById('newUserProfMobile')?.value.trim();
+        const department = document.getElementById('newUserDepartment')?.value.trim();
+        const profGender = document.getElementById('newUserProfGender')?.value;
+        
         if (!facultyId) { showToast('Faculty ID is required.', 'error'); return; }
+        if (facultyId.length !== 10) { showToast('Faculty ID must be exactly 10 characters (e.g., 20250000-F).', 'error'); return; }
         if (!profMobile) { showToast('Mobile number is required.', 'error'); return; }
         if (!/^[0-9]{11}$/.test(profMobile)) { showToast('Mobile number must be exactly 11 digits.', 'error'); return; }
+        if (!profGender) { showToast('Gender is required.', 'error'); return; }
+        if (!department) { showToast('Department is required.', 'error'); return; }
     } else if (role === 'admin') {
         if (!adminId) { showToast('Admin ID is required.', 'error'); return; }
     }
@@ -2519,7 +2530,7 @@ async function loadUsers() {
                 const overdueCount = overdueMap[user.id] || 0;
                 const overdueBadge = overdueCount > 0 ? `<br><span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); font-size: 0.7rem; margin-top: 4px;">${overdueCount} Overdue Item${overdueCount > 1 ? 's' : ''}</span>` : '';
 
-                const idNum = (user.studentId || user.facultyId) ? `<br><small class="text-muted">ID: ${user.studentId || user.facultyId}</small>` : '';
+                const idNum = (user.studentId || user.facultyId || user.adminId) ? `<br><small class="text-muted">ID: ${user.studentId || user.facultyId || user.adminId}</small>` : '';
 
                 let actionHtml = '';
                 if (user.id !== currentAdmin.uid) {
@@ -2867,11 +2878,54 @@ if (editUserForm) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = "<span>Saving...</span>";
 
+            // --- Consolidation of values for validation ---
+            const firstName = document.getElementById("editUserFirstName").value.trim();
+            const lastName = document.getElementById("editUserLastName").value.trim();
+            const email = document.getElementById("editUserEmail").value.trim();
+            const middleInitial = document.getElementById("editUserMiddleInitial").value.trim();
+
             let idToCheck = "";
             if (role === 'student') idToCheck = document.getElementById("editUserStudentId").value.trim();
-            else if (role === 'professor') idToCheck = document.getElementById("editUserFacultyId")?.value.trim();
-            else if (role === 'admin') idToCheck = document.getElementById("editUserAdminId")?.value.trim();
+            else if (role === 'professor') idToCheck = document.getElementById("editUserFacultyId")?.value.trim() || "";
+            else if (role === 'admin') idToCheck = document.getElementById("editUserAdminId")?.value.trim() || "";
 
+            // --- Validation Block ---
+            if (!firstName || !lastName || !email) {
+                showToast("Basic information (Names, Email) is required.", "error");
+                submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return;
+            }
+
+            if (role === 'student') {
+                const sMobile = document.getElementById("editUserMobile").value.trim();
+                const sGender = document.getElementById("editUserGender").value;
+                const sCourse = document.getElementById("editUserCourse").value.trim();
+                const sYear = document.getElementById("editUserYearLevel").value;
+                const sSection = document.getElementById("editUserSection").value;
+
+                if (!idToCheck) { showToast("Student ID is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (idToCheck.length !== 10) { showToast("Student ID must be exactly 10 characters.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!sMobile) { showToast("Mobile number is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!/^[0-9]{11}$/.test(sMobile)) { showToast("Mobile number must be exactly 11 digits.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!sGender) { showToast("Gender is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!sCourse) { showToast("Course is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!sYear) { showToast("Year Level is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!sSection) { showToast("Section is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+            } else if (role === 'professor') {
+                const pMobile = document.getElementById("editUserProfMobile")?.value.trim();
+                const pGender = document.getElementById("editUserProfGender")?.value;
+                const pDept = document.getElementById("editUserDepartment")?.value.trim();
+
+                if (!idToCheck) { showToast("Faculty ID is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (idToCheck.length !== 10) { showToast("Faculty ID must be exactly 10 characters.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!pMobile) { showToast("Mobile number is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!/^[0-9]{11}$/.test(pMobile)) { showToast("Mobile number must be exactly 11 digits.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!pGender) { showToast("Gender is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+                if (!pDept) { showToast("Department is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+            } else if (role === 'admin') {
+                if (!idToCheck) { showToast("Admin ID is required.", "error"); submitBtn.disabled = false; submitBtn.innerHTML = originalContent; return; }
+            }
+
+            // --- ID Uniqueness Check ---
             if (idToCheck) {
                 const studentCheck = await db.collection('users').where('studentId', '==', idToCheck).limit(1).get();
                 const facultyCheck = await db.collection('users').where('facultyId', '==', idToCheck).limit(1).get();
@@ -2890,27 +2944,23 @@ if (editUserForm) {
                 }
             }
 
-            const firstName = document.getElementById("editUserFirstName").value.trim();
-            const middleInitial = document.getElementById("editUserMiddleInitial").value.trim();
-            const lastName = document.getElementById("editUserLastName").value.trim();
-
             const mInitial = middleInitial ? `${middleInitial}. ` : '';
             const name = `${firstName} ${mInitial}${lastName}`;
 
             const updateData = {
                 name: name,
-                email: document.getElementById("editUserEmail").value,
-                role: role,
-                studentId: document.getElementById("editUserStudentId").value
+                email: email,
+                role: role
             };
 
             if (role === 'student') {
                 const yearLevel = document.getElementById("editUserYearLevel").value;
                 const section = document.getElementById("editUserSection").value;
 
-                updateData.mobile = document.getElementById("editUserMobile").value;
+                updateData.studentId = idToCheck;
+                updateData.mobile = document.getElementById("editUserMobile").value.trim();
                 updateData.gender = document.getElementById("editUserGender").value;
-                updateData.course = document.getElementById("editUserCourse").value;
+                updateData.course = document.getElementById("editUserCourse").value.trim();
                 updateData.yearLevel = yearLevel;
                 updateData.section = section;
                 updateData.yearSection = (yearLevel && section) ? `${yearLevel}-${section}` : '';
