@@ -2330,6 +2330,21 @@ async function createNewUser() {
     const submitBtn = document.querySelector('#addUserForm button[type="submit"]');
     const originalBtnContent = submitBtn.innerHTML;
 
+    // --- Validation ---
+    if (role === 'student') {
+        if (!studentId) { showToast('Student ID is required.', 'error'); return; }
+        if (!mobile) { showToast('Mobile number is required.', 'error'); return; }
+        if (!/^[0-9]{11}$/.test(mobile)) { showToast('Mobile number must be exactly 11 digits.', 'error'); return; }
+    } else if (role === 'professor') {
+        const facultyId = document.getElementById('newUserFacultyId')?.value.trim();
+        const profMobile = document.getElementById('newUserProfMobile')?.value.trim();
+        if (!facultyId) { showToast('Faculty ID is required.', 'error'); return; }
+        if (!profMobile) { showToast('Mobile number is required.', 'error'); return; }
+        if (!/^[0-9]{11}$/.test(profMobile)) { showToast('Mobile number must be exactly 11 digits.', 'error'); return; }
+    } else if (role === 'admin') {
+        if (!adminId) { showToast('Admin ID is required.', 'error'); return; }
+    }
+
     try {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Creating...</span>';
@@ -3115,6 +3130,11 @@ function initializeProfileDropdown() {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword.length < 6) {
+                showToast('New password must be at least 6 characters', 'error');
+                return;
+            }
 
             if (newPassword !== confirmPassword) {
                 showToast('New passwords do not match', 'error');

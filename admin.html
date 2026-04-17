@@ -710,7 +710,7 @@
                 <div style="margin-bottom: 10px;">
                     <label>Password</label>
                     <input type="password" id="newUserPassword" class="form-control" style="width: 100%;"
-                        placeholder="password" minlength="8" required>
+                        placeholder="password" required>
                 </div>
 
                 <div style="margin-bottom: 10px;">
@@ -726,13 +726,13 @@
                     <div style="margin-bottom: 10px;">
                         <label>Student ID</label>
                         <input type="text" id="newUserStudentId" class="form-control" style="width: 100%;"
-                            placeholder="20250000-S" minlength="10" maxlength="10">
+                            placeholder="20250000-S" maxlength="10" required>
                     </div>
 
                     <div style="margin-bottom: 10px;">
                         <label>Mobile No.</label>
                         <input type="tel" id="newUserMobile" class="form-control" style="width: 100%;"
-                            placeholder="09*********" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            placeholder="09*********" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
 
                     <div style="margin-bottom: 10px;">
@@ -778,7 +778,7 @@
                     <div style="margin-bottom: 10px;">
                         <label>Faculty ID</label>
                         <input type="text" id="newUserFacultyId" class="form-control" style="width: 100%;"
-                            placeholder="Faculty ID" minlength="10" maxlength="10">
+                            placeholder="Faculty ID" maxlength="10" required>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <label>Department</label>
@@ -788,7 +788,7 @@
                     <div style="margin-bottom: 10px;">
                         <label>Mobile No.</label>
                         <input type="tel" id="newUserProfMobile" class="form-control" style="width: 100%;"
-                            placeholder="09*********" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            placeholder="09*********" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <label>Gender</label>
@@ -803,7 +803,7 @@
                 <div id="additionalAdminFields" style="display: none; margin-bottom: 10px;">
                     <label>Admin ID (Private Login ID)</label>
                     <input type="text" id="newUserAdminId" class="form-control" style="width: 100%;"
-                        placeholder="e.g., ADMIN-01">
+                        placeholder="e.g., ADMIN-01" required>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddUser">Cancel</button>
@@ -919,10 +919,10 @@
 
                 <div id="editStudentFieldsContainers">
                     <label>Student ID</label>
-                    <input id="editUserStudentId" class="form-control" style="width: 100%;" minlength="10" maxlength="10">
+                    <input id="editUserStudentId" class="form-control" style="width: 100%;" maxlength="10" required>
 
                     <label>Mobile No.</label>
-                    <input type="tel" id="editUserMobile" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    <input type="tel" id="editUserMobile" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required>
 
                     <label>Gender</label>
                     <select id="editUserGender">
@@ -961,13 +961,13 @@
 
                 <div id="editProfessorFieldsContainers" style="display: none;">
                     <label>Faculty ID</label>
-                    <input id="editUserFacultyId" class="form-control" style="width: 100%;" minlength="10" maxlength="10">
+                    <input id="editUserFacultyId" class="form-control" style="width: 100%;" maxlength="10" required>
 
                     <label>Department</label>
-                    <input id="editUserDepartment" class="form-control" style="width: 100%;">
+                    <input id="editUserDepartment" class="form-control" style="width: 100%;" required>
 
                     <label>Mobile No.</label>
-                    <input type="tel" id="editUserProfMobile" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="form-control" style="width: 100%;">
+                    <input type="tel" id="editUserProfMobile" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="form-control" style="width: 100%;" required>
 
                     <label>Gender</label>
                     <select id="editUserProfGender" class="form-control" style="width: 100%;">
@@ -1001,12 +1001,11 @@
                 </div>
                 <div class="form-group">
                     <label for="newPassword">New Password</label>
-                    <input type="password" id="newPassword" placeholder="At least 8 characters" minlength="8" required>
+                    <input type="password" id="newPassword" placeholder="Enter new password" required>
                 </div>
                 <div class="form-group">
                     <label for="confirmPassword">Confirm New Password</label>
-                    <input type="password" id="confirmPassword" placeholder="Repeat new password" minlength="8"
-                        required>
+                    <input type="password" id="confirmPassword" placeholder="Repeat new password" required>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelChangePass">Cancel</button>

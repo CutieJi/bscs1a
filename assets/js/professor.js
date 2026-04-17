@@ -1346,8 +1346,8 @@ async function changePassword() {
         return;
     }
 
-    if (newPass.length < 8) {
-        showToast("New password must be at least 8 characters", "error");
+    if (newPass.length < 6) {
+        showToast("New password must be at least 6 characters", "error");
         return;
     }
 

@@ -162,10 +162,12 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px 30px;
+    padding: 15px 30px;
     background: #fcfcfd;
     overflow: hidden;
 }
+
+
 
 .auth-card {
     width: 100%;
@@ -209,8 +211,8 @@ a {
     margin-bottom: 7px;
 }
 
-.field input,
-.field select {
+.login-card .field input,
+.login-card .field select {
     width: 100%;
     height: 50px;
     border: 1.4px solid #cfd5e3;
@@ -223,8 +225,8 @@ a {
     transition: 0.2s ease;
 }
 
-.field input:focus,
-.field select:focus {
+.login-card .field input:focus,
+.login-card .field select:focus {
     border-color: #64748b;
     box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.08);
 }
@@ -318,14 +320,15 @@ a {
 }
 
 .compact-register h2 {
-    font-size: 2rem;
-    margin-bottom: 6px;
+    font-size: 1.6rem;
+    margin-bottom: 4px;
 }
 
 .compact-register .auth-desc {
-    margin-bottom: 14px;
-    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
 }
+
 /* ── Register grid ──────────────────────────────────────── */
 /* Uses a 6-column base so we can do:
    [First(3)] [MI(1)] [Last(3)] → row 1
@@ -338,46 +341,63 @@ a {
 .compact-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 10px 14px;
+    gap: 6px 12px;
 }
+
 
 .compact-grid .field {
     margin-bottom: 0;
-    grid-column: span 3; /* default: half row */
+    grid-column: span 3;
+    /* default: half row */
 }
 
 /* Name row */
-.compact-grid .col-first   { grid-column: span 2; }
-.compact-grid .col-mi      { grid-column: span 2; }  /* narrow MI */
-.compact-grid .col-last    { grid-column: span 2; }
+.compact-grid .col-first {
+    grid-column: span 2;
+}
+
+.compact-grid .col-mi {
+    grid-column: span 2;
+}
+
+/* narrow MI */
+.compact-grid .col-last {
+    grid-column: span 2;
+}
 
 /* Renames col-span-1 to also just mean "3 of 6 columns" */
-.compact-grid .col-span-1  { grid-column: span 3; }
+.compact-grid .col-span-1 {
+    grid-column: span 3;
+}
 
 /* Full width */
-.compact-grid .full        { grid-column: 1 / -1; }
+.compact-grid .full {
+    grid-column: 1 / -1;
+}
 
 .compact-grid .field label {
     display: block;
-    font-size: 0.84rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #4b5563;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
 }
+
 
 .compact-grid .field input,
 .compact-grid .field select {
     width: 100%;
-    height: 44px;
-    font-size: 0.9rem;
-    border-radius: 10px;
+    height: 36px;
+    font-size: 0.85rem;
+    border-radius: 8px;
     border: 1.4px solid #cfd5e3;
-    padding: 0 13px;
+    padding: 0 12px;
     background: #fff;
     color: #1f2937;
     outline: none;
     transition: 0.2s ease;
 }
+
 
 .compact-grid .field input:focus,
 .compact-grid .field select:focus {
@@ -387,10 +407,11 @@ a {
 
 
 .compact-btn {
-    margin-top: 12px;
-    height: 46px;
-    font-size: 0.93rem;
+    margin-top: 8px;
+    height: 40px;
+    font-size: 0.9rem;
 }
+
 
 .compact-bottom {
     margin-top: 12px;
@@ -421,6 +442,7 @@ a {
 }
 
 @media (max-width: 980px) {
+
     html,
     body {
         overflow: auto;
@@ -502,16 +524,26 @@ a {
 
 .password-field input {
     width: 100%;
-    height: 50px;
+    height: 36px; /* Default for compact registration */
     padding: 0 78px 0 15px;
     border: 1.4px solid #cfd5e3;
-    border-radius: 12px;
-    font-size: 0.95rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
     background: #fff;
     color: #1f2937;
     outline: none;
     transition: 0.2s ease;
 }
+
+/* Override for larger login card password */
+.login-card .password-field input {
+    height: 50px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+}
+
+
+
 
 .password-field input:focus {
     border-color: #64748b;
@@ -544,8 +576,15 @@ a {
 }
 
 @keyframes alertSlideDown {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .form-alert {
@@ -587,6 +626,7 @@ a {
 
 /* Extra Small Screens (300px+) */
 @media (max-width: 350px) {
+
     .auth-card h2,
     .compact-register h2 {
         font-size: 1.4rem;
@@ -652,4 +692,61 @@ a {
 .back-btn svg {
     width: 20px;
     height: 20px;
+}
+
+/* ── Role Selector & Dynamic Fields ──────────────────────── */
+.role-selector-wrap {
+    grid-column: 1 / -1;
+    margin-bottom: 12px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 12px;
+    display: flex;
+    gap: 4px;
+    position: relative;
+    border: 1px solid #e2e8f0;
+}
+
+
+.role-option {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.role-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.role-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0 !important;
+}
+
+.role-option input:checked+label {
+    background: #fff;
+    color: var(--primary-2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dynamic-field {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+}
+
+.dynamic-field.hidden-field {
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
 }

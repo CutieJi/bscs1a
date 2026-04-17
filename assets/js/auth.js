@@ -213,11 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `${firstName} ${middleInitial}. ${lastName}`
                 : `${firstName} ${lastName}`;
 
-            // Basic client-side validation
+
             if (password.length < 6) {
                 showFormAlert('registerAlert', 'Password must be at least 6 characters.', 'error');
                 return;
             }
+
             if (idValue.length !== 10) {
                 showFormAlert('registerAlert', 'ID must be exactly 10 characters.', 'error');
                 return;

@@ -53,12 +53,20 @@
                     <div id="registerAlert" class="form-alert d-none"></div>
 
                     <div class="register-grid compact-grid">
-                        <!-- Role Selector (Hidden, handled by toggle link) -->
-                        <div class="field full" style="display: none;">
-                            <label for="registerRole">I am a</label>
-                            <select id="registerRole" required>
+                        <!-- Role Selector Toggle -->
+                        <div class="role-selector-wrap">
+                            <div class="role-option">
+                                <input type="radio" name="role" id="roleStudent" value="student" checked>
+                                <label for="roleStudent">Student</label>
+                            </div>
+                            <div class="role-option">
+                                <input type="radio" name="role" id="roleProfessor" value="professor">
+                                <label for="roleProfessor">Professor / Faculty</label>
+                            </div>
+                            <!-- Hidden select to keep compatibility with auth.js if it uses it directly -->
+                            <select id="registerRole" style="display: none;">
                                 <option value="student" selected>Student</option>
-                                <option value="professor">Professor / Faculty</option>
+                                <option value="professor">Professor</option>
                             </select>
                         </div>
 
@@ -81,12 +89,12 @@
                         <!-- Row 2: ID | Mobile Number -->
                         <div class="field">
                             <label for="registerStudentId" id="registerIdLabel">Student ID</label>
-                            <input type="text" id="registerStudentId" placeholder="Student ID" minlength="10" maxlength="10" required />
+                            <input type="text" id="registerStudentId" placeholder="Student ID" maxlength="10" required />
                         </div>
 
                         <div class="field">
                             <label for="registerMobile">Mobile Number</label>
-                            <input type="text" id="registerMobile" placeholder="Mobile Number" minlength="11" maxlength="11" pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
+                            <input type="text" id="registerMobile" placeholder="Mobile Number" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
                         </div>
 
                         <!-- Row 3: Gender | Course / Department -->
@@ -115,13 +123,14 @@
                         <div class="field full">
                             <label for="registerPassword">Password</label>
                             <div class="password-field">
-                                <input type="password" id="registerPassword" placeholder="Enter your password (min 6 chars)" required />
+                                <input type="password" id="registerPassword" placeholder="Enter your password" required />
+
                                 <button type="button" class="toggle-password" id="toggleRegPassword">Show</button>
                             </div>
                         </div>
 
                         <!-- Row 6: Year Level | Section (Student only) -->
-                        <div class="field" id="yearLevelField">
+                        <div class="field dynamic-field" id="yearLevelField">
                             <label for="registerYearLevel">Year Level</label>
                             <select id="registerYearLevel" required>
                                 <option value="">Select Year</option>
@@ -132,7 +141,7 @@
                             </select>
                         </div>
 
-                        <div class="field" id="sectionField">
+                        <div class="field dynamic-field" id="sectionField">
                             <label for="registerSection">Section</label>
                             <select id="registerSection" required>
                                 <option value="">Select Section</option>
@@ -184,7 +193,8 @@
         }
 
         // Role toggle logic
-        const roleSelect = document.getElementById('registerRole');
+        const roleRadios = document.querySelectorAll('input[name="role"]');
+        const registerRole = document.getElementById('registerRole');
 
         function updateRoleUI(role) {
             const isProfessor = role === 'professor';
@@ -197,9 +207,12 @@
             const yearSelect = document.getElementById('registerYearLevel');
             const sectionSelect = document.getElementById('registerSection');
 
+            // Set hidden select for auth.js compatibility
+            if (registerRole) registerRole.value = role;
+
             if (isProfessor) {
-                yearField.style.display = 'none';
-                sectionField.style.display = 'none';
+                yearField.classList.add('hidden-field');
+                sectionField.classList.add('hidden-field');
                 yearSelect.required = false;
                 sectionSelect.required = false;
                 idLabel.textContent = 'Faculty ID';
@@ -207,8 +220,8 @@
                 courseLabel.textContent = 'Department';
                 courseInput.placeholder = 'e.g. CSD, PSYCH';
             } else {
-                yearField.style.display = '';
-                sectionField.style.display = '';
+                yearField.classList.remove('hidden-field');
+                sectionField.classList.remove('hidden-field');
                 yearSelect.required = true;
                 sectionSelect.required = true;
                 idLabel.textContent = 'Student ID';
@@ -218,16 +231,19 @@
             }
         }
 
-        if (roleSelect) {
-            roleSelect.addEventListener('change', () => updateRoleUI(roleSelect.value));
-        }
+        roleRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => updateRoleUI(e.target.value));
+        });
 
         // Check for role parameter in URL
         const urlParams = new URLSearchParams(window.location.search);
         const roleParam = urlParams.get('role');
-        if (roleParam === 'professor' && roleSelect) {
-            roleSelect.value = 'professor';
-            updateRoleUI('professor');
+        if (roleParam === 'professor') {
+            const profRadio = document.getElementById('roleProfessor');
+            if (profRadio) {
+                profRadio.checked = true;
+                updateRoleUI('professor');
+            }
         }
     </script>
 </body>

@@ -101,7 +101,7 @@ function updateCartUI() {
 function toggleCartModal() {
     const modal = document.getElementById('cartModal');
     if (!modal) return;
-    
+
     modal.classList.toggle('active');
     if (modal.classList.contains('active')) {
         renderCart();
@@ -122,13 +122,13 @@ async function addToCart(equipmentId) {
     try {
         const doc = await db.collection('equipment').doc(equipmentId).get();
         if (!doc.exists) return;
-        
+
         const item = { id: doc.id, ...doc.data() };
         cart.push(item);
         saveCart();
         updateCartUI();
         showToast(`Added ${item.name} to cart`, 'success');
-        
+
         // Find the button and show feedback
         const btn = document.querySelector(`button[onclick="addToCart('${equipmentId}')"]`);
         if (btn) {
@@ -196,10 +196,10 @@ function renderCart() {
 
 function proceedToBorrow() {
     if (cart.length === 0) return;
-    
+
     // Close cart modal
     document.getElementById('cartModal').classList.remove('active');
-    
+
     // Open borrow modal in bulk mode
     openBulkBorrowModal();
 }
@@ -229,7 +229,7 @@ async function openBulkBorrowModal() {
 
     // Set a flag for bulk mode and specify handler
     document.getElementById('confirmBorrow').onclick = async () => await borrowCartItems();
-    
+
     document.getElementById('borrowModal').classList.add('active');
 }
 
@@ -271,9 +271,9 @@ async function borrowCartItems() {
         confirmBtn.innerHTML = '<span>Processing...</span>';
 
         const batch = db.batch();
-        
+
         const submissionId = `SUB_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
+
         cart.forEach(item => {
             const newBorrowRef = db.collection('borrowings').doc();
             batch.set(newBorrowRef, {
@@ -300,7 +300,7 @@ async function borrowCartItems() {
 
         showToast('Borrow requests submitted! Awaiting admin approval.', 'success');
         document.getElementById('borrowModal').classList.remove('active');
-        
+
         clearCart();
         loadEquipment();
         loadBorrowedItems();
@@ -1424,9 +1424,9 @@ function openProfileModal() {
     document.getElementById("profileEmail").value = currentUser.email || "";
     document.getElementById("profileStudentId").value = currentUserData.studentId || "";
     document.getElementById("profileCourse").value = currentUserData.course || "";
-    
+
     // REMOVED the two lines causing the crash here
-    
+
     document.getElementById("profileMobile").value = currentUserData.mobile || "";
     document.getElementById("profileGender").value = currentUserData.gender || "";
     document.getElementById("profileYearLevel").value = currentUserData.yearLevel || "";
@@ -1592,8 +1592,8 @@ async function changePassword() {
         return;
     }
 
-    if (newPass.length < 8) {
-        showToast("New password must be at least 8 characters", "error");
+    if (newPass.length < 6) {
+        showToast("New password must be at least 6 characters", "error");
         return;
     }
 
@@ -2160,13 +2160,13 @@ window.openUserIncidentDetail = openUserIncidentDetail;
 window.submitIncidentReport = submitIncidentReport;
 window.loadMyIncidents = loadMyIncidents;
 window.openNewIncidentForm = openNewIncidentForm;
-window.openImageZoomModal = function(src) { 
-    const modal = document.getElementById('imageZoomModal'); 
-    const zoomedImage = document.getElementById('zoomedImagePreview'); 
-    if (!modal || !zoomedImage || !src) return; 
-    zoomedImage.src = src; 
-    modal.classList.add('active'); 
-    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); }; 
+window.openImageZoomModal = function (src) {
+    const modal = document.getElementById('imageZoomModal');
+    const zoomedImage = document.getElementById('zoomedImagePreview');
+    if (!modal || !zoomedImage || !src) return;
+    zoomedImage.src = src;
+    modal.classList.add('active');
+    modal.onclick = function (e) { if (e.target === modal) modal.classList.remove('active'); };
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -2198,7 +2198,7 @@ async function checkStudentOverdueStatus() {
             if (item.borrowedAt && item.expectedReturnTime) {
                 const borrowedDate = item.borrowedAt.toDate();
                 const [hh, mm] = String(item.expectedReturnTime).split(':').map(Number);
-                
+
                 if (!isNaN(hh) && !isNaN(mm)) {
                     const due = new Date(borrowedDate);
                     due.setHours(hh, mm, 0, 0);
@@ -2215,19 +2215,19 @@ async function checkStudentOverdueStatus() {
 
         if (totalStrikes > 0) {
             let message = `You have <strong style="color: var(--danger);">${totalStrikes} lifetime overdue strike${totalStrikes > 1 ? 's' : ''}</strong>. `;
-            
+
             if (activeOverdueCount > 0) {
                 message += `You currently have <strong>${activeOverdueCount} item(s) overdue right now!</strong> Please return them immediately. `;
             }
-            
+
             message += `Accumulating 3 strikes will result in automatic account suspension.`;
-            
+
             textEl.innerHTML = message;
             banner.style.display = 'flex';
-            
+
             // Visual escalation if they are at 2 strikes (1 away from suspension)
             if (totalStrikes >= 2) {
-                banner.style.background = 'rgba(239, 68, 68, 0.15)'; 
+                banner.style.background = 'rgba(239, 68, 68, 0.15)';
                 banner.style.borderLeft = '6px solid var(--danger)';
             }
         } else {

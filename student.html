@@ -534,14 +534,14 @@
                     <div class="form-group">
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Student
                             ID</label>
-                        <input type="text" id="profileStudentId" class="form-control" minlength="10" maxlength="10">
+                        <input type="text" id="profileStudentId" class="form-control" maxlength="10">
                     </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <div style="flex: 1;">
                             <label
                                 style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">Mobile
                                 No.</label>
-                            <input type="tel" id="profileMobile" class="form-control" minlength="11" maxlength="11"
+                            <input type="tel" id="profileMobile" class="form-control" maxlength="11"
                                 pattern="[0-9]{11}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         </div>
                         <div style="width: 120px;">
@@ -599,13 +599,12 @@
                     </div>
                     <div class="form-group">
                         <label>New Password</label>
-                        <input type="password" id="newPassword" minlength="8" placeholder="At least 8 characters"
-                            required>
+                        <input type="password" id="newPassword" placeholder="Enter new password" required>
                     </div>
                     <div class="form-group">
                         <label>Confirm New Password</label>
                         <input type="password" id="confirmPasswordStudent" placeholder="Repeat new password"
-                            autocomplete="new-password" minlength="8" required>
+                            autocomplete="new-password" required>
                     </div>
                     <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
                 </div>
