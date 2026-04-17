@@ -1043,6 +1043,8 @@ body {
 }
 
 .equipment-card {
+    display: flex;
+    flex-direction: column;
     background: white;
     border-radius: var(--radius-xl);
     padding: var(--spacing-xl);

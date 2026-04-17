@@ -67,7 +67,19 @@ function initializeRealtimeListeners() {
     db.collection('borrowings')
         .where('status', 'in', ['pending_borrow', 'pending_return', 'pending_extension'])
         .onSnapshot((snapshot) => {
-            const count = snapshot.size;
+            // Count unique groups for a consistent experience
+            const groups = new Set();
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (data.status === 'pending_borrow') {
+                    groups.add(data.submissionId || doc.id);
+                } else {
+                    // Returns and extensions are typically individual
+                    groups.add(doc.id);
+                }
+            });
+
+            const count = groups.size;
             const badge = document.getElementById('approvalsBadge');
             const badgeMobile = document.getElementById('approvalsBadgeMobile');
             const dashPendingCount = document.getElementById('pendingRequestsCount');
@@ -649,16 +661,41 @@ async function loadPendingRequests() {
             db.collection('borrowings').where('status', '==', 'pending_return').get()
         ]);
 
-        const pendingBorrows = borrowSnapshot.docs.map(doc => ({ id: doc.id, type: 'borrow', ...doc.data() }));
-        const pendingReturns = returnSnapshot.docs.map(doc => ({ id: doc.id, type: 'return', ...doc.data() }));
+        const pBorrows = borrowSnapshot.docs.map(doc => ({ id: doc.id, type: 'borrow', ...doc.data() }));
+        const pReturns = returnSnapshot.docs.map(doc => ({ id: doc.id, type: 'return', ...doc.data() }));
 
-        const allPending = [...pendingBorrows, ...pendingReturns].sort((a, b) => {
-            const timeA = a.borrowedAt ? a.borrowedAt.toDate() : new Date(0);
-            const timeB = b.borrowedAt ? b.borrowedAt.toDate() : new Date(0);
+        const groupedBorrows = {};
+        const individualPendingReturns = [...pReturns];
+
+        // Register for bulk actions to avoid JSON stringify in onclick
+        window.__pendingBulkStorage = {};
+
+        pBorrows.forEach(req => {
+            const submissionGroupId = req.submissionId || req.id;
+            if (!groupedBorrows[submissionGroupId]) {
+                groupedBorrows[submissionGroupId] = {
+                    ...req,
+                    items: []
+                };
+            }
+            groupedBorrows[submissionGroupId].items.push({
+                borrowingId: req.id,
+                equipmentId: req.equipmentId,
+                equipmentName: req.equipmentName,
+                equipmentCode: req.equipmentCode
+            });
+        });
+
+        const allPendingGrouped = [
+            ...Object.values(groupedBorrows),
+            ...individualPendingReturns
+        ].sort((a, b) => {
+            const timeA = (a.borrowedAt && a.borrowedAt.toDate) ? a.borrowedAt.toDate() : new Date(0);
+            const timeB = (b.borrowedAt && b.borrowedAt.toDate) ? b.borrowedAt.toDate() : new Date(0);
             return timeB - timeA;
         });
 
-        const count = allPending.length;
+        const count = allPendingGrouped.length;
 
         if (badge) {
             badge.textContent = count;
@@ -685,10 +722,10 @@ async function loadPendingRequests() {
             return;
         }
 
-        pendingGrid.innerHTML = allPending.map(req => {
+        pendingGrid.innerHTML = allPendingGrouped.map(req => {
             const isBorrow = req.type === 'borrow';
             const isReturn = req.type === 'return';
-            const isExtension = req.type === 'extension';
+            const submissionGroupId = req.submissionId || req.id;
 
             let actionColor = 'var(--primary)';
             let actionBg = 'rgba(60, 255, 154, 0.1)';
@@ -702,12 +739,38 @@ async function loadPendingRequests() {
                 icon = '<polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path>';
             }
 
+            // For grouped borrows (cart submissions)
+            const isBulk = isBorrow && req.items && req.items.length > 1;
+            const itemsListHtml = isBulk 
+                ? `<ul style="margin-top: 5px; list-style: none; padding-left: 0;">` + 
+                  req.items.map(it => `<li style="font-size: 0.85rem; margin-bottom: 3px;"><i class="fa-solid fa-cube" style="font-size: 0.7rem; opacity: 0.6;"></i> ${it.equipmentName} (${it.equipmentCode})</li>`).join('') + 
+                  `</ul>`
+                : '';
+
+            const equipmentDisplayName = isBulk ? `${req.items.length} Items Selected` : req.equipmentName;
+            const equipmentDisplayCode = isBulk ? 'Cart Submission' : `ID: ${req.equipmentCode}`;
+
+            let actionButtonsHtml = '';
+            if (isBorrow) {
+                const storageId = `bulk_${submissionGroupId}`;
+                window.__pendingBulkStorage[storageId] = req.items;
+                actionButtonsHtml = `
+                    <button class="btn btn-primary" style="flex: 1;" onclick="approveBorrowBulk('${storageId}')">Approve</button>
+                    <button class="btn btn-secondary" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="rejectBorrowBulk('${storageId}')">Reject</button>
+                `;
+            } else {
+                actionButtonsHtml = `
+                    <button class="btn btn-primary" style="flex: 1;" onclick="approveReturn('${req.id}', '${req.equipmentId}', '${req.pendingReturnCondition}')">Approve</button>
+                    <button class="btn btn-secondary" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="rejectReturn('${req.id}', '${req.equipmentId}')">Reject</button>
+                `;
+            }
+
             return `
                 <div class="equipment-card" style="border-top: 4px solid ${actionColor}">
                     <div class="card-header">
                         <div class="card-title-group">
-                            <h3 class="card-title">${req.equipmentName}</h3>
-                            <span class="card-subtitle">ID: ${req.equipmentCode}</span>
+                            <h3 class="card-title">${equipmentDisplayName}</h3>
+                            <span class="card-subtitle">${equipmentDisplayCode}</span>
                         </div>
                         <div class="stat-icon" style="background: ${actionBg}; color: ${actionColor}; width: 32px; height: 32px;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -734,6 +797,7 @@ async function loadPendingRequests() {
                             <div class="detail-row"><span>Room:</span> <span>${req.room || 'N/A'}</span></div>
                             <div class="detail-row"><span>Purpose:</span> <span>${req.purpose || 'N/A'}</span></div>
                             <div class="detail-row"><span>Duration:</span> <span>Until ${formatTimeTo12h(req.expectedReturnTime)}</span></div>
+                            ${itemsListHtml}
                         ` : isReturn ? `
                             <div class="detail-row"><span>Condition:</span> <span style="text-transform: capitalize;">${req.pendingReturnCondition || 'N/A'}</span></div>
                             <div class="detail-row"><span>Notes:</span> <span style="font-style: italic;">${req.pendingReturnNotes || 'None'}</span></div>
@@ -745,8 +809,7 @@ async function loadPendingRequests() {
                     </div>
 
                     <div class="card-actions" style="margin-top: auto; display: flex; gap: 0.5rem;">
-                        <button class="btn btn-primary" style="flex: 1;" onclick="${isBorrow ? `approveBorrow('${req.id}', '${req.equipmentId}')` : `approveReturn('${req.id}', '${req.equipmentId}', '${req.pendingReturnCondition}')`}">Approve</button>
-                        <button class="btn btn-secondary" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="${isBorrow ? `rejectBorrow('${req.id}', '${req.equipmentId}')` : `rejectReturn('${req.id}', '${req.equipmentId}')`}">Reject</button>
+                        ${actionButtonsHtml}
                     </div>
                 </div>
             `;
@@ -954,8 +1017,8 @@ async function handleStudentIdUpload(event) {
     }
 }
 
-async function openStudentIdCaptureModal(borrowingId, equipmentId) {
-    pendingBorrowApproval = { borrowingId, equipmentId };
+async function openStudentIdCaptureModal(items) {
+    pendingBorrowApproval = items;
     resetStudentIdCaptureUI();
 
     const modal = document.getElementById('studentIdCaptureModal');
@@ -983,7 +1046,7 @@ function closeStudentIdCaptureModal() {
 }
 
 async function saveStudentIdCapture() {
-    if (!pendingBorrowApproval?.borrowingId || !pendingBorrowApproval?.equipmentId) {
+    if (!pendingBorrowApproval || (Array.isArray(pendingBorrowApproval) && pendingBorrowApproval.length === 0)) {
         showToast('Borrow request details are missing.', 'error');
         return;
     }
@@ -993,13 +1056,13 @@ async function saveStudentIdCapture() {
         return;
     }
 
-    await approveBorrow(pendingBorrowApproval.borrowingId, pendingBorrowApproval.equipmentId, studentIdCaptureImage);
+    await approveBorrow(pendingBorrowApproval, studentIdCaptureImage);
 }
 
 
-async function approveBorrow(borrowingId, equipmentId, capturedStudentIdPhoto = null) {
+async function approveBorrow(items, capturedStudentIdPhoto = null) {
     if (!capturedStudentIdPhoto) {
-        await openStudentIdCaptureModal(borrowingId, equipmentId);
+        await openStudentIdCaptureModal(items);
         return;
     }
 
@@ -1011,23 +1074,31 @@ async function approveBorrow(borrowingId, equipmentId, capturedStudentIdPhoto = 
     })) return;
 
     try {
-        const borrowDoc = await db.collection('borrowings').doc(borrowingId).get();
-        const borrowData = borrowDoc.data();
+        const batch = db.batch();
+        const itemsArray = Array.isArray(items) ? items : [items];
+        
+        for (const item of itemsArray) {
+            const borrowDoc = await db.collection('borrowings').doc(item.borrowingId).get();
+            const borrowData = borrowDoc.data();
 
-        await db.collection('borrowings').doc(borrowingId).update({
-            status: 'borrowed',
-            studentIdPhoto: capturedStudentIdPhoto,
-            studentIdPhotoCapturedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            studentIdPhotoCapturedBy: currentAdmin?.uid || null,
-            studentIdPhotoCapturedByName: currentAdminData?.name || currentAdmin?.email || 'Administrator'
-        });
-        await db.collection('equipment').doc(equipmentId).update({
-            status: 'borrowed',
-            borrowedBy: borrowData.userId || null,
-            borrowedAt: borrowData.borrowedAt || firebase.firestore.FieldValue.serverTimestamp()
-        });
+            batch.update(db.collection('borrowings').doc(item.borrowingId), {
+                status: 'borrowed',
+                studentIdPhoto: capturedStudentIdPhoto,
+                studentIdPhotoCapturedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                studentIdPhotoCapturedBy: currentAdmin?.uid || null,
+                studentIdPhotoCapturedByName: currentAdminData?.name || currentAdmin?.email || 'Administrator'
+            });
+
+            batch.update(db.collection('equipment').doc(item.equipmentId), {
+                status: 'borrowed',
+                borrowedBy: borrowData.userId || null,
+                borrowedAt: borrowData.borrowedAt || firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
+        await batch.commit();
         closeStudentIdCaptureModal();
-        showToast('Borrow request approved and student ID saved', 'success');
+        showToast(itemsArray.length > 1 ? `Approved ${itemsArray.length} items` : 'Borrow request approved', 'success');
         loadPendingRequests();
         loadCurrentlyBorrowed();
         loadDashboardData();
@@ -1037,21 +1108,31 @@ async function approveBorrow(borrowingId, equipmentId, capturedStudentIdPhoto = 
     }
 }
 
-async function rejectBorrow(borrowingId, equipmentId) {
+async function rejectBorrow(items) {
+    const itemsArray = Array.isArray(items) ? items : [items];
+    const message = itemsArray.length > 1 
+        ? `Reject these ${itemsArray.length} borrow requests?` 
+        : 'Reject this borrow request?';
+
     if (!await showConfirm({
         title: 'Reject Borrow',
-        message: 'Reject this borrow request?',
+        message: message,
         confirmText: 'Reject',
         type: 'danger'
     })) return;
+
     try {
-        await db.collection('borrowings').doc(borrowingId).update({ status: 'rejected' });
-        await db.collection('equipment').doc(equipmentId).update({
-            status: 'available',
-            borrowedBy: null,
-            borrowedAt: null
-        });
-        showToast('Borrow request rejected', 'success');
+        const batch = db.batch();
+        for (const item of itemsArray) {
+            batch.update(db.collection('borrowings').doc(item.borrowingId), { status: 'rejected' });
+            batch.update(db.collection('equipment').doc(item.equipmentId), {
+                status: 'available',
+                borrowedBy: null,
+                borrowedAt: null
+            });
+        }
+        await batch.commit();
+        showToast(itemsArray.length > 1 ? `Rejected ${itemsArray.length} items` : 'Borrow request rejected', 'success');
         loadPendingRequests();
         loadDashboardData();
     } catch (err) {
@@ -1059,6 +1140,18 @@ async function rejectBorrow(borrowingId, equipmentId) {
         showToast('Error rejecting request', 'error');
     }
 }
+
+// Global exposure for bulk actions
+window.approveBorrowBulk = (storageId) => {
+    const items = window.__pendingBulkStorage?.[storageId];
+    if (items) approveBorrow(items);
+    else showToast('Could not find request data', 'error');
+};
+window.rejectBorrowBulk = (storageId) => {
+    const items = window.__pendingBulkStorage?.[storageId];
+    if (items) rejectBorrow(items);
+    else showToast('Could not find request data', 'error');
+};
 
 async function approveReturn(borrowingId, equipmentId, condition) {
     if (!await showConfirm({

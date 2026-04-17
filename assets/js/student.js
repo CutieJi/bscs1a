@@ -1,9 +1,8 @@
 let currentUser = null;
 let currentUserData = null;
 let html5QrCode = null;
-let selectedEquipmentForBorrow = null;
-let selectedBorrowingForReturn = null;
 let selectedBorrowingForExtend = null;
+let cart = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -71,6 +70,247 @@ function initializeDashboard() {
     initializeHistoryExport();
     initializeIncidentReporting();
     checkStudentOverdueStatus();
+    initializeCart();
+}
+
+function initializeCart() {
+    try {
+        const savedCart = localStorage.getItem('borrow-cart');
+        if (savedCart) cart = JSON.parse(savedCart);
+    } catch (e) {
+        cart = [];
+    }
+    updateCartUI();
+}
+
+function updateCartUI() {
+    const fab = document.getElementById('cartFab');
+    const badge = document.getElementById('cartBadge');
+    if (!fab || !badge) return;
+
+    if (cart.length > 0) {
+        fab.classList.add('visible');
+        badge.textContent = cart.length;
+    } else {
+        fab.classList.remove('visible');
+        const modal = document.getElementById('cartModal');
+        if (modal) modal.classList.remove('active');
+    }
+}
+
+function toggleCartModal() {
+    const modal = document.getElementById('cartModal');
+    if (!modal) return;
+    
+    modal.classList.toggle('active');
+    if (modal.classList.contains('active')) {
+        renderCart();
+    }
+}
+
+async function addToCart(equipmentId) {
+    if (cart.some(item => item.id === equipmentId)) {
+        showToast('Item already in cart', 'info');
+        return;
+    }
+
+    if (cart.length >= 5) {
+        showToast('Cart is full (max 5 items)', 'warning');
+        return;
+    }
+
+    try {
+        const doc = await db.collection('equipment').doc(equipmentId).get();
+        if (!doc.exists) return;
+        
+        const item = { id: doc.id, ...doc.data() };
+        cart.push(item);
+        saveCart();
+        updateCartUI();
+        showToast(`Added ${item.name} to cart`, 'success');
+        
+        // Find the button and show feedback
+        const btn = document.querySelector(`button[onclick="addToCart('${equipmentId}')"]`);
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Added';
+            btn.classList.add('add-to-cart-anim');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('add-to-cart-anim');
+            }, 2000);
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showToast('Failed to add item', 'error');
+    }
+}
+
+function removeFromCart(equipmentId) {
+    cart = cart.filter(item => item.id !== equipmentId);
+    saveCart();
+    updateCartUI();
+    renderCart();
+}
+
+function clearCart() {
+    cart = [];
+    saveCart();
+    updateCartUI();
+}
+
+function saveCart() {
+    localStorage.setItem('borrow-cart', JSON.stringify(cart));
+}
+
+function renderCart() {
+    const list = document.getElementById('cartItemsList');
+    if (!list) return;
+
+    if (cart.length === 0) {
+        list.innerHTML = `
+            <div class="cart-empty">
+                <i class="fa-solid fa-cart-flatbed"></i>
+                <p>Your cart is empty</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = cart.map(item => {
+        const imgPath = getEquipmentImage(item.category);
+        return `
+            <div class="cart-item">
+                <img src="${imgPath}" class="cart-item-img" alt="${item.name}">
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-id">ID: ${item.equipmentId}</div>
+                </div>
+                <button class="cart-item-remove" onclick="removeFromCart('${item.id}')" title="Remove">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function proceedToBorrow() {
+    if (cart.length === 0) return;
+    
+    // Close cart modal
+    document.getElementById('cartModal').classList.remove('active');
+    
+    // Open borrow modal in bulk mode
+    openBulkBorrowModal();
+}
+
+async function openBulkBorrowModal() {
+    const borrowDetail = document.getElementById('borrowDetail');
+    if (!borrowDetail) return;
+
+    borrowDetail.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+            <strong>Items to Borrow (${cart.length}):</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+                ${cart.map(item => `<li>${item.name} (${item.equipmentId})</li>`).join('')}
+            </ul>
+        </div>
+    `;
+
+    const returnTimeInput = document.getElementById('returnTime');
+    if (returnTimeInput) {
+        const now = new Date();
+        now.setSeconds(0, 0);
+        now.setHours(now.getHours() + 1);
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        returnTimeInput.value = `${hh}:${mm}`;
+    }
+
+    // Set a flag for bulk mode and specify handler
+    document.getElementById('confirmBorrow').onclick = async () => await borrowCartItems();
+    
+    document.getElementById('borrowModal').classList.add('active');
+}
+
+async function borrowCartItems() {
+    const returnTime = document.getElementById('returnTime').value;
+    const purpose = document.getElementById('purpose').value;
+    const room = document.getElementById('room').value.trim();
+
+    if (!room) {
+        showToast('Please enter the room', 'error');
+        return;
+    }
+
+    if (!returnTime) {
+        showToast('Please select a return time', 'error');
+        return;
+    }
+
+    const now = new Date();
+    const [hh, mm] = returnTime.split(':').map(Number);
+    const target = new Date();
+    target.setHours(hh, mm, 0, 0);
+
+    if (target < now) {
+        target.setDate(target.getDate() + 1);
+    }
+
+    const diffHours = (target - now) / (1000 * 60 * 60);
+    if (diffHours > 3.01) {
+        showToast('Maximum borrowing time is 3 hours', 'error');
+        return;
+    }
+
+    const confirmBtn = document.getElementById('confirmBorrow');
+    const originalContent = confirmBtn.innerHTML;
+
+    try {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span>Processing...</span>';
+
+        const batch = db.batch();
+        
+        const submissionId = `SUB_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        cart.forEach(item => {
+            const newBorrowRef = db.collection('borrowings').doc();
+            batch.set(newBorrowRef, {
+                equipmentId: item.id,
+                equipmentCode: item.equipmentId,
+                equipmentName: item.name,
+                equipmentCategory: item.category,
+                room: room,
+                userId: currentUser.uid,
+                userName: currentUserData.name,
+                userEmail: currentUser.email,
+                userMobile: currentUserData.mobile || 'N/A',
+                studentId: currentUserData.studentId,
+                userPhotoURL: currentUserData.photoURL || null,
+                borrowedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                expectedReturnTime: returnTime,
+                purpose: purpose || 'Not specified',
+                status: 'pending_borrow',
+                submissionId: submissionId
+            });
+        });
+
+        await batch.commit();
+
+        showToast('Borrow requests submitted! Awaiting admin approval.', 'success');
+        document.getElementById('borrowModal').classList.remove('active');
+        
+        clearCart();
+        loadEquipment();
+        loadBorrowedItems();
+    } catch (error) {
+        console.error('Error borrowing items from cart:', error);
+        showToast('Failed to submit borrow requests', 'error');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalContent;
+    }
 }
 
 function updateUserInfo() {
@@ -275,11 +515,14 @@ async function loadEquipment() {
                     ${item.description ? `<p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">${item.description}</p>` : ''}
                     <div class="equipment-actions">
                         ${item.status === 'available' ? `
-                            <button class="btn btn-primary btn-sm" onclick="openBorrowModal('${item.id}')">
+                            <button class="btn btn-secondary btn-sm" onclick="addToCart('${item.id}')" style="flex: 1;">
+                                <i class="fa-solid fa-cart-plus"></i> Cart
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="openBorrowModal('${item.id}')" style="flex: 1;">
                                 Borrow
                             </button>
                         ` : `
-                            <button class="btn btn-secondary btn-sm" disabled>Not Available</button>
+                            <button class="btn btn-secondary btn-sm" disabled style="width: 100%;">Not Available</button>
                         `}
                     </div>
                 </div>
@@ -440,6 +683,11 @@ async function openBorrowModal(equipmentId) {
             returnTimeInput.value = `${hh}:${mm}`;
         }
 
+        const confirmBorrow = document.getElementById('confirmBorrow');
+        if (confirmBorrow) {
+            confirmBorrow.onclick = async () => await borrowEquipment();
+        }
+
         document.getElementById('borrowModal').classList.add('active');
     } catch (error) {
         console.error('Error opening borrow modal:', error);
@@ -466,9 +714,9 @@ function initializeModals() {
     }
 
     if (confirmBorrow) {
-        confirmBorrow.addEventListener('click', async () => {
+        confirmBorrow.onclick = async () => {
             await borrowEquipment();
-        });
+        };
     }
 
     const returnModal = document.getElementById('returnModal');
@@ -489,9 +737,9 @@ function initializeModals() {
     }
 
     if (confirmReturn) {
-        confirmReturn.addEventListener('click', async () => {
+        confirmReturn.onclick = async () => {
             await returnEquipment();
-        });
+        };
     }
 
     if (borrowModal) {
@@ -581,7 +829,8 @@ async function borrowEquipment() {
             expectedReturnTime: returnTime,
 
             purpose: purpose || 'Not specified',
-            status: 'pending_borrow'
+            status: 'pending_borrow',
+            submissionId: `SUB_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         });
 
         showToast('Borrow request submitted! Awaiting admin approval.', 'success');

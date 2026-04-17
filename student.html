@@ -642,6 +642,27 @@
             </a>
         </nav>
 
+        <div class="cart-fab" id="cartFab" onclick="toggleCartModal()">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <div class="cart-badge" id="cartBadge">0</div>
+        </div>
+
+        <div class="modal" id="cartModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Your Borrowing Cart</h2>
+                    <button class="modal-close" onclick="toggleCartModal()">&times;</button>
+                </div>
+                <div id="cartItemsList" style="margin-bottom: 1.5rem; max-height: 350px; overflow-y: auto; padding-right: 5px;">
+                    <!-- Cart items will be rendered here -->
+                </div>
+                <div class="modal-footer" id="cartFooter">
+                    <button class="btn btn-secondary" onclick="clearCart()">Clear All</button>
+                    <button class="btn btn-primary" onclick="proceedToBorrow()">Next: Details</button>
+                </div>
+            </div>
+        </div>
+
         <div class="toast" id="toast"></div>
 
         <div class="modal" id="imageZoomModal"
