@@ -516,7 +516,7 @@ async function loadEquipment() {
                     <div class="equipment-actions">
                         ${item.status === 'available' ? `
                             <button class="btn btn-secondary btn-sm" onclick="addToCart('${item.id}')" style="flex: 1;">
-                                <i class="fa-solid fa-cart-plus"></i> Cart
+                                <i class="fa-solid fa-check-double"></i> Select
                             </button>
                             <button class="btn btn-primary btn-sm" onclick="openBorrowModal('${item.id}')" style="flex: 1;">
                                 Borrow
