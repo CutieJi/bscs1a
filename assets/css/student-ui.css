@@ -2481,7 +2481,7 @@ textarea {
 
 .cart-badge {
     position: absolute;
-    top: 5px;
+    top: -10px;
     right: -5px;
     background: var(--danger);
     color: white;
