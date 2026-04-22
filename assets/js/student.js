@@ -170,7 +170,7 @@ function renderCart() {
     if (cart.length === 0) {
         list.innerHTML = `
             <div class="cart-empty">
-                <i class="fa-solid fa-cart-flatbed"></i>
+                <i class="fa-solid fa-hand-holding"></i>
                 <p>Your cart is empty</p>
             </div>
         `;
