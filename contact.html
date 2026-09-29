@@ -367,7 +367,7 @@
             // EMAIL NOTIFICATION LOGIC
             try {
               const emailParams = {
-                to_email: "roshjingel@gmail.com",
+                to_email: "roshingel.dev@gmail.com",
                 from_name: formData.fullName,
                 user_role: formData.role,
                 user_email: formData.email,
@@ -378,7 +378,7 @@
 
 
               emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams)
-                .then(() => console.log("✅ Email sent to roshjingel@gmail.com"))
+                .then(() => console.log("✅ Email sent to roshingel.dev@gmail.com"))
                 .catch((err) => console.error("EmailJS send error:", err));
 
             } catch (emailErr) {
