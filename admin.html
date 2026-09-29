@@ -1047,8 +1047,36 @@
                     </div>
                 </div>
 
-                <!-- Tab: Send Reset Email -->
-                <div id="adminPassTabEmail">
+                <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                    <button type="button" class="btn btn-primary btn-sm" id="tabSetDirect" style="flex:1;" onclick="adminPassSwitchTab('direct')">
+                        Set Password
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="tabResetEmail" style="flex:1;" onclick="adminPassSwitchTab('email')">
+                        Send Reset Email
+                    </button>
+                </div>
+
+                <div id="adminPassTabDirect">
+                    <p style="font-size:.875rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.6;">
+                        Set a new password for this user. They can sign in immediately with the password you enter here. You do not need their current password.
+                    </p>
+                    <div class="form-group">
+                        <label for="adminNewPassword">New Password</label>
+                        <input type="password" id="adminNewPassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminConfirmPassword">Confirm New Password</label>
+                        <input type="password" id="adminConfirmPassword" placeholder="Repeat new password" minlength="6" autocomplete="new-password">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelAdminSetPassword2">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="adminSetPasswordSubmitBtn">
+                            Update Password
+                        </button>
+                    </div>
+                </div>
+
+                <div id="adminPassTabEmail" style="display:none;">
                     <p style="font-size:.875rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.6;">
                         A password reset link will be sent to the user's email address. The user can click the link to set their own new password.
                     </p>
@@ -1199,6 +1227,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://kit.fontawesome.com/ca64101f16.js" crossorigin="anonymous"></script>

@@ -3449,15 +3449,15 @@ window.approveExtension = approveExtension;
 window.rejectExtension = rejectExtension;
 
 function openAdminSetPassword(userId, userName, userEmail, userPhotoURL) {
-    // Populate hidden fields
+    const form = document.getElementById('adminSetPasswordForm');
+    if (form) form.reset();
+    adminPassSwitchTab('direct');
+
     document.getElementById('adminSetPasswordUserId').value = userId;
     document.getElementById('adminSetPasswordUserEmail').value = userEmail;
-
-    // Populate user info display
     document.getElementById('adminSetPasswordUserName').textContent = userName;
     document.getElementById('adminSetPasswordUserEmailDisplay').textContent = userEmail;
 
-    // ── Avatar: show photo if available, else initials ──
     const avatarEl = document.getElementById('adminSetPasswordAvatar');
     if (avatarEl) {
         if (userPhotoURL && userPhotoURL !== '' && userPhotoURL !== 'undefined') {
@@ -3468,18 +3468,41 @@ function openAdminSetPassword(userId, userName, userEmail, userPhotoURL) {
         }
     }
 
-    // Reset form & switch to direct tab by default
-    const form = document.getElementById('adminSetPasswordForm');
-    if (form) form.reset();
-    adminPassSwitchTab('direct');
-
-    // Clear all password inputs explicitly
-    ['adminCurrentPassword', 'adminNewPassword', 'adminConfirmPassword'].forEach(id => {
+    ['adminNewPassword', 'adminConfirmPassword'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
 
     document.getElementById('adminSetPasswordModal').classList.add('active');
+}
+
+function getAdminSetPasswordError(err) {
+    const code = String(err && err.code ? err.code : '').replace(/^functions\//, '');
+    const details = err && err.details;
+    const detailText = typeof details === 'string'
+        ? details
+        : (details && details.message) ? details.message : '';
+    const message = (err && err.message) || '';
+
+    if (code === 'not-found' && /Authentication account/i.test(message + detailText)) {
+        return message || detailText;
+    }
+    if (code === 'not-found' || /NOT_FOUND/i.test(message) || /does not exist/i.test(message)) {
+        return 'Password function is not deployed yet. Run: firebase deploy --only functions';
+    }
+    if (code === 'unauthenticated') {
+        return 'Please sign in again, then retry.';
+    }
+    if (code === 'permission-denied') {
+        return message || 'Only admins can change other users’ passwords.';
+    }
+    if (code === 'invalid-argument' || code === 'failed-precondition') {
+        return detailText || message || 'Could not update this password.';
+    }
+    if (code === 'internal' || /^internal$/i.test(message)) {
+        return 'Firebase returned an internal error. Redeploy functions, confirm Blaze billing is on, then check Functions logs. If the user was created only in Firestore, they have no Auth account to update.';
+    }
+    return detailText || message || 'Failed to update password';
 }
 
 function closeAdminSetPasswordModal() {
@@ -3544,6 +3567,50 @@ function adminPassSwitchTab(tab) {
             } finally {
                 sendBtn.disabled = false;
                 sendBtn.innerHTML = orig;
+            }
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const uid = document.getElementById('adminSetPasswordUserId').value;
+            const newPassword = document.getElementById('adminNewPassword').value;
+            const confirmPassword = document.getElementById('adminConfirmPassword').value;
+
+            if (!uid) {
+                showToast('No user selected.', 'error');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showToast('New password must be at least 6 characters', 'error');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('adminSetPasswordSubmitBtn') || form.querySelector('button[type="submit"]');
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Updating...</span>';
+
+            try {
+                if (typeof firebase.functions !== 'function') {
+                    throw new Error('Firebase Functions SDK is not loaded.');
+                }
+                const setPassword = firebase.app().functions('us-central1').httpsCallable('adminSetUserPassword');
+                await setPassword({ uid, password: newPassword });
+                showToast('Password updated. The user can sign in with the new password.', 'success');
+                close();
+            } catch (err) {
+                console.error('Admin set password error:', err);
+                showToast(getAdminSetPasswordError(err), 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
             }
         });
     }
