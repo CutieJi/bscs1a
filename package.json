@@ -1,0 +1,13 @@
+{
+  "name": "mislend",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "workspaces": [
+    "server"
+  ],
+  "scripts": {
+    "start": "npm --workspace server start"
+  }
+}
